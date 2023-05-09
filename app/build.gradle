@@ -1,0 +1,19 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 33
+    defaultConfig {
+        applicationId "com.csl.cs710ademoapp"
+        minSdkVersion 21
+        targetSdkVersion 33
+        versionCode 3
+        versionName "4.8.0"
+    }
+}
+
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation 'com.google.android.material:material:1.0.0'
+    implementation project(path: ':cs710library4a')
+    implementation project(path: ':cs108library4a')
+}
