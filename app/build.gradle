@@ -7,7 +7,7 @@ android {
         minSdkVersion 21
         targetSdkVersion 33
         versionCode 3
-        versionName "4.8.0"
+        versionName "4.8.1"
     }
 }
 

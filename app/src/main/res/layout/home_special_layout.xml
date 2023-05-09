@@ -20,6 +20,15 @@
             android:layout_marginTop="@dimen/home_icon_margin_1"
             android:background="@drawable/btn_back"
             android:gravity="center"
+            android:text="Multi-bank Inventory"
+            android:onClick="multiBankClicked"/>
+
+        <Button
+            style="@style/DashboardButton"
+            android:layout_height="50dp"
+            android:layout_marginTop="@dimen/home_icon_margin_1"
+            android:background="@drawable/btn_back"
+            android:gravity="center"
             android:text="Impinj FastID TagFocus"
             android:onClick="impInventoryClicked"/>
 
@@ -169,15 +178,6 @@
             android:gravity="center"
             android:text="Simple Inventory"
             android:onClick="simpleInventoryClicked"/>
-
-        <Button
-            style="@style/DashboardButton"
-            android:layout_height="50dp"
-            android:layout_marginTop="@dimen/home_icon_margin_1"
-            android:background="@drawable/btn_back"
-            android:gravity="center"
-            android:text="Multi-bank Inventory"
-            android:onClick="multiBankClicked"/>
 
         <Button
             style="@style/DashboardButton"

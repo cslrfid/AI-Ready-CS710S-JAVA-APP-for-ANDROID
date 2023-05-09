@@ -137,7 +137,7 @@ public class AccessTask1 {
                 } else bValue = true;
             }
         } else bValue = true;
-        MainActivity.csLibrary4A.appendToLog("HelloA: bValue=" + bValue);
+        //MainActivity.csLibrary4A.appendToLog("HelloA: bValue=" + bValue);
         isResultReady = bValue;
         return bValue;
     }
