@@ -10,7 +10,7 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@drawable/csl_logo_230426"
+        android:icon="@mipmap/csl_logo_230510"
         android:label="@string/app_newname"
         android:supportsRtl="true"
         android:requestLegacyExternalStorage="true"
