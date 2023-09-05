@@ -16,7 +16,7 @@ import android.view.ViewGroup;
 
 import com.csl.cs710ademoapp.R;
 
-class ImpinjSecurityAdapter extends FragmentStatePagerAdapter {
+class ImpinjAutoTuneAdapter extends FragmentStatePagerAdapter {
     private final int NO_OF_TABS = 2;
     public Fragment fragment0, fragment1;
 
@@ -41,15 +41,15 @@ class ImpinjSecurityAdapter extends FragmentStatePagerAdapter {
         return PagerAdapter.POSITION_NONE;
     }
 
-    public ImpinjSecurityAdapter(FragmentManager fm) {
+    public ImpinjAutoTuneAdapter(FragmentManager fm) {
         super(fm, FragmentStatePagerAdapter.BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
     }
 }
 
-public class ImpinjM775Fragment extends CommonFragment {
+public class ImpinjAutoTuneFragment extends CommonFragment {
     private ActionBar actionBar;
     private ViewPager viewPager;
-    ImpinjSecurityAdapter mAdapter;
+    ImpinjAutoTuneAdapter mAdapter;
 
     private String[] tabs = {"Configuration", "Scan"};
     int iTargetOld, iSessionOld;
@@ -66,28 +66,6 @@ public class ImpinjM775Fragment extends CommonFragment {
         return fragment1.onOptionsItemSelected(item);
     }
 
-
-    @Override
-    public void onPause() {
-        mAdapter.fragment0.onPause();
-        mAdapter.fragment1.onPause();
-        super.onPause();
-    }
-
-    @Override
-    public void onStop() {
-        mAdapter.fragment0.onStop();
-        mAdapter.fragment1.onStop();
-        super.onStop();
-    }
-
-    @Override
-    public void onDestroyView() {
-        mAdapter.fragment0.onDestroyView();
-        mAdapter.fragment1.onDestroyView();
-        super.onDestroyView();
-    }
-
     @Override
     public void onDetach() {
         mAdapter.fragment0.onDetach();
@@ -95,7 +73,7 @@ public class ImpinjM775Fragment extends CommonFragment {
         super.onDetach();
     }
 
-    public ImpinjM775Fragment() {
-        super("ImpinjM775Fragment");
+    public ImpinjAutoTuneFragment() {
+        super("ImpinjAutoTuneFragment");
     }
 }

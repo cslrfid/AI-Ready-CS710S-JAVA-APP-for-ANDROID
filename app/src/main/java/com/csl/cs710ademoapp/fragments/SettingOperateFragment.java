@@ -22,9 +22,9 @@ import com.csl.cs710ademoapp.SettingTask;
 
 public class SettingOperateFragment extends CommonFragment {
     final String strOVERRIDE = "Override"; final String strRESET = "Reset";
-    private CheckBox checkBoxPortEnable, checkBoxTagFocus, checkBoxFastId, checkBoxHighCompression;
-    private Spinner spinnerRegulatoryRegion, spinnerFrequencyOrder, spinnerChannel, spinnerQueryTarget, spinnerQuerySession, spinnerInvAlgo, spinnerProfile, spinnerRflnaGain, spinnerIflnaGain, spinnerAgcGain;
-    private EditText editTextPopulation, editTextStartQValue, editTextOperatePower, editTextPortDwell, editTextTagDelay, editTextIntraPkDelay, editTextDupDelay, editTextRetry;
+    private CheckBox checkBoxPortEnable, checkBoxTagFocus, checkBoxHighCompression;
+    private Spinner spinnerRegulatoryRegion, spinnerFrequencyOrder, spinnerQueryTarget, spinnerQuerySession, spinnerInvAlgo, spinnerProfile, spinnerRflnaGain, spinnerIflnaGain, spinnerAgcGain;
+    private EditText editTextChannel, editTextPopulation, editTextStartQValue, editTextOperatePower, editTextPortDwell, editTextTagDelay, editTextIntraPkDelay, editTextDupDelay, editTextRetry;
     private TextView textViewPortChannel;
     private Button buttonPortSelect, buttonOverride, button, button1;
     private TextView textViewEnvironmentalRSSI;
@@ -35,22 +35,22 @@ public class SettingOperateFragment extends CommonFragment {
         int querySession;
         int queryTarget;
         String dwell;
-        String tagDelay;//, intraPkDelay, dupDelay;
+        String tagDelay, intraPkDelay, dupDelay;
         void store() {
             querySession = spinnerQuerySession.getSelectedItemPosition(); spinnerQuerySession.setSelection(1); spinnerQuerySession.setEnabled(false);
             queryTarget = spinnerQueryTarget.getSelectedItemPosition(); spinnerQueryTarget.setSelection(0); spinnerQueryTarget.setEnabled(false);
             dwell = editTextPortDwell.getText().toString(); editTextPortDwell.setText("2000"); editTextPortDwell.setEnabled(false);
             tagDelay = editTextTagDelay.getText().toString(); editTextTagDelay.setText("0"); editTextTagDelay.setEnabled(false);
-            //intraPkDelay = editTextIntraPkDelay.getText().toString(); editTextIntraPkDelay.setText("0"); editTextIntraPkDelay.setEnabled(false);
-            //dupDelay = editTextDupDelay.getText().toString(); editTextDupDelay.setText("0"); editTextDupDelay.setEnabled(false);
+            intraPkDelay = editTextIntraPkDelay.getText().toString(); editTextIntraPkDelay.setText("0"); editTextIntraPkDelay.setEnabled(false);
+            dupDelay = editTextDupDelay.getText().toString(); editTextDupDelay.setText("0"); editTextDupDelay.setEnabled(false);
         }
         void restore() {
             spinnerQuerySession.setSelection(querySession); spinnerQuerySession.setEnabled(true);
             spinnerQueryTarget.setSelection(queryTarget); spinnerQueryTarget.setEnabled(true);
             editTextPortDwell.setText(dwell); editTextPortDwell.setEnabled(true);
             editTextTagDelay.setText(tagDelay); editTextTagDelay.setEnabled(true);
-            //editTextIntraPkDelay.setText(intraPkDelay); editTextIntraPkDelay.setEnabled(true);
-            //editTextDupDelay.setText(dupDelay); editTextDupDelay.setEnabled(true);
+            editTextIntraPkDelay.setText(intraPkDelay); editTextIntraPkDelay.setEnabled(true);
+            editTextDupDelay.setText(dupDelay); editTextDupDelay.setEnabled(true);
         }
     };
     SettingBeforeTagFocus settingBeforeTagFocus = new SettingBeforeTagFocus();
@@ -69,7 +69,7 @@ public class SettingOperateFragment extends CommonFragment {
     byte byteFixedQValue = -1; byte byteFixedQValueMin = 0; byte byteFixedQValueMax = 15;
     int queryTarget;
     int querySession = -1;
-    int tagFocus = -1, fastId = -1;
+    int tagFocus = -1;
     boolean invAlgoDynamic = false;
     int retry = -1;
     int profile = -1;
@@ -97,13 +97,11 @@ public class SettingOperateFragment extends CommonFragment {
             tableRow.setVisibility(View.GONE);
             TableRow tableRow1 = (TableRow) getActivity().findViewById(R.id.settingOperateIntraPkDelayRow);
             tableRow1.setVisibility(View.GONE);
-            //TableRow tableRow2 = (TableRow) getActivity().findViewById(R.id.settingOperatePortWarningRow);
-            //tableRow2.setVisibility(View.GONE);
         }
 
         spinnerRegulatoryRegion = (Spinner) getActivity().findViewById(R.id.settingOperateRegulatoryRegion);
         spinnerFrequencyOrder = (Spinner) getActivity().findViewById(R.id.settingOperateFrequencyOrder); spinnerFrequencyOrder.setEnabled(false);
-        spinnerChannel = (Spinner) getActivity().findViewById(R.id.settingOperateChannel);
+        editTextChannel = (EditText) getActivity().findViewById(R.id.settingOperateChannel);
 
         iPortNumber = MainActivity.csLibrary4A.getPortNumber();
         if (iPortNumber == 1 && false) {
@@ -127,7 +125,6 @@ public class SettingOperateFragment extends CommonFragment {
             }
             textViewPortChannel = (TextView) getActivity().findViewById(R.id.settingOperatePortChannel); textViewPortChannel.setText("1");
             buttonPortSelect = (Button) getActivity().findViewById(R.id.settingOperatePortChannelSelect);
-            if (false && MainActivity.csLibrary4A.get98XX() == 2) buttonPortSelect.setEnabled(false);
             buttonPortSelect.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -184,7 +181,7 @@ public class SettingOperateFragment extends CommonFragment {
 
         checkBoxTagFocus = (CheckBox) getActivity().findViewById(R.id.settingOperateTagFocus);
         String string = checkBoxTagFocus.getText().toString();
-        if (MainActivity.csLibrary4A.get98XX() ==  2) checkBoxTagFocus.setText(string.substring(0, string.length()-1) + ". When enabled, tag select is disabled.)");
+        if (MainActivity.csLibrary4A.get98XX() !=  0) checkBoxTagFocus.setText(string.substring(0, string.length()-1) + ". When enabled, tag select is disabled.)");
         checkBoxTagFocus.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -192,8 +189,6 @@ public class SettingOperateFragment extends CommonFragment {
                 else settingBeforeTagFocus.restore();
             }
         });
-
-        checkBoxFastId = (CheckBox) getActivity().findViewById(R.id.settingOperateFastId);
 
         spinnerInvAlgo = (Spinner) getActivity().findViewById(R.id.settingOperateAlgorithmToUse);
         targetAdapter = ArrayAdapter.createFromResource(getActivity(), R.array.inventory_algorithm_options, R.layout.custom_spinner_layout);
@@ -290,7 +285,7 @@ public class SettingOperateFragment extends CommonFragment {
             try {
                 countrySelect = spinnerRegulatoryRegion.getSelectedItemPosition();
                 channelOrder = spinnerFrequencyOrder.getSelectedItemPosition();
-                channelSelect = spinnerChannel.getSelectedItemPosition();
+                channelSelect = Integer.parseInt(editTextChannel.getText().toString());
                 if (textViewPortChannel != null)
                     channel = Integer.parseInt(textViewPortChannel.getText().toString());
                 if (checkBoxPortEnable != null) portEnable = checkBoxPortEnable.isChecked();
@@ -308,7 +303,6 @@ public class SettingOperateFragment extends CommonFragment {
                 queryTarget = spinnerQueryTarget.getSelectedItemPosition();
                 querySession = spinnerQuerySession.getSelectedItemPosition();
                 tagFocus = (checkBoxTagFocus.isChecked() ? 1 : 0);
-                fastId = (checkBoxFastId.isChecked() ? 1 : 0);
                 invAlgoDynamic = (spinnerInvAlgo.getSelectedItemPosition() == 0 ? true : false);
                 retry = Integer.parseInt(editTextRetry.getText().toString());
                 profile = spinnerProfile.getSelectedItemPosition();
@@ -331,21 +325,6 @@ public class SettingOperateFragment extends CommonFragment {
         super.onDestroy();
     }
 
-    boolean userVisibleHint = true;
-    @Override
-    public void setUserVisibleHint(boolean isVisibleToUser) {
-        MainActivity.csLibrary4A.appendToLog("isVisibleToUser = " + isVisibleToUser);
-        super.setUserVisibleHint(isVisibleToUser);
-        if(getUserVisibleHint()) {
-            if (userVisibleHint == false) {
-                userVisibleHint = true;
-                mHandler.post(updateRunnable);
-            }
-        } else {
-            userVisibleHint = false;
-        }
-    }
-
     public SettingOperateFragment() {
         super("SettingOperateFragment");
     }
@@ -360,12 +339,12 @@ public class SettingOperateFragment extends CommonFragment {
 
             updateRunning = true;
             if (MainActivity.csLibrary4A.mrfidToWriteSize() != 0)   {
-                updating = true; MainActivity.csLibrary4A.appendToLog("updating 1");
+                updating = true; MainActivity.csLibrary4A.appendToLog("upating 1");
             }
             else {
                 iPopulation = MainActivity.csLibrary4A.getPopulation();
                 if (iPopulation < 0) {
-                    updating = true; MainActivity.csLibrary4A.appendToLog("updating 2");
+                    updating = true; MainActivity.csLibrary4A.appendToLog("upating 2");
                 }
                 else {
                     editTextPopulation.setText(String.valueOf(iPopulation));
@@ -378,10 +357,17 @@ public class SettingOperateFragment extends CommonFragment {
                         buttonOverride.setText(strOVERRIDE); overriding = false;
                     }
                 }
+                if (updating == false) {
+                    int channel = MainActivity.csLibrary4A.getChannel();
+                    if (channel < 0) {
+                        updating = true; MainActivity.csLibrary4A.appendToLog("upating 3");
+                    }
+                    else { editTextChannel.setText(String.valueOf(channel)); }
+                }
                 if (updating == false && textViewPortChannel != null) {
                     lValue = MainActivity.csLibrary4A.getAntennaSelect();
                     if (lValue < 0) {
-                        updating = true; MainActivity.csLibrary4A.appendToLog("updating 4");
+                        updating = true; MainActivity.csLibrary4A.appendToLog("upating 4");
                     } else {
                         textViewPortChannel.setText(String.valueOf(lValue+1));
                     }
@@ -390,7 +376,7 @@ public class SettingOperateFragment extends CommonFragment {
                 if (updating == false) {
                     lValue = MainActivity.csLibrary4A.getPwrlevel();
                     if (lValue < 0) {
-                        updating = true; MainActivity.csLibrary4A.appendToLog("updating 5");
+                        updating = true; MainActivity.csLibrary4A.appendToLog("upating 5");
                     } else {
                         editTextOperatePower.setText(String.valueOf(lValue));
                     }
@@ -398,7 +384,7 @@ public class SettingOperateFragment extends CommonFragment {
                 if (updating == false && editTextPortDwell != null) {
                     lValue = MainActivity.csLibrary4A.getAntennaDwell();
                     if (lValue < 0) {
-                        updating = true; MainActivity.csLibrary4A.appendToLog("updating 6");
+                        updating = true; MainActivity.csLibrary4A.appendToLog("upating 6");
                     } else {
                         editTextPortDwell.setText(String.valueOf(lValue));
                     }
@@ -412,7 +398,7 @@ public class SettingOperateFragment extends CommonFragment {
                 if (updating == false) {
                     iValue = MainActivity.csLibrary4A.getQuerySession();
                     if (iValue < 0) {
-                        updating = true; MainActivity.csLibrary4A.appendToLog("updating 7");
+                        updating = true; MainActivity.csLibrary4A.appendToLog("upating 7");
                     } else {
                         spinnerQuerySession.setSelection(iValue);
                     }
@@ -420,7 +406,7 @@ public class SettingOperateFragment extends CommonFragment {
                 if (updating == false) {
                     iValue = MainActivity.csLibrary4A.getTagFocus();
                     if (iValue < 0) {
-                        updating = true; MainActivity.csLibrary4A.appendToLog("updating 8");
+                        updating = true; MainActivity.csLibrary4A.appendToLog("upating 8");
                     }
                     else {
                         checkBoxTagFocus.setChecked(iValue > 0 ? true : false);
@@ -428,64 +414,48 @@ public class SettingOperateFragment extends CommonFragment {
                     }
                 }
                 if (updating == false) {
-                    iValue = MainActivity.csLibrary4A.getFastId();
-                    if (iValue < 0) {
-                        updating = true; MainActivity.csLibrary4A.appendToLog("updating 8");
-                    }
-                    else checkBoxFastId.setChecked(iValue > 0 ? true : false);
-                }
-                if (updating == false) {
                     spinnerInvAlgo.setSelection(MainActivity.csLibrary4A.getInvAlgo() ? 0 : 1);
                 }
                 if (updating == false) {
                     int iRetry = MainActivity.csLibrary4A.getRetryCount();
                     if (iRetry < 0) {
-                        updating = true; MainActivity.csLibrary4A.appendToLog("updating 9");
+                        updating = true; MainActivity.csLibrary4A.appendToLog("upating 9");
                     }
                     else editTextRetry.setText(String.valueOf(iRetry));
                 }
                 if (updating == false) {
                     String[] strCountryList = MainActivity.csLibrary4A.getCountryList();
-                    for (int i = 0; i < strCountryList.length; i++) MainActivity.csLibrary4A.appendToLog("updating: String " + i + " = " + strCountryList[i]);
-                    String[] strChannelFrequencyList = MainActivity.csLibrary4A.getChannelFrequencyList();
-                    //for (int i = 0; i < strChannelFrequencyList.length; i++) MainActivity.csLibrary4A.appendToLog("updating: String " + i + " = " + strChannelFrequencyList[i]);
+                    for (int i = 0; i < strCountryList.length; i++) MainActivity.csLibrary4A.appendToLog("upating: String " + i + " = " + strCountryList[i]);
                     if (strCountryList == null) {
-                        updating = true; MainActivity.csLibrary4A.appendToLog("updating 10");
-                    } else {
+                        updating = true; MainActivity.csLibrary4A.appendToLog("upating 10");
+                    } else
+                    if (true) {
                         ArrayAdapter targetAdapter1 = new ArrayAdapter(getActivity(), R.layout.custom_spinner_layout, strCountryList);
                         targetAdapter1.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                         spinnerRegulatoryRegion.setAdapter(targetAdapter1);
                         int countryNumber = MainActivity.csLibrary4A.getCountryNumberInList();
-                        MainActivity.csLibrary4A.appendToLog("updating countryNumber = " + countryNumber);
+                        MainActivity.csLibrary4A.appendToLog("upating countryNumber = " + countryNumber);
                         if (countryNumber < 0 || countryNumber > strCountryList.length) spinnerRegulatoryRegion.setSelection(0);
                         else spinnerRegulatoryRegion.setSelection(countryNumber);
                         if (strCountryList.length == 1) spinnerRegulatoryRegion.setEnabled(false);
                         else spinnerRegulatoryRegion.setEnabled(true);
 
                         ArrayAdapter<CharSequence> targetAdapter;
-                        //if (MainActivity.csLibrary4A.getChannelHoppingDefault())
+                        //if (MainActivity.mCs108Library4a.getChannelHoppingDefault())
                             targetAdapter = ArrayAdapter.createFromResource(getActivity(), R.array.frequencyOrder_options, R.layout.custom_spinner_layout);
                         //else targetAdapter = ArrayAdapter.createFromResource(getActivity(), R.array.frequencyAgile_options, R.layout.custom_spinner_layout);
                         targetAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                         spinnerFrequencyOrder.setAdapter(targetAdapter);
                         spinnerFrequencyOrder.setSelection(MainActivity.csLibrary4A.getChannelHoppingStatus() ? 0 : 1);
-                        if (MainActivity.csLibrary4A.getChannelHoppingStatus()) spinnerChannel.setEnabled(false);
-                        else spinnerChannel.setEnabled(true);
-
-                        ArrayAdapter targetAdapter2 = new ArrayAdapter(getActivity(), R.layout.custom_spinner_layout, strChannelFrequencyList);
-                        targetAdapter2.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                        spinnerChannel.setAdapter(targetAdapter2);
-                        int channel = MainActivity.csLibrary4A.getChannel();
-                        MainActivity.csLibrary4A.appendToLog("channel = " + channel);
-                        if (channel < 0 || channel > strChannelFrequencyList.length) spinnerChannel.setSelection(0);
-                        else spinnerChannel.setSelection(channel);
+                        if (MainActivity.csLibrary4A.getChannelHoppingStatus()) editTextChannel.setEnabled(false);
+                        else editTextChannel.setEnabled(true);
                     }
                 }
             }
             if (updating == false) {
                 iValue = MainActivity.csLibrary4A.getCurrentProfile();
                 if (iValue < 0) {
-                    updating = true; MainActivity.csLibrary4A.appendToLog("updating 11");
+                    updating = true; MainActivity.csLibrary4A.appendToLog("upating 11");
                 } else {
                     spinnerProfile.setSelection(iValue);
                 }
@@ -493,20 +463,20 @@ public class SettingOperateFragment extends CommonFragment {
             if (updating == false) {
                 String strRssi = MainActivity.csLibrary4A.getEnvironmentalRSSI();
                 if (strRssi == null) {
-                    updating = true; MainActivity.csLibrary4A.appendToLog("updating 12");
+                    updating = true; MainActivity.csLibrary4A.appendToLog("upating 12");
                 }
                 else textViewEnvironmentalRSSI.setText(strRssi);
             }
             if (updating == false) {
                 iValue = MainActivity.csLibrary4A.getHighCompression();
                 if (iValue < 0) {
-                    updating = true; MainActivity.csLibrary4A.appendToLog("updating 13");
+                    updating = true; MainActivity.csLibrary4A.appendToLog("upating 13");
                 } else checkBoxHighCompression.setChecked(iValue == 0 ? false : true);
             }
             if (updating == false) {
                 iValue = MainActivity.csLibrary4A.getRflnaGain();
                 if (iValue < 0) {
-                    updating = true; MainActivity.csLibrary4A.appendToLog("updating 14");
+                    updating = true; MainActivity.csLibrary4A.appendToLog("upating 14");
                 } else {
                     switch (iValue) {
                         case 2:
@@ -526,7 +496,7 @@ public class SettingOperateFragment extends CommonFragment {
             if (updating == false) {
                 iValue = MainActivity.csLibrary4A.getIflnaGain();
                 if (iValue < 0) {
-                    updating = true; MainActivity.csLibrary4A.appendToLog("updating 15");
+                    updating = true; MainActivity.csLibrary4A.appendToLog("upating 15");
                 } else {
                     switch (iValue) {
                         case 1:
@@ -549,7 +519,7 @@ public class SettingOperateFragment extends CommonFragment {
             if (updating == false) {
                 iValue = MainActivity.csLibrary4A.getAgcGain();
                 if (iValue < 0) {
-                    updating = true; MainActivity.csLibrary4A.appendToLog("updating 16");
+                    updating = true; MainActivity.csLibrary4A.appendToLog("upating 16");
                 } else {
                     switch (iValue) {
                         case 4:
@@ -588,9 +558,9 @@ public class SettingOperateFragment extends CommonFragment {
         if (invalidRequest == false && (MainActivity.csLibrary4A.getChannelHoppingStatus() != (channelOrder == 0 ? true : false) || sameCheck == false)) {
             sameSetting = false; MainActivity.csLibrary4A.appendToLog("point 2");
             if (MainActivity.csLibrary4A.setChannelHoppingStatus(channelOrder == 0 ? true : false) == false)    invalidRequest = true;
-            else if (channelOrder > 0) spinnerChannel.setEnabled(true);
-            else spinnerChannel.setEnabled(false);
-            spinnerChannel.setSelection(MainActivity.csLibrary4A.getChannel()); MainActivity.csLibrary4A.appendToLog("1 channel = ");
+            else if (channelOrder > 0) editTextChannel.setEnabled(true);
+            else editTextChannel.setEnabled(false);
+            editTextChannel.setText(String.valueOf(MainActivity.csLibrary4A.getChannel())); MainActivity.csLibrary4A.appendToLog("1 channel = ");
         }
         if (invalidRequest == false && (MainActivity.csLibrary4A.getChannel() != channelSelect || sameCheck == false)) {
             sameSetting = false; MainActivity.csLibrary4A.appendToLog("point 3");
@@ -675,11 +645,6 @@ public class SettingOperateFragment extends CommonFragment {
             if (MainActivity.csLibrary4A.setTagFocus(tagFocus > 0 ? true : false) == false)
                 invalidRequest = true;
         }
-        if (MainActivity.csLibrary4A.getFastId() != fastId || sameCheck == false) {
-            sameSetting = false; MainActivity.csLibrary4A.appendToLog("point 12");
-            if (MainActivity.csLibrary4A.setFastId(fastId > 0 ? true : false) == false)
-                invalidRequest = true;
-        }
         if (invalidRequest == false) {
             if (MainActivity.csLibrary4A.getInvAlgo() != invAlgoDynamic || sameCheck == false) {
                 sameSetting = false; MainActivity.csLibrary4A.appendToLog("point 13");
@@ -697,7 +662,7 @@ public class SettingOperateFragment extends CommonFragment {
         }
         if (invalidRequest == false) {
             if (MainActivity.csLibrary4A.getCurrentProfile() != profile || sameCheck == false) {
-                sameSetting = false; MainActivity.csLibrary4A.appendToLog("point 15 with profile = " + profile);
+                sameSetting = false; MainActivity.csLibrary4A.appendToLog("point 15");
                 if (MainActivity.csLibrary4A.setCurrentLinkProfile(profile) == false)
                     invalidRequest = true;
             }

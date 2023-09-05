@@ -304,7 +304,6 @@
         android:gravity="center">
 
         <TextView
-            android:id="@+id/module_versionLabel"
             android:layout_width="0dp"
             android:layout_weight="50"
             android:gravity="left"
@@ -319,7 +318,7 @@
             android:text="@string/colon" />
 
         <TextView
-            android:id="@+id/module_version"
+            android:id="@+id/module_versoin"
             android:layout_width="0dp"
             android:layout_weight="40"
             android:gravity="center"
@@ -367,7 +366,7 @@
             android:layout_weight="50"
             android:gravity="left"
             style="@style/style_normal_font"
-            android:text="RFID serial number" />
+            android:text="Radio serial number" />
 
         <TextView
             android:layout_width="0dp"
@@ -395,7 +394,7 @@
             android:layout_weight="50"
             android:gravity="left"
             style="@style/style_normal_font"
-            android:text="RFID board version" />
+            android:text="Radio board version" />
 
         <TextView
             android:layout_width="0dp"
@@ -423,7 +422,7 @@
             android:layout_weight="50"
             android:gravity="left"
             style="@style/style_normal_font"
-            android:text="RFID firmware version" />
+            android:text="Radio firmware version" />
 
         <TextView
             android:layout_width="0dp"

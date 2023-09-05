@@ -24,9 +24,10 @@ import android.widget.Toast;
 import com.csl.cs710ademoapp.CustomMediaPlayer;
 import com.csl.cs710ademoapp.InventoryRfidTask;
 import com.csl.cs710ademoapp.SelectTag;
+import com.csl.cs710library4a.Cs108Connector;
 import com.csl.cs710ademoapp.MainActivity;
 import com.csl.cs710ademoapp.R;
-import com.csl.cs710library4a.CsLibrary4A;
+import com.csl.cs710library4a.Cs710Library4A;
 import com.csl.cs710library4a.ReaderDevice;
 
 public class InventoryRfidSearchFragment extends CommonFragment {
@@ -250,7 +251,7 @@ public class InventoryRfidSearchFragment extends CommonFragment {
     };
 
     void setNotificationListener() {
-        MainActivity.csLibrary4A.setNotificationListener(new CsLibrary4A.NotificationListener() {
+        MainActivity.csLibrary4A.setNotificationListener(new Cs108Connector.NotificationListener() {
             @Override
             public void onChange() {
                 startStopHandler(true);
@@ -290,16 +291,12 @@ public class InventoryRfidSearchFragment extends CommonFragment {
         started = true; boolean invalidRequest = false;
         int memorybank = memoryBankSpinner.getSelectedItemPosition();
         int powerLevel = Integer.valueOf(editTextGeigerAntennaPower.getText().toString());
-        if (powerLevel < 0 || powerLevel > 330) {
-            MainActivity.csLibrary4A.appendToLog("invalidRequest = " + invalidRequest + ", with powerLevel = " + powerLevel);
+        if (powerLevel < 0 || powerLevel > 330) invalidRequest = true;
+        else if (MainActivity.csLibrary4A.setSelectedTag(selectTag.editTextTagID.getText().toString(), memorybank+1, powerLevel) == false) {
             invalidRequest = true;
-        } else if (MainActivity.csLibrary4A.setSelectedTag(selectTag.editTextTagID.getText().toString(), memorybank+1, powerLevel) == false) {
-            invalidRequest = true;
-            MainActivity.csLibrary4A.appendToLog("invalidRequest = " + invalidRequest + ", with setSelectedTag as false, string = " + selectTag.editTextTagID.getText().toString() + ", bank = " + memorybank+1 + ", power = " + powerLevel);
         } else {
-            MainActivity.csLibrary4A.startOperation(CsLibrary4A.OperationTypes.TAG_SEARCHING);
+            MainActivity.csLibrary4A.startOperation(Cs710Library4A.OperationTypes.TAG_SEARCHING);
         }
-        MainActivity.csLibrary4A.appendToLog("invalidRequest = " + invalidRequest);
         geigerSearchTask = new InventoryRfidTask(getContext(), -1,-1, 0, 0, 0, 0, invalidRequest, true,
                 null, null, geigerTagRssiView, null,
                 geigerRunTime, geigerTagGotView, geigerVoltageLevelView, null, button, rfidRateView);

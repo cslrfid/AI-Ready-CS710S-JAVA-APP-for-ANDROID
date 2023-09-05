@@ -27,7 +27,7 @@
                     android:text="Select mask" />
 
                 <include
-                    android:id="@+id/accessKilowayID"
+                    android:id="@+id/accessLEDTagID"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     layout="@layout/custom_edittext" />
@@ -55,24 +55,23 @@
             <TableRow
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:paddingLeft="@dimen/default_left_padding"
-                android:visibility="gone">
+                android:paddingLeft="@dimen/default_left_padding">
 
                 <TextView
-                    android:id="@+id/accessKilowayResultOK"
+                    android:id="@+id/accessLedTagResultOK"
                     android:layout_width="wrap_content" />
 
                 <CheckBox
-                    android:id="@+id/accessKilowayResultTitle"
+                    android:id="@+id/accessLedTagResultTitle"
                     android:layout_width="0dp"
                     android:layout_weight="1"
                     android:visibility="visible"
                     style="@style/style_normal_font"
                     android:checked="true"
-                    android:text="Read data to turn on led:" />
+                    android:text="Read data:" />
 
                 <TextView
-                    android:id="@+id/accessKilowayResult"
+                    android:id="@+id/accessLedTagResult"
                     android:layout_width="0dp"
                     android:layout_weight="1" />
             </TableRow>
@@ -91,7 +90,7 @@
             android:paddingLeft="@dimen/default_left_padding">
 
             <CheckBox
-                android:id="@+id/accessKilowayRepeat"
+                android:id="@+id/accessLedTagRepeat"
                 android:layout_width="0dp"
                 android:layout_weight="1"
                 android:visibility="visible"
@@ -105,11 +104,11 @@
             android:layout_height="wrap_content">
 
             <Button
-                android:id="@+id/accessKilowayStartButton"
+                android:id="@+id/accessMNReadButton"
                 android:layout_width="0dp"
                 android:layout_weight="1"
                 style="@style/style_button_font"
-                android:text="Blink" />
+                android:text="@string/read_title" />
         </TableRow>
     </LinearLayout>
 </LinearLayout>

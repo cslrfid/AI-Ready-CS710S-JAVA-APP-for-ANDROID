@@ -12,15 +12,15 @@ import androidx.viewpager.widget.ViewPager;
 
 import com.csl.cs710ademoapp.MainActivity;
 import com.csl.cs710ademoapp.R;
-import com.csl.cs710ademoapp.adapters.KilowayAdapter;
+import com.csl.cs710ademoapp.adapters.LedTagAdapter;
 import com.google.android.material.tabs.TabLayout;
 
-public class KilowayFragment extends CommonFragment {
+public class LedTagFragment extends CommonFragment {
     private ActionBar actionBar;
     private ViewPager viewPager;
-    KilowayAdapter mAdapter;
+    LedTagAdapter mAdapter;
 
-    private String[] tabs = {"Scan", "Configuration"};
+    private String[] tabs = {"Configuration", "Scan"};
     int iTargetOld, iSessionOld;
 
     @Override
@@ -32,22 +32,19 @@ public class KilowayFragment extends CommonFragment {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         InventoryRfidiMultiFragment fragment1 = (InventoryRfidiMultiFragment) mAdapter.fragment1;
-        if (item.getItemId() == R.id.menuAction_clear) {
-            fragment1.clearTagsList();
-            return true;
-        } else if (item.getItemId() == R.id.menuAction_sortRssi) {
-            fragment1.sortTagsListByRssi();
-            return true;
-        } else if (item.getItemId() == R.id.menuAction_sort) {
-            fragment1.sortTagsList();
-            return true;
-        } else if (item.getItemId() == R.id.menuAction_save) {
-            fragment1.saveTagsList();
-            return true;
-        } else if (item.getItemId() == R.id.menuAction_share) {
-            fragment1.shareTagsList();
-            return true;
-        } else return super.onOptionsItemSelected(item);
+        switch (item.getItemId()) {
+            case R.id.menuAction_1:
+                fragment1.clearTagsList();
+                return true;
+            case R.id.menuAction_2:
+                fragment1.sortTagsList();
+                return true;
+            case R.id.menuAction_3:
+                fragment1.saveTagsList();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     @Override
@@ -56,11 +53,11 @@ public class KilowayFragment extends CommonFragment {
 
         actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
         actionBar.setIcon(R.drawable.dl_inv);
-        actionBar.setTitle(R.string.title_activity_kiloway);
+        actionBar.setTitle(R.string.title_activity_ledTag);
 
         TabLayout tabLayout = (TabLayout) getActivity().findViewById(R.id.OperationsTabLayout);
 
-        mAdapter = new KilowayAdapter(getActivity().getSupportFragmentManager());
+        mAdapter = new LedTagAdapter(getActivity().getSupportFragmentManager());
         viewPager = (ViewPager) getActivity().findViewById(R.id.OperationsPager);
         viewPager.setAdapter(mAdapter);
         viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
@@ -125,7 +122,7 @@ public class KilowayFragment extends CommonFragment {
         super.onDetach();
     }
 
-    public KilowayFragment() {
+    public LedTagFragment() {
         super("LedTagFragment");
     }
 }

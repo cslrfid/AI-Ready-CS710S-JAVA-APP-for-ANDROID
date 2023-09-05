@@ -12,7 +12,7 @@ import android.os.Environment;
 import android.provider.Settings;
 import android.widget.Toast;
 
-import com.csl.cs710library4a.CsLibrary4A;
+import com.csl.cs710library4a.Cs710Library4A;
 import com.csl.cs710library4a.ReaderDevice;
 
 import org.json.JSONArray;
@@ -68,10 +68,9 @@ public class SaveList2ExternalTask extends AsyncTask<Void,Void,String> {
 
         stringBluetoothMAC = BluetoothAdapter.getDefaultAdapter().getAddress().replaceAll(":", "");
         csLibrary4A.appendToLog("stringBluetoothMac from getMacAddress = " + stringBluetoothMAC);
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.S) { }
-        else if (stringBluetoothMAC.contains("020000000000")) {
+        if (stringBluetoothMAC.contains("020000000000")) {
             final String SECURE_SETTINGS_BLUETOOTH_ADDRESS = "bluetooth_address";
-            String macAddress = Settings.Secure.getString(mContext.getContentResolver(), SECURE_SETTINGS_BLUETOOTH_ADDRESS); //Not OK in android 8, >= 32
+            String macAddress = Settings.Secure.getString(mContext.getContentResolver(), SECURE_SETTINGS_BLUETOOTH_ADDRESS); //Not OK in android 8
             csLibrary4A.appendToLog("stringBluetoothMac from Settings.Secure.getString = " + macAddress);
             stringBluetoothMAC = macAddress;
         }
@@ -256,7 +255,15 @@ public class SaveList2ExternalTask extends AsyncTask<Void,Void,String> {
             object.put("rfidReaderInternalSerialNumber", MainActivity.csLibrary4A.getRadioSerial());
 
             object.put("smartPhoneName", Build.MODEL);
-            String strPhoneSerial = Build.SERIAL;
+            String strPhoneSerial = null;
+            /*if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                try {
+                    strPhoneSerial = Build.getSerial();
+                } catch (Exception ex) {
+                    mCs108Library4a.appendToLog("Exception = " + ex.getCause());
+                }
+            } else*/
+                strPhoneSerial = Build.SERIAL;
             object.put("smartPhoneSerialNumber", strPhoneSerial);
             object.put("smartPhoneBluetoothMACAddress",  stringBluetoothMAC);
             object.put("smartPhoneWiFiMACAddress", stringWifiMac);
@@ -283,16 +290,16 @@ public class SaveList2ExternalTask extends AsyncTask<Void,Void,String> {
                     String objectTag;
                     objectTag = "PC,";
                     objectTag += "EPC,";
-                    if ((csvColumnSelect & (0x01 << CsLibrary4A.CsvColumn.RESERVE_BANK.ordinal())) != 0) objectTag += "Reserve Bank,";
-                    if ((csvColumnSelect & (0x01 << CsLibrary4A.CsvColumn.EPC_BANK.ordinal())) != 0) objectTag += "EPC Bank,";
-                    if ((csvColumnSelect & (0x01 << CsLibrary4A.CsvColumn.TID_BANK.ordinal())) != 0) objectTag += "TID Bank,";
-                    if ((csvColumnSelect & (0x01 << CsLibrary4A.CsvColumn.USER_BANK.ordinal())) != 0) objectTag += "User Bank,";
-                    if ((csvColumnSelect & (0x01 << CsLibrary4A.CsvColumn.PHASE.ordinal())) != 0) objectTag += "Phase,";
-                    if ((csvColumnSelect & (0x01 << CsLibrary4A.CsvColumn.CHANNEL.ordinal())) != 0) objectTag += "Channel,";
-                    if ((csvColumnSelect & (0x01 << CsLibrary4A.CsvColumn.TIME.ordinal())) != 0) objectTag += "Time Of Read,";
-                    if ((csvColumnSelect & (0x01 << CsLibrary4A.CsvColumn.TIMEZONE.ordinal())) != 0) objectTag += "Time Zone,";
-                    if ((csvColumnSelect & (0x01 << CsLibrary4A.CsvColumn.LOCATION.ordinal())) != 0) objectTag += "location Of Read Latitude, Location of Read Longitude, ";
-                    if ((csvColumnSelect & (0x01 << CsLibrary4A.CsvColumn.DIRECTION.ordinal())) != 0) objectTag += "eCompass";
+                    if ((csvColumnSelect & (0x01 << Cs710Library4A.CsvColumn.RESERVE_BANK.ordinal())) != 0) objectTag += "Reserve Bank,";
+                    if ((csvColumnSelect & (0x01 << Cs710Library4A.CsvColumn.EPC_BANK.ordinal())) != 0) objectTag += "EPC Bank,";
+                    if ((csvColumnSelect & (0x01 << Cs710Library4A.CsvColumn.TID_BANK.ordinal())) != 0) objectTag += "TID Bank,";
+                    if ((csvColumnSelect & (0x01 << Cs710Library4A.CsvColumn.USER_BANK.ordinal())) != 0) objectTag += "User Bank,";
+                    if ((csvColumnSelect & (0x01 << Cs710Library4A.CsvColumn.PHASE.ordinal())) != 0) objectTag += "Phase,";
+                    if ((csvColumnSelect & (0x01 << Cs710Library4A.CsvColumn.CHANNEL.ordinal())) != 0) objectTag += "Channel,";
+                    if ((csvColumnSelect & (0x01 << Cs710Library4A.CsvColumn.TIME.ordinal())) != 0) objectTag += "Time Of Read,";
+                    if ((csvColumnSelect & (0x01 << Cs710Library4A.CsvColumn.TIMEZONE.ordinal())) != 0) objectTag += "Time Zone,";
+                    if ((csvColumnSelect & (0x01 << Cs710Library4A.CsvColumn.LOCATION.ordinal())) != 0) objectTag += "location Of Read Latitude, Location of Read Longitude, ";
+                    if ((csvColumnSelect & (0x01 << Cs710Library4A.CsvColumn.DIRECTION.ordinal())) != 0) objectTag += "eCompass";
                     objectTag += "\n";
                     object += objectTag;
                 }
@@ -332,21 +339,21 @@ public class SaveList2ExternalTask extends AsyncTask<Void,Void,String> {
                     objectTag = String.format("=\"%s\",", pcData);
                     objectTag += String.format("=\"%s\",", epcData);
 
-                    if ((csvColumnSelect & (0x01 << CsLibrary4A.CsvColumn.RESERVE_BANK.ordinal())) != 0) objectTag += String.format("=\"%s\",", resBankData);
-                    if ((csvColumnSelect & (0x01 << CsLibrary4A.CsvColumn.EPC_BANK.ordinal())) != 0) objectTag += String.format("=\"%s\",", epcBankData);
-                    if ((csvColumnSelect & (0x01 << CsLibrary4A.CsvColumn.TID_BANK.ordinal())) != 0) objectTag += String.format("=\"%s\",", tidBankData);
-                    if ((csvColumnSelect & (0x01 << CsLibrary4A.CsvColumn.USER_BANK.ordinal())) != 0) objectTag += String.format("=\"%s\",", userBankData);
-                    if ((csvColumnSelect & (0x01 << CsLibrary4A.CsvColumn.PHASE.ordinal())) != 0) objectTag += String.format("%d,", phase);
-                    if ((csvColumnSelect & (0x01 << CsLibrary4A.CsvColumn.CHANNEL.ordinal())) != 0) objectTag += String.format("%d,", channel);
-                    if ((csvColumnSelect & (0x01 << CsLibrary4A.CsvColumn.TIME.ordinal())) != 0) objectTag += String.format("=\"%s\",", timeOfRead);
-                    if ((csvColumnSelect & (0x01 << CsLibrary4A.CsvColumn.TIMEZONE.ordinal())) != 0) objectTag += String.format("%s,", timeZone);
-                    if ((csvColumnSelect & (0x01 << CsLibrary4A.CsvColumn.LOCATION.ordinal())) != 0) objectTag += String.format("%s,", location);
-                    if ((csvColumnSelect & (0x01 << CsLibrary4A.CsvColumn.DIRECTION.ordinal())) != 0)objectTag += String.format("%s", compass);
+                    if ((csvColumnSelect & (0x01 << Cs710Library4A.CsvColumn.RESERVE_BANK.ordinal())) != 0) objectTag += String.format("=\"%s\",", resBankData);
+                    if ((csvColumnSelect & (0x01 << Cs710Library4A.CsvColumn.EPC_BANK.ordinal())) != 0) objectTag += String.format("=\"%s\",", epcBankData);
+                    if ((csvColumnSelect & (0x01 << Cs710Library4A.CsvColumn.TID_BANK.ordinal())) != 0) objectTag += String.format("=\"%s\",", tidBankData);
+                    if ((csvColumnSelect & (0x01 << Cs710Library4A.CsvColumn.USER_BANK.ordinal())) != 0) objectTag += String.format("=\"%s\",", userBankData);
+                    if ((csvColumnSelect & (0x01 << Cs710Library4A.CsvColumn.PHASE.ordinal())) != 0) objectTag += String.format("%d,", phase);
+                    if ((csvColumnSelect & (0x01 << Cs710Library4A.CsvColumn.CHANNEL.ordinal())) != 0) objectTag += String.format("%d,", channel);
+                    if ((csvColumnSelect & (0x01 << Cs710Library4A.CsvColumn.TIME.ordinal())) != 0) objectTag += String.format("=\"%s\",", timeOfRead);
+                    if ((csvColumnSelect & (0x01 << Cs710Library4A.CsvColumn.TIMEZONE.ordinal())) != 0) objectTag += String.format("%s,", timeZone);
+                    if ((csvColumnSelect & (0x01 << Cs710Library4A.CsvColumn.LOCATION.ordinal())) != 0) objectTag += String.format("%s,", location);
+                    if ((csvColumnSelect & (0x01 << Cs710Library4A.CsvColumn.DIRECTION.ordinal())) != 0)objectTag += String.format("%s", compass);
                     objectTag += "\n";
                     object += objectTag;
                 }
 
-                if ((csvColumnSelect & (0x01 << CsLibrary4A.CsvColumn.OTHERS.ordinal())) != 0) {
+                if ((csvColumnSelect & (0x01 << Cs710Library4A.CsvColumn.OTHERS.ordinal())) != 0) {
                     object += "\nUser Description,this is example tag data\n";
 
                     object += String.format("RFID Reader Name,=\"%s\"\n", MainActivity.csLibrary4A.getBluetoothICFirmwareName());
@@ -385,12 +392,12 @@ public class SaveList2ExternalTask extends AsyncTask<Void,Void,String> {
             errorDisplay = "denied WRITE_EXTERNAL_STORAGE Permission !!!";
         } else if (Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState()) == false) errorDisplay = "Error in mouting external storage !!!";
         else {
-            File path = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + Environment.DIRECTORY_DOWNLOADS + "/csReaderJava");
+            File path = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + Environment.DIRECTORY_DOWNLOADS + "/cs108Java");
             if (path.exists() == false) path.mkdirs();
             if (path.exists() == false) errorDisplay = "Error in making directory !!!";
             else {
                 String dateTime = new SimpleDateFormat("yyMMdd_HHmmss").format(new Date());
-                String fileName = "csReaderJava_" + dateTime + (csLibrary4A.getSavingFormatSetting() == 0 ? ".txt" : ".csv");
+                String fileName = "cs108Java_" + dateTime + (csLibrary4A.getSavingFormatSetting() == 0 ? ".txt" : ".csv");
                 File file = new File(path, fileName);
                 if (file == null) errorDisplay = "Error in making directory !!!";
                 else {
@@ -401,7 +408,7 @@ public class SaveList2ExternalTask extends AsyncTask<Void,Void,String> {
                         outputStream.write(messageStr.getBytes());
                         errorDisplay = "Error in close()"; outputStream.close();
                         MediaScannerConnection.scanFile(mContext, new String[]{file.getAbsolutePath()}, null, null);
-                        resultDisplay = "Success in saving data to Download/csReaderJava/" + fileName;
+                        resultDisplay = "Success in saving data to Download/cs108Java/" + fileName;
                         errorDisplay = null;
                     } catch (Exception ex) {
                         errorDisplay += ex.getMessage();

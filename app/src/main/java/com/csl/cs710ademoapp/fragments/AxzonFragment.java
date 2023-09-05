@@ -32,22 +32,19 @@ public class AxzonFragment extends CommonFragment {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         InventoryRfidiMultiFragment fragment = (InventoryRfidiMultiFragment) mAdapter.fragment0;
-        if (item.getItemId() == R.id.menuAction_clear) {
-            fragment.clearTagsList();
-            return true;
-        } else if (item.getItemId() == R.id.menuAction_sortRssi) {
-            fragment.sortTagsListByRssi();
-            return true;
-        } else if (item.getItemId() == R.id.menuAction_sort) {
-            fragment.sortTagsList();
-            return true;
-        } else if (item.getItemId() == R.id.menuAction_save) {
-            fragment.saveTagsList();
-            return true;
-        } else if (item.getItemId() == R.id.menuAction_share) {
-            fragment.shareTagsList();
-            return true;
-        } else return super.onOptionsItemSelected(item);
+        switch (item.getItemId()) {
+            case R.id.menuAction_1:
+                fragment.clearTagsList();
+                return true;
+            case R.id.menuAction_2:
+                fragment.sortTagsList();
+                return true;
+            case R.id.menuAction_3:
+                fragment.saveTagsList();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     @Override
@@ -56,15 +53,7 @@ public class AxzonFragment extends CommonFragment {
 
         actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
         actionBar.setIcon(R.drawable.dl_inv);
-        MainActivity.csLibrary4A.appendToLog("MainActivity.mDid = " + MainActivity.mDid);
-        if (false) actionBar.setTitle(R.string.title_activity_axzon);
-        else {
-            String stringTitle = getResources().getString(R.string.title_activity_axzon);
-            if (MainActivity.mDid.matches("E282402")) stringTitle = "S2";
-            else if (MainActivity.mDid.matches("E282403")) stringTitle = "S3";
-            if (MainActivity.mDid.matches("E282405")) stringTitle = "Xerxes";
-            actionBar.setTitle(stringTitle);
-         }
+        actionBar.setTitle(R.string.title_activity_axzon);
 
         boolean bXervesTag = false;
         if (MainActivity.mDid != null) if (MainActivity.mDid.matches("E282405")) bXervesTag = true;

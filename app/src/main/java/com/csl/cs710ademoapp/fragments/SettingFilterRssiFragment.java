@@ -124,43 +124,40 @@ public class SettingFilterRssiFragment extends CommonFragment {
             else {
                 if (updating == null) {
                     boolean bValue = MainActivity.csLibrary4A.getRssiFilterEnable();
-                    MainActivity.csLibrary4A.appendToLog("0 updateRunnable getSelectEnable = " + bValue);
+                    MainActivity.csLibrary4A.appendToLog("updateRunnable getSelectEnable = " + bValue);
                     checkBoxEnable.setChecked(bValue);
                 }
                 if (updating == null) {
                     int iValue1 = MainActivity.csLibrary4A.getRssiFilterType();
-                    MainActivity.csLibrary4A.appendToLog("1 updateRunnable getSelectAction = " + iValue1);
+                    MainActivity.csLibrary4A.appendToLog("updateRunnable getSelectAction = " + iValue1);
                     if (iValue1 < 0) updating = "getting filter type";
                     else spinnerFilterType.setSelection(iValue1);
                 }
                 if (updating == null) {
                     int iValue1 = MainActivity.csLibrary4A.getRssiFilterOption();
-                    MainActivity.csLibrary4A.appendToLog("2 updateRunnable getSelectAction = " + iValue1);
+                    MainActivity.csLibrary4A.appendToLog("updateRunnable getSelectAction = " + iValue1);
                     if (iValue1 < 0) updating = "getting filter option";
                     else spinnerFilterOption.setSelection(iValue1);
                 }
                 if (updating == null) {
                     double dValue = MainActivity.csLibrary4A.getRssiFilterThreshold1();
-                    MainActivity.csLibrary4A.appendToLog(String.format("3 updateRunnable getRssiFilterThreshold1 = %f", dValue));
-                    if (dValue < 0 && false) updating = "updating threshold 1";
+                    if (dValue < 0) updating = "updating threshold 1";
                     else editTextFilterThreshold1.setText(String.format("%.1f", (MainActivity.csLibrary4A.getRssiDisplaySetting() > 0 ? dValue -= MainActivity.csLibrary4A.dBuV_dBm_constant : dValue)));
                 }
                 if (updating == null) {
                     double dValue = MainActivity.csLibrary4A.getRssiFilterThreshold2();
-                    MainActivity.csLibrary4A.appendToLog(String.format("4 updateRunnable getRssiFilterThreshold2 = %f", dValue));
-                    if (dValue < 0 && false) updating = "updating threshold 2";
+                    if (dValue < 0) updating = "updating threshold 2";
                     else editTextFilterThreshold2.setText(String.format("%.1f", (MainActivity.csLibrary4A.getRssiDisplaySetting() > 0 ? dValue -= MainActivity.csLibrary4A.dBuV_dBm_constant : dValue)));
                 }
                 if (updating == null) {
                     long lValue1 = MainActivity.csLibrary4A.getRssiFilterCount();
-                    MainActivity.csLibrary4A.appendToLog(String.format("5 updateRunnable getRssiFilterCount = %d", lValue1));
                     if (lValue1 < 0) updating = "updating count";
                     else editTextFilterCount.setText(String.valueOf(lValue1));
                 }
             }
             if (updating != null) {
                 mHandler.postDelayed(updateRunnable, 1000);
-                MainActivity.csLibrary4A.appendToLogView("Updating in " + updating);
+                MainActivity.csLibrary4A.appendToLog("Updating in " + updating);
             }
         }
     };
@@ -178,8 +175,6 @@ public class SettingFilterRssiFragment extends CommonFragment {
             }
             if (MainActivity.csLibrary4A.getRssiFilterThreshold1() != invSelectFilterThreshold1 || MainActivity.csLibrary4A.getRssiFilterThreshold2() != invSelectFilterThreshold2) {
                 sameSetting = false;
-                MainActivity.csLibrary4A.appendToLog(String.format("updateRunnable: getRssiFilterThreshold2 = %f, invSelectFilterThreshold2 = %f", MainActivity.csLibrary4A.getRssiFilterThreshold2(), invSelectFilterThreshold2));
-                invSelectFilterThreshold2 = 0;
                 if (MainActivity.csLibrary4A.setRssiFilterThreshold(invSelectFilterThreshold1, invSelectFilterThreshold2) == false) invalidRequest = "setting filter threshold";
             }
             if (MainActivity.csLibrary4A.getRssiFilterCount() != invSelectFilterCount) {

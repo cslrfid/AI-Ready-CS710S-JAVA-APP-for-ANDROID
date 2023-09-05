@@ -78,11 +78,12 @@
                 style="@style/style_normal_font"
                 android:text="Fixed channel" />
 
-            <Spinner
+            <EditText
                 android:id="@+id/settingOperateChannel"
                 android:layout_width="0dp"
                 android:layout_weight="1"
                 android:background="@drawable/my_edittext_background"
+                android:inputType="numberDecimal"
                 style="@style/style_normal_font" />
         </TableRow>
 
@@ -91,21 +92,6 @@
             android:layout_height="1dp"
             android:background="@android:color/darker_gray"
             android:visibility="visible"/>
-
-        <TableRow
-            android:id="@+id/settingOperatePortWarningRow"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:visibility="gone">
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                style="@style/style_normal_font"
-                android:textAlignment="center"
-                android:text="Current Port is the last enabled power level"/>
-        </TableRow>
 
         <TableRow
             android:id="@+id/settingOperatePortChannelRow"

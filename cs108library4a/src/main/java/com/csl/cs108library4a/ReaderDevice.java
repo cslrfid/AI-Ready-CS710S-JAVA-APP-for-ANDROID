@@ -84,10 +84,8 @@ public class ReaderDevice implements Comparable<ReaderDevice>  {
 
     public String getName() {
         String strName = name;
-        if (strName != null) {
-            strName = strName.replaceAll("\\r|\\n", "");
-            strName = strName.trim();
-        }
+        strName = strName.replaceAll("\\r|\\n", "");
+        strName = strName.trim();
         return strName;
     }
 

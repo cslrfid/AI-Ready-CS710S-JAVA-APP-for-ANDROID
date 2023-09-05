@@ -29,7 +29,8 @@ import com.csl.cs710ademoapp.InventoryBarcodeTask;
 import com.csl.cs710ademoapp.InventoryRfidTask;
 import com.csl.cs710ademoapp.MainActivity;
 import com.csl.cs710ademoapp.R;
-import com.csl.cs710library4a.CsLibrary4A;
+import com.csl.cs710library4a.Cs108Connector;
+import com.csl.cs710library4a.Cs710Library4A;
 import com.csl.cs710library4a.ReaderDevice;
 
 import java.util.ArrayList;
@@ -196,7 +197,6 @@ public class AccessRegisterFragment extends CommonFragment {
                     mHandler.removeCallbacks(runnableSelect);
                     textViewSelectedTags.setText("");
                     for (int i = 0; i < epcArrayList.size(); i++) {
-                        MainActivity.csLibrary4A.appendToLog("epcArrayList.get[" + i + "] = " + epcArrayList.get(i));
                         textViewSelectedTags.append(epcArrayList.get(i) + "\n");
                     }
                     if (textViewSelectedTags.getText().toString().trim().length() == 0)  {
@@ -213,9 +213,8 @@ public class AccessRegisterFragment extends CommonFragment {
                     String strTagId = editTextSelectMask.getText().toString();
                     int selectBank = spinnerSelectBank.getSelectedItemPosition() + 1;
                     long pwrlevel = Integer.parseInt(editTextAntennaPower.getText().toString());
-                    MainActivity.csLibrary4A.setTagRead(0);
                     MainActivity.csLibrary4A.setSelectedTag(strTagId, selectBank, pwrlevel);
-                    MainActivity.csLibrary4A.startOperation(CsLibrary4A.OperationTypes.TAG_INVENTORY);
+                    MainActivity.csLibrary4A.startOperation(Cs710Library4A.OperationTypes.TAG_INVENTORY);
                     inventoryRfidTask = new InventoryRfidTask();
                     inventoryRfidTask.execute();
                     MainActivity.sharedObjects.serviceArrayList.clear(); epcArrayList.clear();
@@ -320,7 +319,7 @@ public class AccessRegisterFragment extends CommonFragment {
     }
 
     void setNotificationListener() {
-        MainActivity.csLibrary4A.setNotificationListener(new CsLibrary4A.NotificationListener() {
+        MainActivity.csLibrary4A.setNotificationListener(new Cs108Connector.NotificationListener() {
             @Override
             public void onChange() {
                 MainActivity.csLibrary4A.appendToLog("TRIGGER key is pressed.");
@@ -341,7 +340,6 @@ public class AccessRegisterFragment extends CommonFragment {
         public void run() {
             while (MainActivity.sharedObjects.serviceArrayList.size() != 0) {
                 String strEpc = MainActivity.sharedObjects.serviceArrayList.get(0); MainActivity.sharedObjects.serviceArrayList.remove(0);
-                MainActivity.csLibrary4A.appendToLog("epcArrayList.add[" + epcArrayList.size() + "] = " + strEpc);
                 boolean matched = false;
                 for (int i = 0; i < epcArrayList.size(); i++) {
                     if (epcArrayList.get(i).matches(strEpc)) {
@@ -636,9 +634,9 @@ public class AccessRegisterFragment extends CommonFragment {
                 + ", password = " + password + ", power = " + antennaPower + ", repeatCount = " + repeatCount + ", resetCount = " + resetCount);
         accessTask = new AccessTask(buttonWrite, textViewWriteCount, invalidRequest1,
                 selectMask, selectBank1, selectOffset1,
-                password, antennaPower, CsLibrary4A.HostCommands.CMD_18K6CWRITE,
-                selectQValue, repeatCount, resetCount, false,
-                textViewRunTime, textViewTagGot, textViewVoltageLevel, textViewYield, textViewTotal);
+                password, antennaPower, Cs108Connector.HostCommands.CMD_18K6CWRITE, selectQValue, repeatCount, resetCount,
+                textViewRunTime, textViewTagGot, textViewVoltageLevel,
+                textViewYield, textViewTotal);
         accessTask.execute();
         resetCount = false;
         return invalidRequest1;

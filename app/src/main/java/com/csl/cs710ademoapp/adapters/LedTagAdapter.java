@@ -5,10 +5,10 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentStatePagerAdapter;
 import androidx.viewpager.widget.PagerAdapter;
 
-import com.csl.cs710ademoapp.fragments.AccessKilowayFragment;
+import com.csl.cs710ademoapp.fragments.AccessLedTagFragment;
 import com.csl.cs710ademoapp.fragments.InventoryRfidiMultiFragment;
 
-public class KilowayAdapter extends FragmentStatePagerAdapter {
+public class LedTagAdapter extends FragmentStatePagerAdapter {
     private final int NO_OF_TABS = 2;
     public Fragment fragment0, fragment1;
 
@@ -17,12 +17,12 @@ public class KilowayAdapter extends FragmentStatePagerAdapter {
         Fragment fragment = null;
         switch (index) {
             case 0:
-                fragment = InventoryRfidiMultiFragment.newInstance(true,"E281D");
-                fragment1 = fragment;
+                fragment = new AccessLedTagFragment();
+                fragment0 = fragment;
                 break;
             case 1:
-                fragment = new AccessKilowayFragment();
-                fragment0 = fragment;
+                fragment = InventoryRfidiMultiFragment.newInstance(true,"");
+                fragment1 = fragment;
                 break;
             default:
                 fragment = null;
@@ -41,7 +41,7 @@ public class KilowayAdapter extends FragmentStatePagerAdapter {
         return PagerAdapter.POSITION_NONE;
     }
 
-    public KilowayAdapter(FragmentManager fm) {
+    public LedTagAdapter(FragmentManager fm) {
         super(fm);
     }
 }

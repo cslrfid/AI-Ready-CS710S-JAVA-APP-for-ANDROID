@@ -36,7 +36,7 @@ public class HomeFragment extends CommonFragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        if (true && ((AppCompatActivity) getActivity()).getSupportActionBar() != null) {
+        if (((AppCompatActivity) getActivity()).getSupportActionBar() != null) {
             ActionBar actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
             actionBar.setIcon(android.R.drawable.ic_menu_save);
             actionBar.setTitle(R.string.title_activity_home);
@@ -75,7 +75,7 @@ public class HomeFragment extends CommonFragment {
                     CustomPopupWindow customPopupWindow = new CustomPopupWindow((Context) getActivity());
                     customPopupWindow.popupStart(stringPopup, false); */
                 }
-            } else if (MainActivity.csLibrary4A.mrfidToWriteSize() != 0) {
+            } else if (MainActivity.csLibrary4A.mrfidToWriteSize() != 0 /*&& MainActivity.mCs108Library4a.isRfidFailure() == false*/) {
                 if (DEBUG) MainActivity.csLibrary4A.appendToLog("mrfidToWriteSize = " + MainActivity.csLibrary4A.mrfidToWriteSize());
                 mHandler.postDelayed(runnableConfiguring, 250);
                 if (progressShown == false) {

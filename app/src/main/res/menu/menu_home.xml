@@ -10,27 +10,22 @@
         app:showAsAction="always" />
 
     <item
-        android:id="@+id/menuAction_share"
+        android:id="@+id/menuAction_4"
         android:title=""
         app:showAsAction="always" />
 
     <item
-        android:id="@+id/menuAction_save"
+        android:id="@+id/menuAction_3"
         android:title=""
         app:showAsAction="never" />
 
     <item
-        android:id="@+id/menuAction_sort"
+        android:id="@+id/menuAction_2"
         android:title=""
         app:showAsAction="never" />
 
     <item
-        android:id="@+id/menuAction_sortRssi"
-        android:title=""
-        app:showAsAction="never" />
-
-    <item
-        android:id="@+id/menuAction_clear"
+        android:id="@+id/menuAction_1"
         android:title=""
         app:showAsAction="never" />
 

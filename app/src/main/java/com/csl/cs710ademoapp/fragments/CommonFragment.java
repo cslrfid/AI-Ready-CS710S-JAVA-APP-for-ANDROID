@@ -38,7 +38,7 @@ public abstract class CommonFragment extends Fragment {
         if (DEBUG) {
         if (fragmentName == null) Log.i(TAG, "CommonFragment.onAttach: NULL fragmentName");
         else Log.i(TAG, "CommonFragment.onAttach: fragmentName = " + fragmentName);
-        if (MainActivity.csLibrary4A == null) Log.i(TAG, "CommonFragment.onAttach: NULL MainActivity.csLibrary4a");
+        if (MainActivity.csLibrary4A == null) Log.i(TAG, "CommonFragment.onAttach: NULL MainActivity.mCs108Library4a");
         if (fragmentName == null) MainActivity.csLibrary4A.appendToLog("NULL fragmentName");
         MainActivity.csLibrary4A.appendToLog(fragmentName);
         }
@@ -61,7 +61,6 @@ public abstract class CommonFragment extends Fragment {
         ActionBar actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
         boolean bHomeAsUpEnabled = true;
         if (fragmentName.matches("HomeFragment")) bHomeAsUpEnabled = false;
-        if (fragmentName.matches("HomeWFragment")) bHomeAsUpEnabled = false;
         actionBar.setDisplayHomeAsUpEnabled(bHomeAsUpEnabled);
         if (DEBUG) MainActivity.csLibrary4A.appendToLog("CommonFragment: onCreateView with fragmentName = " + fragmentName + " , onOptionsItemSelected = " + menuFragment + ", DisplayHomeAsUpEnabled = " + bHomeAsUpEnabled);
 
@@ -73,9 +72,8 @@ public abstract class CommonFragment extends Fragment {
     private final Runnable updateTriggerRunnable = new Runnable() {
         @Override
         public void run() {
-            short reportCount = 5;
-            if (MainActivity.csLibrary4A.isBleConnected()) reportCount = MainActivity.csLibrary4A.getTriggerReportingCount();
-            mHandler.postDelayed(updateTriggerRunnable, reportCount * 1100);
+            mHandler.postDelayed(updateTriggerRunnable, MainActivity.csLibrary4A.getTriggerReportingCount() * 1100);
+
             if (menuTriggerItem == null) return;
             if (MainActivity.csLibrary4A.isBleConnected() == false) { menuTriggerItem.setTitle("");  return; }
             int triggerCount = MainActivity.csLibrary4A.getTriggerCount();
@@ -87,7 +85,6 @@ public abstract class CommonFragment extends Fragment {
         }
     };
 
-    boolean bleDisConnecting = false;
     boolean bleConnected = false, rfidFailure = false;
     int batteryCount_old; boolean batteryUpdate = false; CustomPopupWindow batteryWarningPopupWindow; String strBatteryLow;
     private final Runnable updateBatteryRunnable = new Runnable() {
@@ -97,9 +94,8 @@ public abstract class CommonFragment extends Fragment {
 
             if (menuBatteryVoltageItem == null) return;
             if (MainActivity.csLibrary4A.isBleConnected() == false) {
-                if (bleDisConnecting) bleConnected = false; bleDisConnecting = true;
                 if (bleConnected) {
-                    bleConnected = false; if (DEBUG) MainActivity.csLibrary4A.appendToLog("bleConnected is FALSE in " + fragmentName);
+                    bleConnected = false;
                     if (false) Toast.makeText(MainActivity.mContext, "Bluetooth is disconnected", Toast.LENGTH_SHORT).show();
                     else {
                         CustomAlertDialog appdialog = new CustomAlertDialog();
@@ -120,12 +116,9 @@ public abstract class CommonFragment extends Fragment {
                                     }
                                 });
                     }
-                } else if (DEBUG) MainActivity.csLibrary4A.appendToLog("bleConnected is Kept as FALSE in " + fragmentName);
+                }
                 MainActivity.sharedObjects.batteryWarningShown = 0; menuBatteryVoltageItem.setTitle("");  return;
-            } else {
-                bleConnected = true;
-                if (DEBUG) MainActivity.csLibrary4A.appendToLog("bleConnected is TRUE in " + fragmentName);
-            }
+            } else bleConnected = true;
 
             if (MainActivity.csLibrary4A.isRfidFailure()) {
                 if (rfidFailure == false) {
@@ -159,7 +152,7 @@ public abstract class CommonFragment extends Fragment {
                 if (batteryWarningPopupWindow != null)
                     batteryWarningPopupWindow.popupWindow.dismiss();
                 batteryWarningPopupWindow = new CustomPopupWindow(MainActivity.mContext);
-                batteryWarningPopupWindow.popupStart(strBatteryLow + "% Battery Life Left, Please Recharge CSL Reader or Replace with Freshly Charged CSL Reader battery", false);
+                batteryWarningPopupWindow.popupStart(strBatteryLow + "% Battery Life Left, Please Recharge CS108 or Replace with Freshly Charged CS108B", false);
             } else if (false && MainActivity.sharedObjects.batteryWarningShown > 10) MainActivity.sharedObjects.batteryWarningShown = 0;
 
             if (batteryCount_old == batteryCount && strText.length() != 0) {
@@ -226,8 +219,6 @@ public abstract class CommonFragment extends Fragment {
             menu.removeItem(R.id.home_menu);
             if (fragmentName.matches("InventoryFragment")
                     || fragmentName.contains("InventoryRfidiMultiFragment")
-                    || fragmentName.contains("InventoryRfidSimpleFragment")
-
                     || fragmentName.contains("ImpinjFragment")
                     || fragmentName.contains("Ucode8Fragment")
                     || fragmentName.contains("UcodeFragment")
@@ -237,26 +228,17 @@ public abstract class CommonFragment extends Fragment {
                     || fragmentName.contains("MicronFragment")
                     || fragmentName.contains("FdmicroFragment")
                     || fragmentName.contains("LedTagFragment")
-
-                    || fragmentName.contains("InventoryRfidSimpleFragment")
                     ) {
-                menu.findItem(R.id.menuAction_clear).setTitle("Clear");
-                menu.findItem(R.id.menuAction_save).setTitle("Save");
-                menu.findItem(R.id.menuAction_share).setTitle("Share");
-                menu.findItem(R.id.menuAction_share).setIcon(android.R.drawable.ic_menu_share);
-                if (fragmentName.contains("InventoryBarcodeFragment")) {
-                    menu.removeItem(R.id.menuAction_sort);
-                    menu.removeItem(R.id.menuAction_sortRssi);
-                } else {
-                    menu.findItem(R.id.menuAction_sort).setTitle("Sort by EPC");
-                    menu.findItem(R.id.menuAction_sortRssi).setTitle("Sort by Rssi");
-                }
+                menu.findItem(R.id.menuAction_1).setTitle("Clear");
+                menu.findItem(R.id.menuAction_2).setTitle("Sort");
+                menu.findItem(R.id.menuAction_3).setTitle("Save");
+                menu.findItem(R.id.menuAction_4).setTitle("Share");
+                menu.findItem(R.id.menuAction_4).setIcon(android.R.drawable.ic_menu_share);
             } else {
-                menu.removeItem(R.id.menuAction_clear);
-                menu.removeItem(R.id.menuAction_save);
-                menu.removeItem(R.id.menuAction_share);
-                menu.removeItem(R.id.menuAction_sort);
-                menu.removeItem(R.id.menuAction_sortRssi);
+                menu.removeItem(R.id.menuAction_1);
+                menu.removeItem(R.id.menuAction_2);
+                menu.removeItem(R.id.menuAction_3);
+                menu.removeItem(R.id.menuAction_4);
             }
         }
     }

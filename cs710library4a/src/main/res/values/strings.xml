@@ -1,6 +1,13 @@
 <resources>
     <string name="library_name">CS710 Library for Android</string>
 
+    <string-array name="profile1_options">
+        <item>0: Multipath Interference Resistance</item>
+        <item>1: Range/Dense reader</item>
+        <item>2: Range/Throughput/Dense reader</item>
+        <item>3: Maximum throughput</item>
+    </string-array>
+
     <string-array name="profile2_options">
         <item>11: Miller 1 640kHz Tari 7.5us</item>
         <item>1:  Miller 2 640kHz Tari 7.5us</item>

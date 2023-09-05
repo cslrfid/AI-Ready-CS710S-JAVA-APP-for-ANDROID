@@ -6,8 +6,6 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.STORAGE" />
-    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
     <uses-permission android:name="android.permission.NFC" />
 
     <application
@@ -18,7 +16,7 @@
         android:requestLegacyExternalStorage="true"
         android:theme="@style/AppTheme">
 
-        <service android:name="CustomIME"
+        <service android:name=".CustomIME"
             android:label="@string/app_ime"
             android:exported="true"
             android:permission="android.permission.BIND_INPUT_METHOD">
@@ -29,7 +27,7 @@
         </service>
 
         <activity
-            android:name="MainActivity"
+            android:name=".MainActivity"
             android:exported="true"
             android:screenOrientation="portrait">
             <intent-filter>

@@ -1,10 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_newname1">CSL Wedge</string>
-    <string name="app_newname">CS710S Java</string>
+    <string name="app_newname">CS710S CS108</string>
     <string name="app_name">CSL Java Demo</string>
-    <string name="app_ime1">CSL Java Simple Wedge</string>
     <string name="app_ime">CSL Java Wedge</string>
     <string name="subtype_en_US">English (US)</string>
 
@@ -22,9 +20,7 @@
     <string name="title_activity_readwrite">Read / Write</string>
     <string name="title_activity_security">Security</string>
 
-    <string name="title_activity_impinj">Impinj</string>
-    <string name="title_activity_m775">ImpinJ M775</string>
-    <string name="title_activity_autotune">ImpinJ Autotune</string>
+    <string name="title_activity_impinj">ImpinJ</string>
     <string name="title_activity_ucode8">UCODE 8</string>
     <string name="title_activity_ucodeDNA">UCODE DNA</string>
     <string name="title_activity_bap">BAP</string>
@@ -38,11 +34,10 @@
 
     <string name="title_activity_fdMicro">FM13DT160</string>
     <string name="title_activity_ctesisu">CTESIUS</string>
-    <string name="title_activity_kiloway">KX2005X-BL</string>
+    <string name="title_activity_ledTag">LEDTAG</string>
 
     <string name="title_activity_registertag">Register tag</string>
     <string name="title_activity_readWriteUser">Long Read / Write</string>
-    <string name="title_activity_simpleInventory">Simple Inventory</string>
 
     <!-- Items for lock privilege state -->
     <string-array name="access_lock_privilege_array">
@@ -307,25 +302,6 @@
         <item>snsor</item>
     </string-array>
 
-    <string-array name="delimiter_options">
-        <item>New line(0x0A)</item>
-        <item>Tab(0x09)</item>
-        <item>Comma(0x2C)</item>
-        <item>Space(0x20)</item>
-        <item>None</item>
-    </string-array>
-
-    <string-array name="impinj_options">
-        <item>M775</item>
-        <item>M780/M781</item>
-        <item>M830/M850</item>
-        <item>M770</item>
-        <item>M730/M750</item>
-        <item>Monza R6-A/B </item>
-        <item>Monza R6-P </item>
-        <item>Others</item>
-    </string-array>
-
     <!-- Strings for StartStopTrigger Fragment -->
     <!-- Strings for start trigger Selection -->
     <!-- Strings for stop trigger Selection -->
@@ -359,8 +335,6 @@
     <string name="toast_invalid_sendHostRequest">Invalid sendHostRequest. Operation is cancelled.</string>
     <string name="toast_same_setting">Same setting. Need no update. Operation is cancelled.</string>
     <string name="toast_saved">Saved new setting.</string>
-    <string name="toast_select_reader_first">Please select reader first</string>
-    <string name="toast_permission_not_granted">"Permissions are not granted. Please allow them in system setting."</string>
 
     <!-- Titles in connection settings -->
     <string name="start_title">START</string>

@@ -33,22 +33,19 @@ public class AuraSenseFragment extends CommonFragment {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         InventoryRfidiMultiFragment fragment1 = (InventoryRfidiMultiFragment) mAdapter.fragment1;
-         if (item.getItemId() == R.id.menuAction_clear) {
-             fragment1.clearTagsList();
-             return true;
-         } else if (item.getItemId() == R.id.menuAction_sortRssi) {
-             fragment1.sortTagsListByRssi();
-             return true;
-         } else if (item.getItemId() == R.id.menuAction_sort) {
-             fragment1.sortTagsList();
-             return true;
-         } else if (item.getItemId() == R.id.menuAction_save) {
-             fragment1.saveTagsList();
-             return true;
-         } else if (item.getItemId() == R.id.menuAction_share) {
-             fragment1.shareTagsList();
-             return true;
-         } else return super.onOptionsItemSelected(item);
+        switch (item.getItemId()) {
+            case R.id.menuAction_1:
+                fragment1.clearTagsList();
+                return true;
+            case R.id.menuAction_2:
+                fragment1.sortTagsList();
+                return true;
+            case R.id.menuAction_3:
+                fragment1.saveTagsList();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     @Override

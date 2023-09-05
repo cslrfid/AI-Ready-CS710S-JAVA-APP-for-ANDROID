@@ -18,7 +18,7 @@ import com.csl.cs710ademoapp.AccessTask;
 import com.csl.cs710ademoapp.GenericTextWatcher;
 import com.csl.cs710ademoapp.MainActivity;
 import com.csl.cs710ademoapp.R;
-import com.csl.cs710library4a.CsLibrary4A;
+import com.csl.cs710library4a.Cs108Connector;
 import com.csl.cs710library4a.ReaderDevice;
 
 import javax.crypto.Cipher;
@@ -526,18 +526,21 @@ public class AccessUcodeFragment extends CommonFragment {
                     else if (operationRead) button = buttonRead;
                     else button = buttonWrite;
 
-                    CsLibrary4A.HostCommands hostCommand;
-                    if (readBufferChecked) hostCommand = CsLibrary4A.HostCommands.CMD_READBUFFER;
-                    else if (authenChecked) hostCommand = CsLibrary4A.HostCommands.CMD_18K6CAUTHENTICATE;
-                    else if (untraceChecked || showEpcChecked) hostCommand = CsLibrary4A.HostCommands.CMD_UNTRACEABLE;
-                    else if (operationRead) hostCommand = CsLibrary4A.HostCommands.CMD_18K6CREAD;
-                    else hostCommand = CsLibrary4A.HostCommands.CMD_18K6CWRITE;
+                    Cs108Connector.HostCommands hostCommand;
+                    if (readBufferChecked) hostCommand = Cs108Connector.HostCommands.CMD_READBUFFER;
+                    else if (authenChecked) hostCommand = Cs108Connector.HostCommands.CMD_AUTHENTICATE;
+                    else if (untraceChecked || showEpcChecked) hostCommand = Cs108Connector.HostCommands.CMD_UNTRACEABLE;
+                    else if (operationRead) hostCommand = Cs108Connector.HostCommands.CMD_18K6CREAD;
+                    else hostCommand = Cs108Connector.HostCommands.CMD_18K6CWRITE;
 
                     accessTask = new AccessTask(
-                            button, null, invalid,
+                            button, null,
+                            invalid,
                             editTextRWTagID.getText().toString(), 1, 32,
-                            editTextAccessRWAccPassword.getText().toString(), Integer.valueOf(editTextaccessRWAntennaPower.getText().toString()), hostCommand,
-                            0, 0, true, false,
+                            editTextAccessRWAccPassword.getText().toString(),
+                            Integer.valueOf(editTextaccessRWAntennaPower.getText().toString()),
+                            hostCommand,
+                            0, 0, true,
                             null, null, null, null, null);
                     accessTask.execute();
                     rerunRequest = true;

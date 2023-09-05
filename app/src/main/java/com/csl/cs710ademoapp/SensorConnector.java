@@ -14,6 +14,7 @@ import android.os.Bundle;
 import androidx.core.app.ActivityCompat;
 import android.widget.Toast;
 
+import com.csl.cs710library4a.Cs710Library4A;
 import com.csl.cs710library4a.CsLibrary4A;
 
 import java.text.SimpleDateFormat;
@@ -65,7 +66,7 @@ public class SensorConnector {
             PackageManager mPackageManager;
             mPackageManager = (PackageManager) context.getPackageManager();
             if (!(mPackageManager.hasSystemFeature(PackageManager.FEATURE_LOCATION))) {
-                if (DEBUG) mCsLibrary4A.appendToLog("there is NO Feature_Location");
+                if (DEBUG) mCsLibrary4A.appendToLog("Cs108Connector(): there is NO Feature_Location");
                 Toast.makeText(context.getApplicationContext(), "there is NO LOCATION_FEATURE in this phone !!! Please use another phone.", Toast.LENGTH_LONG).show();
             } else locationManager = (LocationManager) context.getSystemService(LOCATION_SERVICE);
         }
@@ -124,6 +125,15 @@ public class SensorConnector {
                 if (azimuthInRadians == 0) return null;
                 float azimuthInDegress = (float) (Math.toDegrees(azimuthInRadians) + 360) % 360;
                 s0 = String.format("%.1f", azimuthInDegress);
+/*
+            azimuthInRadians = mCs108ConnectorData.mOrientation[1];
+            azimuthInDegress = (float)(Math.toDegrees(azimuthInRadians)+360)%360;
+            s1 = String.format("%.1f", azimuthInDegress);
+
+            azimuthInRadians = mCs108ConnectorData.mOrientation[2];
+            azimuthInDegress = (float)(Math.toDegrees(azimuthInRadians)+360)%360;
+            s2 = String.format("%.1f", azimuthInDegress);
+*/
             }
             return s0;  // + ", " + s1 + ", " + s2;
         }
@@ -135,7 +145,7 @@ public class SensorConnector {
 
             mSensorManager = (SensorManager) mContext.getSystemService(SENSOR_SERVICE);
             List<Sensor> deviceSensors = mSensorManager.getSensorList(Sensor.TYPE_ALL);
-            if (DEBUG) mCsLibrary4A.appendToLog("SensorDevice(): List of sensors");
+            if (DEBUG) mCsLibrary4A.appendToLog("Cs108Connector.SensorDevice(): List of sensors");
             for (int i = 0; i < deviceSensors.size(); i++) {
                 if (DEBUG) mCsLibrary4A.appendToLog(deviceSensors.get(i).getType() + "," + deviceSensors.get(i).getName());
             }
