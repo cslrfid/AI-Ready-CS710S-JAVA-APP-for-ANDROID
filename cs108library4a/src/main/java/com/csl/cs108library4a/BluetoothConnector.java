@@ -9,10 +9,11 @@ import java.util.ArrayList;
 class BluetoothConnector {
     boolean DEBUG_PKDATA;
     final boolean DEBUG = false;
+    boolean userDebugEnableDefault = false, userDebugEnable = userDebugEnableDefault;
 
-    Context mContext; TextView mLogView;
+    Context context; TextView mLogView;
     BluetoothConnector(Context context, TextView mLogView) {
-        mContext = context;
+        this.context = context;
         this.mLogView = mLogView;
         utility = new Utility(context, mLogView); DEBUG_PKDATA = utility.DEBUG_PKDATA;
         mBluetoothIcDevice = new BluetoothIcDevice();
@@ -217,7 +218,9 @@ class BluetoothConnector {
                 mBluetoothIcToWrite.remove(0); sendDataToWriteSent = 0;
                 if (DEBUG) appendToLog("Removed after sending count-out with oldSize = " + oldSize + ", updated mBluetoothIcToWrite.size() = " + mBluetoothIcToWrite.size());
                 if (DEBUG) appendToLog("Removed after sending count-out.");
-                Toast.makeText(mContext, "Problem in sending data to Bluetooth Module. Removed data sending after count-out", Toast.LENGTH_SHORT).show();
+                String string = "Problem in sending data to Bluetooth Module. Removed data sending after count-out";
+                if (userDebugEnable) Toast.makeText(context, string, Toast.LENGTH_SHORT).show();
+                else appendToLogView(string);
             } else {
                 if (DEBUG) appendToLog("size = " + mBluetoothIcToWrite.size() + ", PayloadEvents = " + mBluetoothIcToWrite.get(0).bluetoothIcPayloadEvent.toString());
                 return writeBluetoothIc(mBluetoothIcToWrite.get(0));

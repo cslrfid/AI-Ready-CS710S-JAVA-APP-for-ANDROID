@@ -18,7 +18,7 @@ import com.csl.cs710ademoapp.AccessTask;
 import com.csl.cs710ademoapp.MainActivity;
 import com.csl.cs710ademoapp.R;
 import com.csl.cs710ademoapp.SelectTag;
-import com.csl.cs710library4a.Cs108Connector;
+import com.csl.cs710library4a.CsLibrary4A;
 
 public class AccessAuraSenseFragment extends CommonFragment {
     final boolean DEBUG = true;
@@ -170,15 +170,15 @@ public class AccessAuraSenseFragment extends CommonFragment {
                 else {
                     String selectMask = selectTag.editTextTagID.getText().toString();
                     int selectBank = selectTag.spinnerSelectBank.getSelectedItemPosition()+1;
-                    int selectOffset = Integer.valueOf(selectTag.editTextRWSelectOffset.getText().toString());
+                    int selectOffset = Integer.valueOf(selectTag.editTextSelectOffset.getText().toString());
                     accessTask = new AccessTask(
                             (operationRead ? buttonRead : buttonWrite), null,
                             invalid,
                             selectMask, selectBank, selectOffset,
-                            selectTag.editTextAccessRWAccPassword.getText().toString(),
-                            Integer.valueOf(selectTag.editTextaccessRWAntennaPower.getText().toString()),
-                            (operationRead ? Cs108Connector.HostCommands.CMD_18K6CREAD: Cs108Connector.HostCommands.CMD_18K6CWRITE),
-                            0, 0, true,
+                            selectTag.editTextAccessPassword.getText().toString(),
+                            Integer.valueOf(selectTag.editTextAccessAntennaPower.getText().toString()),
+                            (operationRead ? CsLibrary4A.HostCommands.CMD_18K6CREAD: CsLibrary4A.HostCommands.CMD_18K6CWRITE),
+                            0, 0, true, false,
                             null, null, null, null, null);
                     accessTask.execute();
                     rerunRequest = true;

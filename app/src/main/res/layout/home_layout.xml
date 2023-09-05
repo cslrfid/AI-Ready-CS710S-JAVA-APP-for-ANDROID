@@ -10,39 +10,49 @@
         android:layout_height="0dp"
         android:layout_weight="1">
 
-        <Button
-            style="@style/DashboardButton"
+        <FrameLayout
             android:layout_width="0dp"
-            android:layout_height="match_parent"
             android:layout_weight="1"
-            android:paddingTop="@dimen/default_top_padding"
-            android:layout_marginTop="@dimen/home_icon_margin_1"
-            android:layout_marginLeft="@dimen/home_icon_margin_1"
-            android:layout_marginRight="@dimen/home_icon_margin_1"
-            android:layout_marginBottom="@dimen/home_icon_margin_1"
-            android:background="@drawable/write5"
-            android:gravity="center|bottom"
-            android:textStyle="bold"
-            android:textSize="20sp"
-            android:text="@string/home_read_write"
-            android:onClick="rrClicked" />
+            android:layout_height="match_parent"
+            android:background="@drawable/border">
 
-        <Button
-            style="@style/DashboardButton"
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:paddingBottom="40dp"
+                android:src="@drawable/write"
+                android:onClick="rrClicked" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center|bottom"
+                android:textStyle="bold"
+                android:textSize="20sp"
+                android:text="@string/home_read_write" />
+        </FrameLayout>
+
+        <FrameLayout
             android:layout_width="0dp"
-            android:layout_height="match_parent"
             android:layout_weight="1"
-            android:paddingTop="@dimen/default_top_padding"
-            android:layout_marginTop="@dimen/home_icon_margin_1"
-            android:layout_marginLeft="@dimen/home_icon_margin_1"
-            android:layout_marginRight="@dimen/home_icon_margin_1"
-            android:layout_marginBottom="@dimen/home_icon_margin_1"
-            android:background="@drawable/inventory5"
-            android:gravity="center|bottom"
-            android:textStyle="bold"
-            android:textSize="20sp"
-            android:text="@string/home_inventory"
-            android:onClick="invClicked" />
+            android:layout_height="match_parent"
+            android:background="@drawable/border">
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:paddingBottom="40dp"
+                android:src="@drawable/inventory"
+                android:onClick="invClicked" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center|bottom"
+                android:textStyle="bold"
+                android:textSize="20sp"
+                android:text="@string/home_inventory" />
+        </FrameLayout>
     </LinearLayout>
 
     <LinearLayout
@@ -50,39 +60,49 @@
         android:layout_height="0dp"
         android:layout_weight="1">
 
-        <Button
-            style="@style/DashboardButton"
+        <FrameLayout
             android:layout_width="0dp"
-            android:layout_height="match_parent"
             android:layout_weight="1"
-            android:paddingTop="10dp"
-            android:layout_marginTop="@dimen/home_icon_margin_1"
-            android:layout_marginLeft="@dimen/home_icon_margin_1"
-            android:layout_marginRight="@dimen/home_icon_margin_1"
-            android:layout_marginBottom="@dimen/home_icon_margin_1"
-            android:background="@drawable/register5"
-            android:gravity="center|bottom"
-            android:textStyle="bold"
-            android:textSize="20sp"
-            android:text="@string/home_regTag"
-            android:onClick="regClicked" />
+            android:layout_height="match_parent"
+            android:background="@drawable/border">
 
-        <Button
-            style="@style/DashboardButton"
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:paddingBottom="40dp"
+                android:src="@drawable/register"
+                android:onClick="regClicked" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center|bottom"
+                android:textStyle="bold"
+                android:textSize="20sp"
+                android:text="@string/home_regTag" />
+        </FrameLayout>
+
+        <FrameLayout
             android:layout_width="0dp"
-            android:layout_height="match_parent"
             android:layout_weight="1"
-            android:paddingTop="@dimen/default_top_padding"
-            android:layout_marginTop="@dimen/home_icon_margin_1"
-            android:layout_marginLeft="@dimen/home_icon_margin_1"
-            android:layout_marginRight="@dimen/home_icon_margin_1"
-            android:layout_marginBottom="@dimen/home_icon_margin_1"
-            android:background="@drawable/function5"
-            android:gravity="center|bottom"
-            android:textStyle="bold"
-            android:textSize="20sp"
-            android:text="@string/home_activity_special"
-            android:onClick="sfnClicked" />
+            android:layout_height="match_parent"
+            android:background="@drawable/border">
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:paddingBottom="40dp"
+                android:src="@drawable/function"
+                android:onClick="sfnClicked" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center|bottom"
+                android:textStyle="bold"
+                android:textSize="20sp"
+                android:text="@string/home_activity_special" />
+        </FrameLayout>
     </LinearLayout>
 
     <LinearLayout
@@ -90,39 +110,49 @@
         android:layout_height="0dp"
         android:layout_weight="1">
 
-        <Button
-            style="@style/DashboardButton"
+        <FrameLayout
             android:layout_width="0dp"
-            android:layout_height="match_parent"
             android:layout_weight="1"
-            android:paddingTop="10dp"
-            android:layout_marginTop="@dimen/home_icon_margin_1"
-            android:layout_marginLeft="@dimen/home_icon_margin_1"
-            android:layout_marginRight="@dimen/home_icon_margin_1"
-            android:layout_marginBottom="@dimen/home_icon_margin_1"
-            android:background="@drawable/search5"
-            android:gravity="center|bottom"
-            android:textStyle="bold"
-            android:textSize="20sp"
-            android:text="@string/home_locate"
-            android:onClick="locateClicked" />
+            android:layout_height="match_parent"
+            android:background="@drawable/border">
 
-        <Button
-            style="@style/DashboardButton"
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:paddingBottom="40dp"
+                android:src="@drawable/search"
+                android:onClick="locateClicked" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center|bottom"
+                android:textStyle="bold"
+                android:textSize="20sp"
+                android:text="@string/home_locate" />
+        </FrameLayout>
+
+        <FrameLayout
             android:layout_width="0dp"
-            android:layout_height="match_parent"
             android:layout_weight="1"
-            android:paddingTop="10dp"
-            android:layout_marginTop="@dimen/home_icon_margin_1"
-            android:layout_marginLeft="@dimen/home_icon_margin_1"
-            android:layout_marginRight="@dimen/home_icon_margin_1"
-            android:layout_marginBottom="@dimen/home_icon_margin_1"
-            android:background="@drawable/settings5"
-            android:gravity="center|bottom"
-            android:textStyle="bold"
-            android:textSize="20sp"
-            android:text="@string/home_settings"
-            android:onClick="settClicked" />
+            android:layout_height="match_parent"
+            android:background="@drawable/border">
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:paddingBottom="40dp"
+                android:src="@drawable/settings"
+                android:onClick="settClicked" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center|bottom"
+                android:textStyle="bold"
+                android:textSize="20sp"
+                android:text="@string/home_settings" />
+        </FrameLayout>
     </LinearLayout>
 
     <LinearLayout
@@ -130,40 +160,49 @@
         android:layout_height="0dp"
         android:layout_weight="1">
 
-        <Button
-            style="@style/DashboardButton"
+        <FrameLayout
             android:layout_width="0dp"
-            android:layout_height="match_parent"
             android:layout_weight="1"
-            android:paddingLeft="5dp"
-            android:paddingTop="10dp"
-            android:layout_marginTop="@dimen/home_icon_margin_1"
-            android:layout_marginLeft="@dimen/home_icon_margin_1"
-            android:layout_marginRight="@dimen/home_icon_margin_1"
-            android:layout_marginBottom="@dimen/home_icon_margin_1"
-            android:background="@drawable/security5"
-            android:gravity="center|bottom"
-            android:textStyle="bold"
-            android:textSize="20sp"
-            android:text="@string/home_access"
-            android:onClick="accessClicked" />
+            android:layout_height="match_parent"
+            android:background="@drawable/border">
 
-        <Button
-            style="@style/DashboardButton"
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:paddingBottom="40dp"
+                android:src="@drawable/security"
+                android:onClick="accessClicked" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center|bottom"
+                android:textStyle="bold"
+                android:textSize="20sp"
+                android:text="@string/home_access" />
+        </FrameLayout>
+
+        <FrameLayout
             android:layout_width="0dp"
-            android:layout_height="match_parent"
             android:layout_weight="1"
-            android:paddingTop="5dp"
-            android:layout_marginTop="@dimen/home_icon_margin_1"
-            android:layout_marginLeft="@dimen/home_icon_margin_1"
-            android:layout_marginRight="@dimen/home_icon_margin_1"
-            android:layout_marginBottom="@dimen/home_icon_margin_1"
-            android:background="@drawable/filter5"
-            android:gravity="center|bottom"
-            android:textStyle="bold"
-            android:textSize="20sp"
-            android:text="@string/home_filter"
-            android:onClick="filterClicked" />
+            android:layout_height="match_parent"
+            android:background="@drawable/border">
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:paddingBottom="40dp"
+                android:src="@drawable/filter"
+                android:onClick="filterClicked" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center|bottom"
+                android:textStyle="bold"
+                android:textSize="20sp"
+                android:text="@string/home_filter" />
+        </FrameLayout>
     </LinearLayout>
 
     <LinearLayout
@@ -202,5 +241,21 @@
             android:text="About"
             android:visibility="visible"
             android:onClick="aboutClicked" />
+
+        <Button
+            style="@style/DashboardButton"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:paddingTop="10dp"
+            android:layout_marginTop="@dimen/home_icon_margin_1"
+            android:layout_marginLeft="@dimen/home_icon_margin_1"
+            android:layout_marginRight="@dimen/home_icon_margin_1"
+            android:layout_marginBottom="@dimen/home_icon_margin_1"
+            android:background="@drawable/btn_back"
+            android:gravity="center"
+            android:text="Simple"
+            android:visibility="gone"
+            android:onClick="directWedgeClicked" />
     </LinearLayout>
 </LinearLayout>

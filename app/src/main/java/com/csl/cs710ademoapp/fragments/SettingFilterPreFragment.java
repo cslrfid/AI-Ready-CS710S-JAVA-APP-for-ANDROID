@@ -62,7 +62,7 @@ public class SettingFilterPreFragment extends CommonFragment {
 
         actionSpinner = (Spinner) getActivity().findViewById(R.id.preFilterAction);
         ArrayAdapter<CharSequence> actionAdapter;
-        if (true) { //MainActivity.mCs108Library4a.getQuerySelect() >= 2) {
+        if (true) { //MainActivity.csLibrary4A.getQuerySelect() >= 2) {
             actionAdapter = ArrayAdapter.createFromResource(getActivity(), R.array.filterPre_SLaction_options, R.layout.custom_spinner_layout);
         } else {
             actionAdapter = ArrayAdapter.createFromResource(getActivity(), R.array.filterPre_SessionAction_options, R.layout.custom_spinner_layout);

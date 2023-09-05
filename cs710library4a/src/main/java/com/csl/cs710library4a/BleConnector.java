@@ -43,7 +43,7 @@ import static androidx.core.app.ActivityCompat.requestPermissions;
 
 class BleConnector extends BluetoothGattCallback {
     boolean DEBUG_PKDATA, DEBUG_APDATA;
-    final boolean DEBUG_SCAN = false, DEBUG_CONNECT = false, DEBUG_BTDATA = false, DEBUG_FILE = false;
+    final boolean DEBUG_SCAN = false, DEBUG_CONNECT = true, DEBUG_BTDATA = false, DEBUG_FILE = false;
     final boolean DEBUG = true, DEBUG_BTOP = false;
     static final String TAG = "Hello";
 
@@ -199,7 +199,6 @@ class BleConnector extends BluetoothGattCallback {
             if (DEBUG) appendToLog("status=" + status + ". restart discoverServices");
             discoverServices();
         } else {
-            //UUID UUID_READER_SERVICE = UUID.fromString("00009800-0000-1000-8000-00805f9b34fb");
             UUID UUID_READER_SERVICE = UUID.fromString("00009802-0000-1000-8000-00805f9b34fb");
             mReaderStreamOutCharacteristic = getCharacteristic(UUID_READER_SERVICE, UUID_READER_STREAM_OUT_CHARACTERISTIC);
             mReaderStreamInCharacteristic = getCharacteristic(UUID_READER_SERVICE, UUID_READER_STREAM_IN_CHARACTERISTIC);
@@ -412,7 +411,7 @@ class BleConnector extends BluetoothGattCallback {
             if (bValue == false) writeBleFailure++;
             else {
                 writeBleFailure = 0;
-                if (DEBUG_BTDATA) appendToLog("BtData: " + byteArrayToString(value));
+                if (DEBUG_BTDATA || true) appendToLogView("BtDataOut: " + byteArrayToString(value));
                 _writeCharacteristic_in_progress = true;
                 mStreamWriteCountOld = mStreamWriteCount;
                 mStreamWriteCount += value.length;
@@ -467,7 +466,7 @@ class BleConnector extends BluetoothGattCallback {
                     streamInBytesMissing += v.length;
                 } else {
                     utility.writeDebug2File("A, " + System.currentTimeMillis());
-                    if (DEBUG_BTDATA) Log.i(TAG, "BtData = " + byteArrayToString(v));
+                    if (DEBUG_BTDATA) Log.i(TAG, "BtDataIn= " + byteArrayToString(v));
                     if (isStreamInBufferRing) {
                         streamInBufferPush(v, 0, v.length);
                     } else {
@@ -967,7 +966,7 @@ class BleConnector extends BluetoothGattCallback {
         return bValue;
     }
 
-    private Utility utility;
+    Utility utility;
     String byteArray2DisplayString(byte[] byteData) { return utility.byteArray2DisplayString(byteData); }
     String byteArrayToString(byte[] packet) { return utility.byteArrayToString(packet); }
     int byteArrayToInt(byte[] bytes) { return utility.byteArrayToInt(bytes); }
@@ -991,9 +990,11 @@ class BleConnector extends BluetoothGattCallback {
         return mBluetoothGatt.discoverServices();
     }
     boolean checkSelfPermissionBLUETOOTH() {
+        boolean bValue = false;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            if (ActivityCompat.checkSelfPermission(mContext, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) return false;
-        } else if (ActivityCompat.checkSelfPermission(mContext.getApplicationContext(), Manifest.permission.BLUETOOTH) != PackageManager.PERMISSION_GRANTED) return false;
-        return true;
+            if (ActivityCompat.checkSelfPermission(mContext, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED) bValue = true;
+        } else if (ActivityCompat.checkSelfPermission(mContext.getApplicationContext(), Manifest.permission.BLUETOOTH) == PackageManager.PERMISSION_GRANTED) bValue = true;
+        if (false) Log.i("Hello3", "checkSelfPermissionBLUETOOTH bValue = " + bValue);
+        return bValue;
     }
 }

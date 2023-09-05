@@ -13,7 +13,7 @@ import com.csl.cs710ademoapp.AccessTask;
 import com.csl.cs710ademoapp.GenericTextWatcher;
 import com.csl.cs710ademoapp.MainActivity;
 import com.csl.cs710ademoapp.R;
-import com.csl.cs710library4a.Cs108Connector;
+import com.csl.cs710library4a.CsLibrary4A;
 import com.csl.cs710library4a.ReaderDevice;
 
 public class AccessSecurityKillFragment extends CommonFragment {
@@ -106,7 +106,7 @@ public class AccessSecurityKillFragment extends CommonFragment {
     }
 
     void setNotificationListener() {
-        MainActivity.csLibrary4A.setNotificationListener(new Cs108Connector.NotificationListener() {
+        MainActivity.csLibrary4A.setNotificationListener(new CsLibrary4A.NotificationListener() {
             @Override
             public void onChange() {
                 MainActivity.csLibrary4A.appendToLog("TRIGGER key is pressed.");
@@ -121,7 +121,11 @@ public class AccessSecurityKillFragment extends CommonFragment {
         String strTagID = editTextTagID.getText().toString();
         String strPassword = editTextPassword.getText().toString();
         int powerLevel = Integer.valueOf(editTextAntennaPower.getText().toString());
-        accessTask = new AccessTask(button, null, invalidRequest, strTagID, 1, 32, strPassword, powerLevel, Cs108Connector.HostCommands.CMD_18K6CKILL, 0, 0, true, null, null, null, null, null);
+        accessTask = new AccessTask(button, null, invalidRequest,
+                strTagID, 1, 32,
+                strPassword, powerLevel, CsLibrary4A.HostCommands.CMD_18K6CKILL,
+                0, 0, true, false,
+                null, null, null, null, null);
         accessTask.execute();
     }
 }
