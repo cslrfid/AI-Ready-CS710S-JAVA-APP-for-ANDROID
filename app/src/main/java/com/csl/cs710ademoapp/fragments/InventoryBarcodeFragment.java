@@ -1,9 +1,11 @@
 package com.csl.cs710ademoapp.fragments;
 
+import android.content.Intent;
 import android.media.MediaPlayer;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -16,8 +18,8 @@ import com.csl.cs710ademoapp.InventoryBarcodeTask;
 import com.csl.cs710ademoapp.MainActivity;
 import com.csl.cs710ademoapp.R;
 import com.csl.cs710ademoapp.SaveList2ExternalTask;
-import com.csl.cs710library4a.Cs108Connector;
 import com.csl.cs710ademoapp.adapters.ReaderListAdapter;
+import com.csl.cs710library4a.CsLibrary4A;
 import com.csl.cs710library4a.ReaderDevice;
 
 import java.util.Collections;
@@ -49,13 +51,40 @@ public class InventoryBarcodeFragment extends CommonFragment {
         saveExternalTask.execute();
     }
     void shareTagsList() {
-        MainActivity.csLibrary4A.appendToLog("Share BUTTON is pressed.");
+        SaveList2ExternalTask saveExternalTask = new SaveList2ExternalTask(MainActivity.sharedObjects.barsList);
+        String stringOutput = saveExternalTask.createStrEpcList();
+
+        Intent sendIntent = new Intent();
+        sendIntent.setAction(Intent.ACTION_SEND);
+        sendIntent.putExtra(Intent.EXTRA_TEXT, stringOutput);
+        sendIntent.setType("text/plain");
+        startActivity(Intent.createChooser(sendIntent, "Sharing to"));
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState, false);
         return inflater.inflate(R.layout.fragment_inventory_barcode, container, false);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.menuAction_clear) {
+            clearTagsList();
+            return true;
+        } else if (item.getItemId() == R.id.menuAction_sortRssi) {
+            //sortTagsListByRssi();
+            return true;
+        } else if (item.getItemId() == R.id.menuAction_sort) {
+            sortTagsList();
+            return true;
+        } else if (item.getItemId() == R.id.menuAction_save) {
+            saveTagsList();
+            return true;
+        } else if (item.getItemId() == R.id.menuAction_share) {
+            shareTagsList();
+            return true;
+        } else return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -133,7 +162,6 @@ public class InventoryBarcodeFragment extends CommonFragment {
     public void onDestroy() {
         MainActivity.csLibrary4A.setAutoBarStartSTop(false); MainActivity.csLibrary4A.setNotificationListener(null);
         super.onDestroy();
-
     }
 
     boolean userVisibleHint = false;
@@ -156,7 +184,7 @@ public class InventoryBarcodeFragment extends CommonFragment {
     }
 
     void setNotificationListener() {
-        MainActivity.csLibrary4A.setNotificationListener(new Cs108Connector.NotificationListener() {
+        MainActivity.csLibrary4A.setNotificationListener(new CsLibrary4A.NotificationListener() {
             @Override
             public void onChange() {
                 startStopHandler(true);

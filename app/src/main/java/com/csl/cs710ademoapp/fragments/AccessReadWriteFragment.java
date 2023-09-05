@@ -22,9 +22,9 @@ import com.csl.cs710ademoapp.AccessTask1;
 import com.csl.cs710ademoapp.CustomPopupWindow;
 import com.csl.cs710ademoapp.GenericTextWatcher;
 import com.csl.cs710ademoapp.SelectTag;
-import com.csl.cs710library4a.Cs108Connector;
 import com.csl.cs710ademoapp.MainActivity;
 import com.csl.cs710ademoapp.R;
+import com.csl.cs710library4a.CsLibrary4A;
 import com.csl.cs710library4a.ReaderDevice;
 
 import static com.csl.cs710ademoapp.MainActivity.mContext;
@@ -287,7 +287,7 @@ public class AccessReadWriteFragment extends CommonFragment {
                             selectTag.editTextTagID.getText().toString(), spinnerSelectBank.getSelectedItemPosition() + 1, selectOffset,
                             editTextAccessRWAccPassword.getText().toString(),
                             Integer.valueOf(editTextaccessRWAntennaPower.getText().toString()),
-                            (operationRead ? Cs108Connector.HostCommands.CMD_18K6CREAD: Cs108Connector.HostCommands.CMD_18K6CWRITE), updateRunnable);
+                            (operationRead ? CsLibrary4A.HostCommands.CMD_18K6CREAD: CsLibrary4A.HostCommands.CMD_18K6CWRITE), updateRunnable);
                     accessTask.execute();
                     rerunRequest = true;
                 }

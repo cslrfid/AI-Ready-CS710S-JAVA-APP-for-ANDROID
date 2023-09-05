@@ -15,10 +15,10 @@ import android.widget.Toast;
 import com.csl.cs710ademoapp.AccessTask;
 import com.csl.cs710ademoapp.MainActivity;
 import com.csl.cs710ademoapp.R;
-import com.csl.cs710library4a.Cs108Connector;
+import com.csl.cs710library4a.CsLibrary4A;
 import com.csl.cs710library4a.ReaderDevice;
 
-public class AccessLedTagFragment extends CommonFragment {
+public class AccessKilowayFragment extends CommonFragment {
     final boolean DEBUG = true;
     EditText editTextRWTagID, editTextaccessRWAntennaPower;
 
@@ -37,21 +37,21 @@ public class AccessLedTagFragment extends CommonFragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState, false);
-        return inflater.inflate(R.layout.fragment_access_ledtag, container, false);
+        return inflater.inflate(R.layout.fragment_access_kiloway, container, false);
     }
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        editTextRWTagID = (EditText) getActivity().findViewById(R.id.accessLEDTagID);
+        editTextRWTagID = (EditText) getActivity().findViewById(R.id.accessKilowayID);
         editTextaccessRWAntennaPower = (EditText) getActivity().findViewById(R.id.accessLEDAntennaPower);
 
-        textViewOk = (TextView) getActivity().findViewById(R.id.accessLedTagResultOK);
-        checkBox = (CheckBox) getActivity().findViewById(R.id.accessLedTagResultTitle);
-        textView = (TextView) getActivity().findViewById(R.id.accessLedTagResult);
+        textViewOk = (TextView) getActivity().findViewById(R.id.accessKilowayResultOK);
+        checkBox = (CheckBox) getActivity().findViewById(R.id.accessKilowayResultTitle);
+        textView = (TextView) getActivity().findViewById(R.id.accessKilowayResult);
 
-        buttonRead = (Button) getActivity().findViewById(R.id.accessMNReadButton);
+        buttonRead = (Button) getActivity().findViewById(R.id.accessKilowayStartButton);
         buttonRead.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -91,7 +91,7 @@ public class AccessLedTagFragment extends CommonFragment {
         }
     }
 
-    public AccessLedTagFragment() {
+    public AccessKilowayFragment() {
         super("AccessLedTagFragment");
     }
 
@@ -136,7 +136,7 @@ public class AccessLedTagFragment extends CommonFragment {
                     boolean invalid = processTickItems();
                     MainActivity.csLibrary4A.appendToLog("AccessLedTagFragment(): processTickItems with invalid = " + invalid + ", bankProcessing = " + bankProcessing + ", checkProcessing = " + checkProcessing); ///
                     if (bankProcessing++ != 0 && invalid == true)   {
-                        CheckBox checkBox = (CheckBox) getActivity().findViewById(R.id.accessLedTagRepeat);
+                        CheckBox checkBox = (CheckBox) getActivity().findViewById(R.id.accessKilowayRepeat);
                         rerunRequest = true;
                         if (checkBox.isChecked()) { bankProcessing = 0; checkProcessing = 0; }
                         else rerunRequest = false;
@@ -144,8 +144,8 @@ public class AccessLedTagFragment extends CommonFragment {
                         accessTask = new AccessTask(
                                 buttonRead, invalid,
                                 editTextRWTagID.getText().toString(), 1, 32,
-                                "00000000", Integer.valueOf(editTextaccessRWAntennaPower.getText().toString()), Cs108Connector.HostCommands.CMD_18K6CREAD,
-                                true, null);
+                                "00000000", Integer.valueOf(editTextaccessRWAntennaPower.getText().toString()), CsLibrary4A.HostCommands.CMD_18K6CREAD,
+                                false, null);
                         accessTask.execute();
                         rerunRequest = true;
                         MainActivity.csLibrary4A.appendToLog("AccessLedTagFragment(): accessTask is created"); ///
@@ -192,7 +192,7 @@ public class AccessLedTagFragment extends CommonFragment {
         MainActivity.csLibrary4A.appendToLog("1: invalidRequest1 = " + invalidRequest1);
 
         if (checkBox.isChecked() == true && checkProcessing < 1) {
-            accBank = 2; accSize = 2; accOffset = 0;
+            accBank = 0; accSize = 1; accOffset = 4;
             readWriteTypes = ReadWriteTypes.READVALUE; checkProcessing = 1;
             textViewOk.setText(""); textView.setText("");
         } else {

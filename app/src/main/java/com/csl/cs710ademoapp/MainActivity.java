@@ -26,9 +26,16 @@ import com.csl.cs710ademoapp.fragments.*;
 import com.csl.cs710library4a.CsLibrary4A;
 import com.csl.cs710library4a.ReaderDevice;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+
 public class MainActivity extends AppCompatActivity {
     final boolean DEBUG = false; final String TAG = "Hello";
     public static boolean activityActive = false;
+    public static DrawerPositions drawerPositionsDefault = DrawerPositions.MAIN;
 
     //Tag to identify the currently displayed fragment
     Fragment fragment = null;
@@ -81,8 +88,9 @@ public class MainActivity extends AppCompatActivity {
         mSensorConnector = new SensorConnector(mContext);
 
         super.onCreate(savedInstanceState);
-        if (savedInstanceState == null) selectItem(DrawerPositions.MAIN);
+        if (savedInstanceState == null) selectItem(drawerPositionsDefault);
         if (DEBUG) Log.i(TAG, "MainActivity.onCreate.onCreate: END");
+        loadWedgeSettingFile();
     }
 
     @Override
@@ -145,7 +153,10 @@ public class MainActivity extends AppCompatActivity {
     CustomProgressDialog progressDialog;
     private void selectItem(DrawerPositions position) {
         if (DEBUG) Log.i(TAG, "MainActivity.selectItem: position = " + position);
-        if (true && position != DrawerPositions.MAIN && position != DrawerPositions.ABOUT && position != DrawerPositions.CONNECT && csLibrary4A.isBleConnected() == false) {
+        if (position != DrawerPositions.MAIN
+                && position != DrawerPositions.ABOUT
+                && position != DrawerPositions.CONNECT
+                && position != DrawerPositions.DIRECTWEDGE && csLibrary4A.isBleConnected() == false) {
             Toast.makeText(MainActivity.mContext, "Bluetooth Disconnected.  Please Connect.", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -156,7 +167,9 @@ public class MainActivity extends AppCompatActivity {
             case SPECIAL:
                 fragment = new HomeSpecialFragment();
                 break;
+
             case ABOUT:
+                //fragment = new Test1Fragment();
                 fragment = new AboutFragment();
                 break;
             case CONNECT:
@@ -170,6 +183,9 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case MULTIBANK:
                 fragment = InventoryRfidiMultiFragment.newInstance(true, null);
+                break;
+            case SIMINVENTORY:
+                fragment = InventoryRfidSimpleFragment.newInstance(false, null);
                 break;
             case SETTING:
                 fragment = new SettingFragment();
@@ -187,10 +203,16 @@ public class MainActivity extends AppCompatActivity {
             case IMPINVENTORY:
                 fragment = new ImpinjFragment();
                 break;
+            case IMP775:
+                fragment = new ImpinjM775Fragment();
+                break;
+            case ALIEN:
+                fragment = InventoryRfidiMultiFragment.newInstance(true, "E2003");
+                break;
             case UCODE8:
                 fragment = new Ucode8Fragment();
                 break;
-            case UCODE:
+            case UCODEDNA:
                 fragment = new UcodeFragment();
                 break;
             case BAPCARD:
@@ -201,6 +223,9 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case AURASENSE:
                 fragment = new AuraSenseFragment();
+                break;
+            case KILOWAY:
+                fragment = new KilowayFragment();
                 break;
             case AXZON:
                 fragment = AxzonSelectorFragment.newInstance(true);
@@ -214,30 +239,30 @@ public class MainActivity extends AppCompatActivity {
             case CTESIUS:
                 fragment = InventoryRfidiMultiFragment.newInstance(true, "E203510");
                 break;
-            case LEDTAG:
-                fragment = new LedTagFragment();
+            case ASYGNTAG:
+                fragment = InventoryRfidiMultiFragment.newInstance(true, "E283A");
                 break;
 
             case REGISTER:
                 fragment = new AccessRegisterFragment();
                 break;
-            case WEDGE:
-                fragment = new HomeSpecialFragment();
-                break;
             case READWRITEUSER:
                 fragment = new AccessReadWriteUserFragment();
                 break;
-            case SIMINVENTORY:
-                //fragment = InventoryRfidSimpleFragment.newInstance(false, null);
+            case WEDGE:
+                fragment = new HomeSpecialFragment();
+                break;
+            case DIRECTWEDGE:
+                fragment = new DirectWedgeFragment();
                 break;
             case BLANK:
-//                fragment = new BlankFragment();
+                fragment = new TestFragment();
                 break;
         }
 
         FragmentManager fragmentManager = getSupportFragmentManager();
 
-        if (position == DrawerPositions.MAIN) {
+        if (position == drawerPositionsDefault) {
             //Pop the back stack since we want to maintain only one level of the back stack
             //Don't add the transaction to back stack since we are navigating to the first fragment
             //being displayed and adding the same to the backstack will result in redundancy
@@ -260,6 +285,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
+        if (drawerPositionsDefault != DrawerPositions.MAIN) return;
         mDrawerList.setItemChecked(0, true);
         Fragment fragment = getSupportFragmentManager().findFragmentByTag(TAG_CONTENT_FRAGMENT);
         if (DEBUG) MainActivity.csLibrary4A.appendToLog("MainActivity super.onBackPressed");
@@ -318,26 +344,31 @@ public class MainActivity extends AppCompatActivity {
     public void rrClicked(View view) {
         selectItem(DrawerPositions.READWRITE);
     }
+    public void rrUserClicked(View view) { selectItem(DrawerPositions.READWRITEUSER); }
+
     public void accessClicked(View view) {
         selectItem(DrawerPositions.SECURITY);
     }
 
     public void impInventoryClicked(View view) { selectItem(DrawerPositions.IMPINVENTORY); }
+    public void m775Clicked(View view) { selectItem(DrawerPositions.IMP775); }
+    public void alienClicked(View view) { selectItem(DrawerPositions.ALIEN); }
     public void uCode8Clicked(View view) { selectItem(DrawerPositions.UCODE8); }
-    public void uCodeClicked(View view) { selectItem(DrawerPositions.UCODE); }
+    public void uCodeClicked(View view) { selectItem(DrawerPositions.UCODEDNA); }
     public void bapCardClicked(View view) { selectItem(DrawerPositions.BAPCARD); }
     public void coldChainClicked(View view) { selectItem(DrawerPositions.COLDCHAIN); }
     public void aurasenseClicked(View view) { selectItem(DrawerPositions.AURASENSE); }
+    public void kilowayClicked(View view) { selectItem(DrawerPositions.KILOWAY); }
     public void axzonClicked(View view) { selectItem(DrawerPositions.AXZON); }
     public void rfMicronClicked(View view) { selectItem(DrawerPositions.RFMICRON); }
     public void fdmicroClicked(View view) { selectItem(DrawerPositions.FDMICRO); }
     public void ctesiusClicked(View view) { selectItem(DrawerPositions.CTESIUS); }
-    public void ledInventoryClicked(View view) { selectItem(DrawerPositions.LEDTAG); }
+    public void asygnClicked(View view) { selectItem(DrawerPositions.ASYGNTAG); }
 
     public void regClicked(View view) {
         selectItem(DrawerPositions.REGISTER);
     }
-    static boolean wedged = false;
+    public static boolean wedged = false;
     public void wedgeClicked(View view) {
         if (true) {
             wedged = true;
@@ -346,12 +377,13 @@ public class MainActivity extends AppCompatActivity {
             startActivity(i);
         }
     }
+    public void directWedgeClicked(View view) {
+        selectItem(DrawerPositions.DIRECTWEDGE);
+    }
 
     public void simpleInventoryClicked(View view) { selectItem(DrawerPositions.SIMINVENTORY); }
 
-    public void blankClicked(View view) {
-//        selectItem(DrawerPositions.BLANK);
-    }
+    public void blankClicked(View view) { if (false) selectItem(DrawerPositions.BLANK); }
 
     // The click listener for ListView in the navigation drawer
     private class DrawerItemClickListener implements ListView.OnItemClickListener {
@@ -371,5 +403,44 @@ public class MainActivity extends AppCompatActivity {
     private void readFromIntent(Intent intent) {
         if (DEBUG) csLibrary4A.appendToLog("onNewIntent !!! readFromIntent entry");
         String action = intent.getAction();
+    }
+
+    public static String fileName = "SimpleWedgeSettings";
+    public static String wedgePrefix = null, wedgeSuffix = null;
+    public static int wedgeDelimiter = 0x0a, wedgePower = 300;
+    void loadWedgeSettingFile() {
+        File path = this.getFilesDir();
+        File file = new File(path, fileName);
+        boolean bNeedDefault = true, DEBUG = false;
+        if (file.exists()) {
+            int length = (int) file.length();
+            byte[] bytes = new byte[length];
+            try {
+                InputStream instream = new FileInputStream(file);
+                if (instream != null) {
+                    InputStreamReader inputStreamReader = new InputStreamReader(instream);
+                    BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+                    String line;
+                    while ((line = bufferedReader.readLine()) != null) {
+                        if (true) csLibrary4A.appendToLog("Data read = " + line);
+                        String[] dataArray = line.split(",");
+                        if (dataArray.length == 2) {
+                            if (dataArray[0].matches("wedgePower")) {
+                                wedgePower = Integer.valueOf(dataArray[1]);
+                            } else if (dataArray[0].matches("wedgePrefix")) {
+                                wedgePrefix = dataArray[1];
+                            } else if (dataArray[0].matches("wedgeSuffix")) {
+                                wedgeSuffix = dataArray[1];
+                            } else if (dataArray[0].matches("wedgeDelimiter")) {
+                                wedgeDelimiter = Integer.valueOf(dataArray[1]);
+                            }
+                        }
+                    }
+                }
+                instream.close();
+            } catch (Exception ex) {
+                //
+            }
+        }
     }
 }

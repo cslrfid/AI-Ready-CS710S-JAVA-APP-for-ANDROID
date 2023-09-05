@@ -1,6 +1,8 @@
 package com.csl.cs710ademoapp;
 
 import android.inputmethodservice.InputMethodService;
+import android.inputmethodservice.Keyboard;
+import android.inputmethodservice.KeyboardView;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.provider.Settings;
@@ -8,15 +10,14 @@ import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputConnection;
 
-import com.csl.cs710library4a.Cs710Library4A;
+import com.csl.cs710library4a.CsLibrary4A;
 
 import java.util.ArrayList;
 
 import static android.content.ContentValues.TAG;
 
-public class CustomIME extends InputMethodService {
+public class CustomIME extends InputMethodService { //implements KeyboardView.OnKeyboardActionListener {
     Handler mHandler = new Handler();
-    boolean activittyActive = false;
 
     @Override
     public void onCreate() {
@@ -25,10 +26,16 @@ public class CustomIME extends InputMethodService {
     }
     @Override
     public View onCreateInputView() {
-        super.onCreateInputView();
-        appendToLog("CustomIME.onCreateInputView()");
+        super.onCreateInputView();;
         mHandler.post(serviceRunnable);
-        return null;
+        KeyboardView keyboardView = null;
+        if (false) {
+            keyboardView = (KeyboardView) getLayoutInflater().inflate(R.layout.keyboard_view, null);
+            Keyboard keyboard = new Keyboard(this, R.xml.number_pad);
+            keyboardView.setKeyboard(keyboard);
+            //keyboardView.setOnKeyboardActionListener(this);
+        }
+        return keyboardView;
     }
     @Override
     public void onDestroy() {
@@ -45,7 +52,7 @@ public class CustomIME extends InputMethodService {
         public void run() {
             String strCurrentIME = Settings.Secure.getString(getContentResolver(), Settings.Secure.DEFAULT_INPUT_METHOD);
             appendToLog("CustomIME Debug 0 with " + strCurrentIME);
-            if (strCurrentIME.contains("com.csl.cs710ademoapp") == false) return;
+            if (strCurrentIME.contains(getPackageName()) == false) return;
 
             mHandler.postDelayed(serviceRunnable, 1000);
             if (MainActivity.sharedObjects == null) return;
@@ -53,8 +60,8 @@ public class CustomIME extends InputMethodService {
 
             if (inventoring == false) { MainActivity.sharedObjects.serviceArrayList.clear(); epcArrayList.clear(); }
             if (MainActivity.mContext == null) return;
-            appendToLog("CustomIME Debug 1");
-            if (MainActivity.activityActive == false && MainActivity.wedged && MainActivity.csLibrary4A.isBleConnected()) {
+            appendToLog("CustomIME Debug 1 with activityActive = " + MainActivity.activityActive + ", wedged = " + MainActivity.wedged + ", isBleConnected = " + MainActivity.csLibrary4A.isBleConnected());
+            if (MainActivity.activityActive == false /*&& MainActivity.wedged*/ && MainActivity.csLibrary4A.isBleConnected()) {
                 if (MainActivity.csLibrary4A.getTriggerButtonStatus() == false) {
                     appendToLog("CustomIME Debug 2");
                     startStopHandler();
@@ -79,7 +86,25 @@ public class CustomIME extends InputMethodService {
                         if (matched == false && strEpc != null) {
                             epcArrayList.add(strEpc);
                             InputConnection ic = getCurrentInputConnection();
-                            ic.commitText(strEpc + "\n", 1);
+                            strEpc = (MainActivity.wedgePrefix != null ? MainActivity.wedgePrefix : "") + strEpc
+                                    + (MainActivity.wedgeSuffix != null ? MainActivity.wedgeSuffix : "");
+                            switch (MainActivity.wedgeDelimiter) {
+                                default:
+                                    strEpc += "\n";
+                                    break;
+                                case 0x09:
+                                    strEpc += "\t";
+                                    break;
+                                case 0x2C:
+                                    strEpc += ",";
+                                    break;
+                                case 0x20:
+                                    strEpc += " ";
+                                    break;
+                                case -1:
+                                    break;
+                            }
+                            ic.commitText(strEpc, 1);
                         }
                     }
                 }
@@ -99,7 +124,7 @@ public class CustomIME extends InputMethodService {
         if ((started && MainActivity.csLibrary4A.getTriggerButtonStatus()) || (started == false && MainActivity.csLibrary4A.getTriggerButtonStatus() == false)) return;
         if (started == false) {
             appendToLog("CustomIME Debug 11");
-            MainActivity.csLibrary4A.startOperation(Cs710Library4A.OperationTypes.TAG_INVENTORY);
+            MainActivity.csLibrary4A.startOperation(CsLibrary4A.OperationTypes.TAG_INVENTORY);
             inventoryRfidTask = new InventoryRfidTask();
             inventoryRfidTask.execute();
         }
