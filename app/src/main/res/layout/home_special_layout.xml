@@ -29,7 +29,16 @@
             android:layout_marginTop="@dimen/home_icon_margin_1"
             android:background="@drawable/btn_back"
             android:gravity="center"
-            android:text="Impinj FastID TagFocus"
+            android:text="Simple Inventory"
+            android:onClick="simpleInventoryClicked"/>
+
+        <Button
+            style="@style/DashboardButton"
+            android:layout_height="50dp"
+            android:layout_marginTop="@dimen/home_icon_margin_1"
+            android:background="@drawable/btn_back"
+            android:gravity="center"
+            android:text="Impinj Special Features"
             android:onClick="impInventoryClicked"/>
 
         <Button
@@ -48,9 +57,8 @@
             android:layout_marginTop="@dimen/home_icon_margin_1"
             android:background="@drawable/btn_back"
             android:gravity="center"
-            android:visibility="gone"
-            android:text="Impinj Autotune"
-            android:onClick="autoTuneClicked"/>
+            android:text="Alien"
+            android:onClick="alienClicked"/>
 
         <Button
             style="@style/DashboardButton"
@@ -103,6 +111,15 @@
             android:layout_marginTop="@dimen/home_icon_margin_1"
             android:background="@drawable/btn_back"
             android:gravity="center"
+            android:text="Kiloway KX2005X-BL"
+            android:onClick="kilowayClicked"/>
+
+        <Button
+            style="@style/DashboardButton"
+            android:layout_height="50dp"
+            android:layout_marginTop="@dimen/home_icon_margin_1"
+            android:background="@drawable/btn_back"
+            android:gravity="center"
             android:text="Axzon"
             android:onClick="axzonClicked"/>
 
@@ -131,7 +148,7 @@
             android:layout_marginTop="@dimen/home_icon_margin_1"
             android:background="@drawable/btn_back"
             android:gravity="center"
-            android:text="Johar CTESIUS"
+            android:text="Landa CTESIUS"
             android:onClick="ctesiusClicked"/>
 
         <Button
@@ -140,26 +157,8 @@
             android:layout_marginTop="@dimen/home_icon_margin_1"
             android:background="@drawable/btn_back"
             android:gravity="center"
-            android:text="Led Tag"
-            android:onClick="ledInventoryClicked"/>
-
-        <Button
-            style="@style/DashboardButton"
-            android:layout_height="50dp"
-            android:layout_marginTop="@dimen/home_icon_margin_1"
-            android:background="@drawable/btn_back"
-            android:gravity="center"
-            android:text="Register Tag"
-            android:onClick="regClicked"/>
-
-        <Button
-            style="@style/DashboardButton"
-            android:layout_height="50dp"
-            android:layout_marginTop="@dimen/home_icon_margin_1"
-            android:background="@drawable/btn_back"
-            android:gravity="center"
-            android:text="Wedge"
-            android:onClick="wedgeClicked" />
+            android:text="Asygn AS321x"
+            android:onClick="asygnClicked"/>
 
         <Button
             style="@style/DashboardButton"
@@ -176,8 +175,8 @@
             android:layout_marginTop="@dimen/home_icon_margin_1"
             android:background="@drawable/btn_back"
             android:gravity="center"
-            android:text="Simple Inventory"
-            android:onClick="simpleInventoryClicked"/>
+            android:text="Wedge"
+            android:onClick="wedgeClicked" />
 
         <Button
             style="@style/DashboardButton"
@@ -185,15 +184,7 @@
             android:layout_marginTop="@dimen/home_icon_margin_1"
             android:background="@drawable/btn_back"
             android:gravity="center"
-            android:text="About"
-            android:onClick="aboutClicked"/>
-
-        <Button
-            style="@style/DashboardButton"
-            android:layout_height="50dp"
-            android:layout_marginTop="@dimen/home_icon_margin_1"
-            android:background="@drawable/btn_back"
-            android:gravity="center"/>
+            android:onClick="blankClicked"/>
     </LinearLayout>
     </ScrollView>
 

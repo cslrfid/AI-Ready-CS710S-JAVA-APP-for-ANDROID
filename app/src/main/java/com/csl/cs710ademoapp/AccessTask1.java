@@ -4,7 +4,7 @@ import android.os.AsyncTask;
 import android.widget.Button;
 import android.widget.Toast;
 
-import com.csl.cs710library4a.Cs108Connector;
+import com.csl.cs710library4a.CsLibrary4A;
 
 public class AccessTask1 {
     Button button;
@@ -14,24 +14,24 @@ public class AccessTask1 {
     int selectBank, selectOffset;
     String strPassword;
     int powerLevel;
-    Cs108Connector.HostCommands hostCommand;
+    CsLibrary4A.HostCommands hostCommand;
     Runnable updateRunnable = null;
 
     AccessTask accessTask;
     public AccessTask1(Button button, boolean invalidRequest,
                        int accBank, int accOffset, int accSize, int accBlockCount, String accWriteData,
                        String selectMask, int selectBank, int selectOffset,
-                       String strPassword, int powerLevel, Cs108Connector.HostCommands hostCommand, Runnable updateRunnable) {
+                       String strPassword, int powerLevel, CsLibrary4A.HostCommands hostCommand, Runnable updateRunnable) {
         this.button = button;
         this.invalidRequest = invalidRequest;
         MainActivity.csLibrary4A.appendToLog("HelloK: invalidRequest=" + invalidRequest);
         this.accBank = accBank;
         this.accOffset = accOffset;
-        if (hostCommand == Cs108Connector.HostCommands.CMD_18K6CWRITE) { if (accBlockCount > 16) accBlockCount = 16; }
+        if (hostCommand == CsLibrary4A.HostCommands.CMD_18K6CWRITE) { if (accBlockCount > 16) accBlockCount = 16; }
         else if (accBlockCount > 255) accBlockCount = 255;
         this.accBlockCount = accBlockCount;
         if (accWriteData == null) accWriteData = "";
-        if (hostCommand == Cs108Connector.HostCommands.CMD_18K6CWRITE) {
+        if (hostCommand == CsLibrary4A.HostCommands.CMD_18K6CWRITE) {
             MainActivity.csLibrary4A.appendToLog("strOut: accWriteData=" + accWriteData);
             accWriteData = deformatWriteAccessData(accWriteData);
             if (accWriteData.length() < accSize * 4) {
@@ -88,7 +88,7 @@ public class AccessTask1 {
         return strOut;
     }
 
-    boolean isResultReady = false; int tryCount = 0, tryCountMax = 20;
+    boolean isResultReady = false; int tryCount = 0, tryCountMax = 3;
     public boolean isResultReady() {
         boolean bValue = false;
         if (accessTask == null) { }
@@ -96,7 +96,7 @@ public class AccessTask1 {
         else if (button.getText().toString().indexOf("ING") > 0) { }
         else if (isResultReady == false) {
             String strAccessResult = "";
-            if (hostCommand != Cs108Connector.HostCommands.CMD_18K6CREAD || accBank != 3) strAccessResult = accessTask.accessResult;
+            if (hostCommand != CsLibrary4A.HostCommands.CMD_18K6CREAD || accBank != 3) strAccessResult = accessTask.accessResult;
             else {
                 int word4line = 7;
                 for (int i = 0; i < accSizeNow; i=i+word4line) {
@@ -129,7 +129,8 @@ public class AccessTask1 {
                     accSize -= accSizeNow;
                     if (accWriteData != null) { if (accWriteData.length() >= accSizeNow*4) accWriteData = accWriteData.substring(accSizeNow*4); }
                     tryCount = 0;
-                } else MainActivity.csLibrary4A.appendToLog("HelloA: Going to retry with TryCount=" + tryCount);
+                }
+                MainActivity.csLibrary4A.appendToLog("HelloA: Going to retry with TryCount=" + tryCount + ", resultError = " + accessTask.resultError);
                 if (tryCount < tryCountMax) {
                     MainActivity.csLibrary4A.appendToLog("HelloA: re-setup");
                     setup();
@@ -177,7 +178,7 @@ public class AccessTask1 {
                 }
             }
         }
-        if (invalidRequest == false && hostCommand == Cs108Connector.HostCommands.CMD_18K6CWRITE) {
+        if (invalidRequest == false && hostCommand == CsLibrary4A.HostCommands.CMD_18K6CWRITE) {
             if (accWriteData.length() > accSizeNow * 4) accWriteDataNow = accWriteData.substring(0, accSizeNow*4);
             else accWriteDataNow = accWriteData;
             if (MainActivity.csLibrary4A.setAccessWriteData(accWriteDataNow) == false) {

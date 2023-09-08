@@ -19,7 +19,7 @@ import com.csl.cs710ademoapp.AccessTask;
 import com.csl.cs710ademoapp.GenericTextWatcher;
 import com.csl.cs710ademoapp.MainActivity;
 import com.csl.cs710ademoapp.R;
-import com.csl.cs710library4a.Cs108Connector;
+import com.csl.cs710library4a.CsLibrary4A;
 import com.csl.cs710library4a.ReaderDevice;
 
 public class UtraceFragment extends CommonFragment {
@@ -222,17 +222,15 @@ public class UtraceFragment extends CommonFragment {
                 Button button = null; int selectBank = memoryBankSpinner.getSelectedItemPosition() + 1; MainActivity.csLibrary4A.appendToLog("selectBank = " + selectBank);
                 if (strUntraceButtonBackup == null) strUntraceButtonBackup = buttonUntrace.getText().toString(); buttonUntrace.setText("Show"); button = buttonUntrace;
                 accessTask = new AccessTask(
-                        button, null,
-                        invalid,
+                        button, null, invalid,
                         editTextRWTagID.getText().toString(), selectBank, (selectBank == 1 ? 32 : 0),
-                        editTextAccessRWAccPassword.getText().toString(),
-                        Integer.valueOf(editTextaccessRWAntennaPower.getText().toString()),
-                        Cs108Connector.HostCommands.CMD_UNTRACEABLE,
-                        0, 0, true,
+                        editTextAccessRWAccPassword.getText().toString(), Integer.valueOf(editTextaccessRWAntennaPower.getText().toString()), CsLibrary4A.HostCommands.CMD_UNTRACEABLE,
+                        0, 0, true, false,
                         null, null, null, null, null);
+                MainActivity.csLibrary4A.appendToLog("setSelectCriteria: going to execute accessTask");
                 accessTask.execute();
                 rerunRequest = true;
-                MainActivity.csLibrary4A.appendToLog("accessTask is created");
+                MainActivity.csLibrary4A.appendToLog("setSelectCriteria: accessTask is executed");
             }
             if (rerunRequest) {
                 mHandler.postDelayed(updateRunnable, 500);

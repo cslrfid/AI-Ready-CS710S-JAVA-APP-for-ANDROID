@@ -20,7 +20,7 @@ import com.csl.cs710ademoapp.AccessTask;
 import com.csl.cs710ademoapp.GenericTextWatcher;
 import com.csl.cs710ademoapp.MainActivity;
 import com.csl.cs710ademoapp.R;
-import com.csl.cs710library4a.Cs108Connector;
+import com.csl.cs710library4a.CsLibrary4A;
 import com.csl.cs710library4a.ReaderDevice;
 
 public class AccessXerxesLoggerFragment extends CommonFragment {
@@ -263,13 +263,10 @@ public class AccessXerxesLoggerFragment extends CommonFragment {
                     int selectOffset = 32;
                     String selectMask = editTextRWTagID.getText().toString();
                     accessTask = new AccessTask(
-                            (operationRead ? buttonRead : buttonWrite), null,
-                            invalid,
+                            (operationRead ? buttonRead : buttonWrite), null, invalid,
                             selectMask, selectBank, selectOffset,
-                            editTextAccessRWAccPassword.getText().toString(),
-                            Integer.valueOf(editTextaccessRWAntennaPower.getText().toString()),
-                            (operationRead ? Cs108Connector.HostCommands.CMD_18K6CREAD: Cs108Connector.HostCommands.CMD_18K6CWRITE),
-                            0, 0, true,
+                            editTextAccessRWAccPassword.getText().toString(), Integer.valueOf(editTextaccessRWAntennaPower.getText().toString()), (operationRead ? CsLibrary4A.HostCommands.CMD_18K6CREAD: CsLibrary4A.HostCommands.CMD_18K6CWRITE),
+                            0, 0, true, false,
                             null, null, null, null, null);
                     accessTask.execute();
                     rerunRequest = true;

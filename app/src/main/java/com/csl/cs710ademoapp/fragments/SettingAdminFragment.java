@@ -17,13 +17,14 @@ import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.csl.cs710ademoapp.CustomPopupWindow;
 import com.csl.cs710ademoapp.MainActivity;
 import com.csl.cs710ademoapp.R;
 import com.csl.cs710ademoapp.SettingTask;
-import com.csl.cs710library4a.Cs710Library4A;
+import com.csl.cs710library4a.CsLibrary4A;
 
 public class SettingAdminFragment extends CommonFragment {
-    private CheckBox checkBoxTriggerReporting, checkBoxInventoryBeep, checkBoxInventoryVibrate, checkBoxSaveFileEnable, checkBoxSaveCloudEnable, checkBoxSaveNewCloudEnable, checkBoxSaveAllCloudEnable;
+    private CheckBox checkBoxTriggerReporting, checkBoxInventoryBeep, checkBoxInventoryVibrate, checkBoxSaveFileEnable, checkBoxSaveCloudEnable, checkBoxSaveNewCloudEnable, checkBoxSaveAllCloudEnable, checkBoxDebugEnable;
     private CheckBox checkBoxCsvColumnResBank, checkBoxCsvColumnEpcBank, checkBoxCsvColumnTidBank, checkBoxCsvColumnUserBank, checkBoxCsvColumnPhase, checkBoxCsvColumnChannel, checkBoxCsvColumnTime, checkBoxCsvColumnTimeZone, checkBoxCsvColumnLocation, checkBoxCsvColumnDirection, checkBoxCsvColumnOthers;
     private EditText editTextDeviceName, editTextCycleDelay, editTextTriggerReportingCount, editTextBeepCount, editTextVibrateTime, editTextVibrateWindow, editTextServer, editTextServerTimeout;
     private TextView textViewReaderModel;
@@ -44,7 +45,7 @@ public class SettingAdminFragment extends CommonFragment {
     short sTriggerCount = -1, sTriggerCountMin = 1, sTriggerCountMax = 100;
     int iVibrateTime = -1; int iVibrateTimeMin = 1; int iVibrateTimeMax = 999;
     int iVibrateWindow = -1; int iVibrateWindowMin = 1; int iVibrateWindowMax = 4;
-    boolean triggerReporting, inventoryBeep, inventoryVibrate, saveFileEnable, saveCloudEnable, saveNewCloudEnable, saveAllCloudEnable;
+    boolean triggerReporting, inventoryBeep, inventoryVibrate, saveFileEnable, saveCloudEnable, saveNewCloudEnable, saveAllCloudEnable, debugEnable;
     String serverName;
     int iServerTimeout = -1; int iServerTimeoutMin = 3; int iServerTimeoutMax = 9;
 
@@ -59,11 +60,6 @@ public class SettingAdminFragment extends CommonFragment {
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-
-        if (MainActivity.csLibrary4A.get98XX() == 2) {
-            LinearLayout linearLayout = (LinearLayout) getActivity().findViewById(R.id.settingAdminCycleDelayRow);
-            linearLayout.setVisibility(View.GONE);
-        }
 
         textViewReaderModel = (TextView) getActivity().findViewById(R.id.settingAdminReaderModel);
         editTextDeviceName = (EditText) getActivity().findViewById(R.id.settingAdminDeviceName);
@@ -92,6 +88,12 @@ public class SettingAdminFragment extends CommonFragment {
             ArrayAdapter<CharSequence> targetAdapter = ArrayAdapter.createFromResource(getActivity(), R.array.admin_vibratemode_options, R.layout.custom_spinner_layout);
             targetAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
             spinnerQueryVibrateMode.setAdapter(targetAdapter);
+        }
+
+        if (MainActivity.csLibrary4A.get98XX() == 2) {
+            LinearLayout linearLayout = (LinearLayout) getActivity().findViewById(R.id.settingAdminCycleDelayRow);
+            linearLayout.setVisibility(View.GONE);
+            spinnerQueryVibrateMode.setEnabled(false);
         }
 
         spinnerSavingFormat = (Spinner) getActivity().findViewById(R.id.settingAdminSavingFormat);
@@ -278,6 +280,11 @@ public class SettingAdminFragment extends CommonFragment {
                     MainActivity.csLibrary4A.setReaderDefault();
                     MainActivity.csLibrary4A.saveSetting2File();
                     Toast.makeText(MainActivity.mContext, R.string.toast_saved, Toast.LENGTH_SHORT).show();
+
+                    mHandler.post(updateRunnable);
+                    CustomPopupWindow customPopupWindow = new CustomPopupWindow(MainActivity.mContext);
+                    String stringInfo = "Please power cycle reader and also this application";
+                    customPopupWindow.popupStart(stringInfo, false);
                 }
             }
         });
@@ -305,17 +312,17 @@ public class SettingAdminFragment extends CommonFragment {
                         savingFormatSelect = spinnerSavingFormat.getSelectedItemPosition();
                         {
                             csvColumnSelect = 0;
-                            if (checkBoxCsvColumnResBank.isChecked()) csvColumnSelect |= (0x01 << Cs710Library4A.CsvColumn.RESERVE_BANK.ordinal());
-                            if (checkBoxCsvColumnEpcBank.isChecked()) csvColumnSelect |= (0x01 << Cs710Library4A.CsvColumn.EPC_BANK.ordinal());
-                            if (checkBoxCsvColumnTidBank.isChecked()) csvColumnSelect |= (0x01 << Cs710Library4A.CsvColumn.TID_BANK.ordinal());
-                            if (checkBoxCsvColumnUserBank.isChecked()) csvColumnSelect |= (0x01 << Cs710Library4A.CsvColumn.USER_BANK.ordinal());
-                            if (checkBoxCsvColumnPhase.isChecked()) csvColumnSelect |= (0x01 << Cs710Library4A.CsvColumn.PHASE.ordinal());
-                            if (checkBoxCsvColumnChannel.isChecked()) csvColumnSelect |= (0x01 << Cs710Library4A.CsvColumn.CHANNEL.ordinal());
-                            if (checkBoxCsvColumnTime.isChecked()) csvColumnSelect |= (0x01 << Cs710Library4A.CsvColumn.TIME.ordinal());
-                            if (checkBoxCsvColumnTimeZone.isChecked()) csvColumnSelect |= (0x01 << Cs710Library4A.CsvColumn.TIMEZONE.ordinal());
-                            if (checkBoxCsvColumnLocation.isChecked()) csvColumnSelect |= (0x01 << Cs710Library4A.CsvColumn.LOCATION.ordinal());
-                            if (checkBoxCsvColumnDirection.isChecked()) csvColumnSelect |= (0x01 << Cs710Library4A.CsvColumn.DIRECTION.ordinal());
-                            if (checkBoxCsvColumnOthers.isChecked()) csvColumnSelect |= (0x01 << Cs710Library4A.CsvColumn.OTHERS.ordinal());
+                            if (checkBoxCsvColumnResBank.isChecked()) csvColumnSelect |= (0x01 << CsLibrary4A.CsvColumn.RESERVE_BANK.ordinal());
+                            if (checkBoxCsvColumnEpcBank.isChecked()) csvColumnSelect |= (0x01 << CsLibrary4A.CsvColumn.EPC_BANK.ordinal());
+                            if (checkBoxCsvColumnTidBank.isChecked()) csvColumnSelect |= (0x01 << CsLibrary4A.CsvColumn.TID_BANK.ordinal());
+                            if (checkBoxCsvColumnUserBank.isChecked()) csvColumnSelect |= (0x01 << CsLibrary4A.CsvColumn.USER_BANK.ordinal());
+                            if (checkBoxCsvColumnPhase.isChecked()) csvColumnSelect |= (0x01 << CsLibrary4A.CsvColumn.PHASE.ordinal());
+                            if (checkBoxCsvColumnChannel.isChecked()) csvColumnSelect |= (0x01 << CsLibrary4A.CsvColumn.CHANNEL.ordinal());
+                            if (checkBoxCsvColumnTime.isChecked()) csvColumnSelect |= (0x01 << CsLibrary4A.CsvColumn.TIME.ordinal());
+                            if (checkBoxCsvColumnTimeZone.isChecked()) csvColumnSelect |= (0x01 << CsLibrary4A.CsvColumn.TIMEZONE.ordinal());
+                            if (checkBoxCsvColumnLocation.isChecked()) csvColumnSelect |= (0x01 << CsLibrary4A.CsvColumn.LOCATION.ordinal());
+                            if (checkBoxCsvColumnDirection.isChecked()) csvColumnSelect |= (0x01 << CsLibrary4A.CsvColumn.DIRECTION.ordinal());
+                            if (checkBoxCsvColumnOthers.isChecked()) csvColumnSelect |= (0x01 << CsLibrary4A.CsvColumn.OTHERS.ordinal());
                         }
                         if (editTextCycleDelay != null)   cycleDelay = Long.parseLong(editTextCycleDelay.getText().toString());
                         if (editTextTriggerReportingCount != null)   sTriggerCount = Short.parseShort(editTextTriggerReportingCount.getText().toString());
@@ -331,6 +338,7 @@ public class SettingAdminFragment extends CommonFragment {
                         saveAllCloudEnable = checkBoxSaveAllCloudEnable.isChecked();
                         serverName = editTextServer.getText().toString();
                         iServerTimeout = Integer.parseInt(editTextServerTimeout.getText().toString());
+                        debugEnable = checkBoxDebugEnable.isChecked();
                         settingUpdate();
                     } catch (Exception ex) {
                         Toast.makeText(MainActivity.mContext, R.string.toast_invalid_range, Toast.LENGTH_SHORT).show();
@@ -338,6 +346,8 @@ public class SettingAdminFragment extends CommonFragment {
                 }
             }
         });
+
+        checkBoxDebugEnable = (CheckBox) getActivity().findViewById(R.id.settingAdminDebugEnable);
 
         if (sameCheck == false) MainActivity.csLibrary4A.setSameCheck(false);
         mHandler.post(updateRunnable);
@@ -362,6 +372,7 @@ public class SettingAdminFragment extends CommonFragment {
             checkBoxSaveCloudEnable.setChecked(MainActivity.csLibrary4A.getSaveCloudEnable());
             checkBoxSaveNewCloudEnable.setChecked(MainActivity.csLibrary4A.getSaveNewCloudEnable());
             checkBoxSaveAllCloudEnable.setChecked(MainActivity.csLibrary4A.getSaveAllCloudEnable());
+            checkBoxDebugEnable.setChecked(MainActivity.csLibrary4A.getUserDebugEnable());
         }
     }
 
@@ -384,17 +395,17 @@ public class SettingAdminFragment extends CommonFragment {
             spinnerSavingFormat.setSelection(MainActivity.csLibrary4A.getSavingFormatSetting());
             {
                 int csvColumnSelect = MainActivity.csLibrary4A.getCsvColumnSelectSetting();
-                if ((csvColumnSelect & (0x01 << Cs710Library4A.CsvColumn.RESERVE_BANK.ordinal())) != 0) checkBoxCsvColumnResBank.setChecked(true); else checkBoxCsvColumnResBank.setChecked(false);
-                if ((csvColumnSelect & (0x01 << Cs710Library4A.CsvColumn.EPC_BANK.ordinal())) != 0) checkBoxCsvColumnEpcBank.setChecked(true); else checkBoxCsvColumnEpcBank.setChecked(false);
-                if ((csvColumnSelect & (0x01 << Cs710Library4A.CsvColumn.TID_BANK.ordinal())) != 0) checkBoxCsvColumnTidBank.setChecked(true); else checkBoxCsvColumnTidBank.setChecked(false);
-                if ((csvColumnSelect & (0x01 << Cs710Library4A.CsvColumn.USER_BANK.ordinal())) != 0) checkBoxCsvColumnUserBank.setChecked(true); else checkBoxCsvColumnUserBank.setChecked(false);
-                if ((csvColumnSelect & (0x01 << Cs710Library4A.CsvColumn.PHASE.ordinal())) != 0) checkBoxCsvColumnPhase.setChecked(true); else checkBoxCsvColumnPhase.setChecked(false);
-                if ((csvColumnSelect & (0x01 << Cs710Library4A.CsvColumn.CHANNEL.ordinal())) != 0) checkBoxCsvColumnChannel.setChecked(true); else checkBoxCsvColumnChannel.setChecked(false);
-                if ((csvColumnSelect & (0x01 << Cs710Library4A.CsvColumn.TIME.ordinal())) != 0) checkBoxCsvColumnTime.setChecked(true); else checkBoxCsvColumnTime.setChecked(false);
-                if ((csvColumnSelect & (0x01 << Cs710Library4A.CsvColumn.TIMEZONE.ordinal())) != 0) checkBoxCsvColumnTimeZone.setChecked(true); else checkBoxCsvColumnTimeZone.setChecked(false);
-                if ((csvColumnSelect & (0x01 << Cs710Library4A.CsvColumn.LOCATION.ordinal())) != 0) checkBoxCsvColumnLocation.setChecked(true); else checkBoxCsvColumnLocation.setChecked(false);
-                if ((csvColumnSelect & (0x01 << Cs710Library4A.CsvColumn.DIRECTION.ordinal())) != 0) checkBoxCsvColumnDirection.setChecked(true); else checkBoxCsvColumnDirection.setChecked(false);
-                if ((csvColumnSelect & (0x01 << Cs710Library4A.CsvColumn.OTHERS.ordinal())) != 0) checkBoxCsvColumnOthers.setChecked(true); else checkBoxCsvColumnOthers.setChecked(false);
+                if ((csvColumnSelect & (0x01 << CsLibrary4A.CsvColumn.RESERVE_BANK.ordinal())) != 0) checkBoxCsvColumnResBank.setChecked(true); else checkBoxCsvColumnResBank.setChecked(false);
+                if ((csvColumnSelect & (0x01 << CsLibrary4A.CsvColumn.EPC_BANK.ordinal())) != 0) checkBoxCsvColumnEpcBank.setChecked(true); else checkBoxCsvColumnEpcBank.setChecked(false);
+                if ((csvColumnSelect & (0x01 << CsLibrary4A.CsvColumn.TID_BANK.ordinal())) != 0) checkBoxCsvColumnTidBank.setChecked(true); else checkBoxCsvColumnTidBank.setChecked(false);
+                if ((csvColumnSelect & (0x01 << CsLibrary4A.CsvColumn.USER_BANK.ordinal())) != 0) checkBoxCsvColumnUserBank.setChecked(true); else checkBoxCsvColumnUserBank.setChecked(false);
+                if ((csvColumnSelect & (0x01 << CsLibrary4A.CsvColumn.PHASE.ordinal())) != 0) checkBoxCsvColumnPhase.setChecked(true); else checkBoxCsvColumnPhase.setChecked(false);
+                if ((csvColumnSelect & (0x01 << CsLibrary4A.CsvColumn.CHANNEL.ordinal())) != 0) checkBoxCsvColumnChannel.setChecked(true); else checkBoxCsvColumnChannel.setChecked(false);
+                if ((csvColumnSelect & (0x01 << CsLibrary4A.CsvColumn.TIME.ordinal())) != 0) checkBoxCsvColumnTime.setChecked(true); else checkBoxCsvColumnTime.setChecked(false);
+                if ((csvColumnSelect & (0x01 << CsLibrary4A.CsvColumn.TIMEZONE.ordinal())) != 0) checkBoxCsvColumnTimeZone.setChecked(true); else checkBoxCsvColumnTimeZone.setChecked(false);
+                if ((csvColumnSelect & (0x01 << CsLibrary4A.CsvColumn.LOCATION.ordinal())) != 0) checkBoxCsvColumnLocation.setChecked(true); else checkBoxCsvColumnLocation.setChecked(false);
+                if ((csvColumnSelect & (0x01 << CsLibrary4A.CsvColumn.DIRECTION.ordinal())) != 0) checkBoxCsvColumnDirection.setChecked(true); else checkBoxCsvColumnDirection.setChecked(false);
+                if ((csvColumnSelect & (0x01 << CsLibrary4A.CsvColumn.OTHERS.ordinal())) != 0) checkBoxCsvColumnOthers.setChecked(true); else checkBoxCsvColumnOthers.setChecked(false);
             }
             if (editTextCycleDelay != null)   editTextCycleDelay.setText(String.valueOf(MainActivity.csLibrary4A.getCycleDelay()));
             if (editTextTriggerReportingCount != null)   {
@@ -582,6 +593,14 @@ public class SettingAdminFragment extends CommonFragment {
                 sameSetting = false;
                 if (iServerTimeout < iServerTimeoutMin || iServerTimeout > iServerTimeoutMax) invalidRequest = true;
                 else if (MainActivity.csLibrary4A.setServerTimeout(iServerTimeout) == false)
+                    invalidRequest = true;
+            }
+        }
+        if (invalidRequest == false && checkBoxDebugEnable != null) {
+            MainActivity.csLibrary4A.appendToLog("getDebugEnable = " + MainActivity.csLibrary4A.getUserDebugEnable() + ", debugEnable = " + debugEnable);
+            if (MainActivity.csLibrary4A.getUserDebugEnable() != debugEnable || sameCheck == false) {
+                sameSetting = false;
+                if (MainActivity.csLibrary4A.setUserDebugEnable(debugEnable) == false)
                     invalidRequest = true;
             }
         }
