@@ -14,7 +14,7 @@ import java.util.List;
 
 public class CsLibrary4A {
     boolean DEBUG = false, DEBUG2 = false;
-    String stringVersion = "4.9.1";
+    String stringVersion = "4.9.2";
     Utility utility;
     Cs710Library4A cs710Library4A;
     com.csl.cs108library4a.Cs108Library4A cs108Library4A;
@@ -1424,7 +1424,7 @@ public class CsLibrary4A {
                 }
             });
         } else if (isCs710Connected()) {
-            cs710Library4A.setNotificationListener(new com.csl.cs710library4a.Cs710Library4A.NotificationListener() {
+            cs710Library4A.setNotificationListener(new Cs710Library4A.NotificationListener() {
                 @Override
                 public void onChange() {
                     listener.onChange();
@@ -1615,7 +1615,7 @@ public class CsLibrary4A {
         }
         else if (isCs710Connected()) {
             Rx000pkgData rx000pkgData = null;
-            com.csl.cs710library4a.Cs710Library4A.Rx000pkgData rx000pkgData1 = cs710Library4A.onRFIDEvent();
+            Cs710Library4A.Rx000pkgData rx000pkgData1 = cs710Library4A.onRFIDEvent();
             if (rx000pkgData1 != null) {
                 rx000pkgData = new Rx000pkgData();
                 switch (rx000pkgData1.responseType) {
@@ -1870,25 +1870,25 @@ public class CsLibrary4A {
             if (hostCommands1 == null) return false;
             else return cs108Library4A.sendHostRegRequestHST_CMD(hostCommands1);
         } else if (isCs710Connected()) {
-            com.csl.cs710library4a.Cs710Library4A.HostCommands hostCommands1 = null;
+            Cs710Library4A.HostCommands hostCommands1 = null;
             switch (hostCommand) {
                 case CMD_18K6CREAD:
-                    hostCommands1 = com.csl.cs710library4a.Cs710Library4A.HostCommands.CMD_18K6CREAD;
+                    hostCommands1 = Cs710Library4A.HostCommands.CMD_18K6CREAD;
                     break;
                 case CMD_18K6CWRITE:
-                    hostCommands1 = com.csl.cs710library4a.Cs710Library4A.HostCommands.CMD_18K6CWRITE;
+                    hostCommands1 = Cs710Library4A.HostCommands.CMD_18K6CWRITE;
                     break;
                 case CMD_18K6CLOCK:
-                    hostCommands1 = com.csl.cs710library4a.Cs710Library4A.HostCommands.CMD_18K6CLOCK;
+                    hostCommands1 = Cs710Library4A.HostCommands.CMD_18K6CLOCK;
                     break;
                 case CMD_18K6CKILL:
-                    hostCommands1 = com.csl.cs710library4a.Cs710Library4A.HostCommands.CMD_18K6CKILL;
+                    hostCommands1 = Cs710Library4A.HostCommands.CMD_18K6CKILL;
                     break;
                 case CMD_18K6CAUTHENTICATE:
-                    hostCommands1 = com.csl.cs710library4a.Cs710Library4A.HostCommands.CMD_18K6CAUTHENTICATE;
+                    hostCommands1 = Cs710Library4A.HostCommands.CMD_18K6CAUTHENTICATE;
                     break;
                 case CMD_GETSENSORDATA:
-                    hostCommands1 = com.csl.cs710library4a.Cs710Library4A.HostCommands.CMD_GETSENSORDATA;
+                    hostCommands1 = Cs710Library4A.HostCommands.CMD_GETSENSORDATA;
                 default:
                     Log.i("Hello2", "sendHostRegRequestHST_CMD: hostCommand = " + hostCommand.toString());
                     break;

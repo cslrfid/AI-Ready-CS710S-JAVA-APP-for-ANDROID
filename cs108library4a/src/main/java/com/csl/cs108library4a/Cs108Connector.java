@@ -1123,9 +1123,7 @@ public class Cs108Connector extends BleConnector {
                                 }
                                 if (matched) {
                                     found = true;
-                                    mBarcodeToWrite.remove(0);
-                                    sendDataToWriteSent = 0;
-                                    mDataToWriteRemoved = true;
+                                    mBarcodeToWrite.remove(0); sendDataToWriteSent = 0; mDataToWriteRemoved = true;
                                     if (DEBUG) appendToLog("BarStream: matched response command");
                                 }
                                 break;

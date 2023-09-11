@@ -2727,22 +2727,26 @@ public class Cs108Library4A extends Cs108Connector {
         }
         return bValue;
     }
+    int findFirstEmptySelect() {
+        int iValue = -1;
+        for (int i = 0; i < 3; i++) {
+            mRfidDevice.mRfidReaderChip.mRx000Setting.setInvSelectIndex(i);
+            if (mRfidDevice.mRfidReaderChip.mRx000Setting.getSelectEnable() == 0) {
+                iValue = i;
+                appendToLog("cs710Library4A: setSelectCriteria 1 with New index = " + iValue);
+                break;
+            }
+        }
+        return iValue;
+    }
     public boolean setSelectCriteria(int index, boolean enable, int target, int action, int bank, int offset, String mask, boolean maskbit) {
         appendToLog("cs108Library4A: setSelectCriteria 1 with index = " + index + ", enable = " + enable + ", target = " + target + ", action = " + action + ", bank = " + bank + ", offset = " + offset + ", mask = " + mask + ", maskbit = " + maskbit);
         if (index == 0) preFilterData = new PreFilterData(enable, target, action, bank, offset, mask, maskbit);
-        if (index < 0) {
-            for (int i = 0; i < 3; i++) {
-                mRfidDevice.mRfidReaderChip.mRx000Setting.setInvSelectIndex(i);
-                if (mRfidDevice.mRfidReaderChip.mRx000Setting.getSelectEnable() == 0) {
-                    index = i;
-                    appendToLog("cs108Library4A: setSelectCriteria 1 with New index = " + index);
-                    break;
-                }
-            }
-        }
+        if (index < 0) index = findFirstEmptySelect();
         if (index < 0) {
             appendToLog("cs710Library4A: no index is available !!!"); return false;
         }
+
         int maskblen = mask.length() * 4;
         String maskHex = ""; int iHex = 0;
         if (maskbit) {
@@ -2765,6 +2769,11 @@ public class Cs108Library4A extends Cs108Connector {
     }
     public boolean setSelectCriteria(int index, boolean enable, int target, int action, int delay, int bank, int offset, String mask) {
         appendToLog("cs108Library4A: setSelectCriteria 2 with index = " + index + ", enable = " + enable + ", target = " + target + ", action = " + action + ", delay = " + delay + ", bank = " + bank + ", offset = " + offset + ", mask = " + mask);
+        if (index < 0) index = findFirstEmptySelect();
+        if (index < 0) {
+            appendToLog("cs710Library4A: no index is available !!!"); return false;
+        }
+
         if (index == 0) preFilterData = new PreFilterData(enable, target, action, bank, offset, mask, false);
         if (mask.length() > 64) mask = mask.substring(0, 64);
         if (index == 0) preMatchData = new PreMatchData(enable, target, action, bank, offset, mask, mask.length() * 4, mRfidDevice.mRfidReaderChip.mRx000Setting.getQuerySelect(), getPwrlevel(), getInvAlgo(), getQValue());

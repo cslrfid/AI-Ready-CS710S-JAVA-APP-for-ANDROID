@@ -390,7 +390,7 @@ public class InventoryRfidiMultiFragment extends CommonFragment {
 
         MainActivity.csLibrary4A.appendToLog("Rin: mDid = " + mDid + ", MainActivity.mDid = " + MainActivity.mDid);
         if (mDid != null) {
-            if (MainActivity.csLibrary4A.getSelectEnable()) MainActivity.csLibrary4A.setSelectCriteriaDisable(0);
+            if (MainActivity.csLibrary4A.getSelectEnable()) MainActivity.csLibrary4A.setSelectCriteriaDisable(-1);
             if (MainActivity.mDid != null && mDid.length() == 0) mDid = MainActivity.mDid;
             extra2Bank = 2;
             extra2Offset = 0;
@@ -493,8 +493,7 @@ public class InventoryRfidiMultiFragment extends CommonFragment {
             } else {
                 MainActivity.csLibrary4A.appendToLog("MainActivity.selectFor = " + MainActivity.selectFor);
                 if (MainActivity.selectFor != -1) {
-                    MainActivity.csLibrary4A.setSelectCriteriaDisable(1);
-                    MainActivity.csLibrary4A.setSelectCriteriaDisable(2);
+                    MainActivity.csLibrary4A.setSelectCriteriaDisable(-1);
                     MainActivity.selectFor = -1;
                 }
             }
@@ -539,7 +538,7 @@ public class InventoryRfidiMultiFragment extends CommonFragment {
                     MainActivity.csLibrary4A.appendToLog("setSelectCriteria: Going to setSelectedByTID");
                     MainActivity.csLibrary4A.setSelectedTagByTID(strMdid, -1);
                 } else {
-                    MainActivity.csLibrary4A.setSelectCriteriaDisable(0);
+                    MainActivity.csLibrary4A.setSelectCriteriaDisable(-1);
                     MainActivity.csLibrary4A.setInvAlgo(MainActivity.csLibrary4A.getInvAlgo());
                 }
             }

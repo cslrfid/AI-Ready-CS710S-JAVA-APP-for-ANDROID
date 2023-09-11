@@ -17,6 +17,7 @@ import android.widget.Toast;
 
 import com.csl.cs710ademoapp.AccessTask;
 import com.csl.cs710ademoapp.AccessTask1;
+import com.csl.cs710ademoapp.CustomPopupWindow;
 import com.csl.cs710ademoapp.MainActivity;
 import com.csl.cs710ademoapp.R;
 import com.csl.cs710ademoapp.SelectTag;
@@ -219,8 +220,11 @@ public class AccessImpinjFragment extends CommonFragment {
             buttonProtectResumeRead.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    if (isZeroPassword()) return;
                     if (isRfidConnectionValid() == false) return;
-                    if (isRunningAccessTask()) return;
+                    if (isRunningAccessTask()) {
+                        if (accessTask != null) accessTask.taskCancelReason = AccessTask.TaskCancelRReason.DESTORY;
+                    }
 
                     if (unprotecting > 0) stopProtectResuming();
                     else {
@@ -277,6 +281,7 @@ public class AccessImpinjFragment extends CommonFragment {
             buttonWrite.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    if (isZeroPassword()) return;
                     if (isRfidConnectionValid() == false) return;
                     if (isRunningAccessTask()) return;
 
@@ -290,6 +295,22 @@ public class AccessImpinjFragment extends CommonFragment {
         }
     }
 
+    boolean isZeroPassword() {
+        boolean bValue = false;
+        int iValue = 0;
+        try {
+            iValue = Integer.parseInt(selectTag.editTextAccessPassword.getText().toString(), 16);
+        } catch (Exception ex) {
+            iValue = -1;
+        }
+        MainActivity.csLibrary4A.appendToLog("Password = " + iValue);
+        if (iValue == 0) {
+            CustomPopupWindow customPopupWindow = new CustomPopupWindow(MainActivity.mContext);
+            customPopupWindow.popupStart("Before operation, please enter non-zero access password !!!", false);
+            bValue = true;
+        }
+        return bValue;
+    }
     void stopProtectResuming() {
         unprotecting = 0;
         checkBoxProtectSelect.setChecked(false);
@@ -440,7 +461,7 @@ public class AccessImpinjFragment extends CommonFragment {
                 else if (iRunType == 4) textViewEpc128Value.setText(accessTask.accessResult);
                 else if (iRunType == 5) {
                     textViewConfiguration.setText(accessTask.accessResult);
-                    int iValue = Integer.valueOf(accessTask.accessResult.substring(accessTask.accessResult.length()-1, accessTask.accessResult.length()), 16);
+                    int iValue = Integer.valueOf(accessTask.accessResult.substring(accessTask.accessResult.length()-2, accessTask.accessResult.length()), 16);
                     MainActivity.csLibrary4A.appendToLog("updateRunnable(): " + String.format("accessResult = %s, iValue = 0x%02X", accessTask.accessResult, iValue));
 
                     if ((iValue & 0x01) != 0) checkBoxAutoTuneDisable.setChecked(true); else checkBoxAutoTuneDisable.setChecked(false);
@@ -451,8 +472,7 @@ public class AccessImpinjFragment extends CommonFragment {
                             spinnerTagSelect.getSelectedItemPosition() == impinjTag.m830.ordinal() ||
                             spinnerTagSelect.getSelectedItemPosition() == impinjTag.m770.ordinal() ||
                             spinnerTagSelect.getSelectedItemPosition() == impinjTag.m730.ordinal()) {
-                        if ((iValue & 0x02) != 0) checkBoxProtect.setChecked(true);
-                        else checkBoxProtect.setChecked(false);
+                        if ((iValue & 0x02) != 0) checkBoxProtect.setChecked(true); else checkBoxProtect.setChecked(false);
                         checkBoxProtect.setEnabled(true);
                     }
 
@@ -469,8 +489,7 @@ public class AccessImpinjFragment extends CommonFragment {
                     if (spinnerTagSelect.getSelectedItemPosition() == impinjTag.m830.ordinal()) iBitCompared = 0x08;
                     else if (spinnerTagSelect.getSelectedItemPosition() == impinjTag.monza_R6P.ordinal()) iBitCompared = 0x04;
                     if (iBitCompared != 0) {
-                        if ((iValue & iBitCompared) != 0) checkBoxMemorySelect.setChecked(true);
-                        else checkBoxMemorySelect.setChecked(false);
+                        if ((iValue & iBitCompared) != 0) checkBoxMemorySelect.setChecked(true); else checkBoxMemorySelect.setChecked(false);
                         checkBoxMemorySelect.setEnabled(true);
                     }
 
@@ -573,7 +592,10 @@ public class AccessImpinjFragment extends CommonFragment {
         if (tagSelected != null) {
             if (tagSelected.getSelected() == true) {
                 bSelected = true;
-                if (selectTag != null) selectTag.editTextTagID.setText(tagSelected.getAddress());
+                if (selectTag != null) {
+                    selectTag.editTextTagID.setText(tagSelected.getAddress());
+                    selectTag.spinnerSelectBank.setSelection(0);
+                }
 
                 String stringDetail = tagSelected.getDetails();
                 int indexUser = stringDetail.indexOf("USER=");

@@ -109,8 +109,7 @@ public class MicronFragment extends CommonFragment {
         if (mAdapter.fragment0 != null) mAdapter.fragment0.onDestroy();
         if (mAdapter.fragment1 != null) mAdapter.fragment1.onDestroy();
         if (MainActivity.selectFor != -1) {
-            MainActivity.csLibrary4A.setSelectCriteriaDisable(1);
-            MainActivity.csLibrary4A.setSelectCriteriaDisable(2);
+            MainActivity.csLibrary4A.setSelectCriteriaDisable(-1);
             MainActivity.selectFor = -1;
         }
         MainActivity.csLibrary4A.restoreAfterTagSelect();
