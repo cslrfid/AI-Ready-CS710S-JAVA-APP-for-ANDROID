@@ -463,7 +463,7 @@ public class InventoryRfidSimpleFragment extends CommonFragment {
 
         MainActivity.csLibrary4A.appendToLog("Rin: mDid = " + mDid + ", MainActivity.mDid = " + MainActivity.mDid);
         if (mDid != null) {
-            if (MainActivity.csLibrary4A.getSelectEnable()) MainActivity.csLibrary4A.setSelectCriteriaDisable(0);
+            if (MainActivity.csLibrary4A.getSelectEnable()) MainActivity.csLibrary4A.setSelectCriteriaDisable(-1);
             if (MainActivity.mDid != null && mDid.length() == 0) mDid = MainActivity.mDid;
             extra2Bank = 2;
             extra2Offset = 0;
@@ -530,8 +530,7 @@ public class InventoryRfidSimpleFragment extends CommonFragment {
                 MainActivity.csLibrary4A.setSelectCriteria(0, true, 7, 4, 0, 2, 0, mDid);
             } else if (mDid.matches("E28240")) {
                 if (MainActivity.selectFor != 0) {
-                    MainActivity.csLibrary4A.setSelectCriteriaDisable(1);
-                    MainActivity.csLibrary4A.setSelectCriteriaDisable(2);
+                    MainActivity.csLibrary4A.setSelectCriteriaDisable(-1);
                     MainActivity.selectFor = 0;
                 }
             } else if (mDid.matches("E282402")) {
@@ -555,8 +554,7 @@ public class InventoryRfidSimpleFragment extends CommonFragment {
                 }
             } else {
                 if (MainActivity.selectFor != -1) {
-                    MainActivity.csLibrary4A.setSelectCriteriaDisable(1);
-                    MainActivity.csLibrary4A.setSelectCriteriaDisable(2);
+                    MainActivity.csLibrary4A.setSelectCriteriaDisable(-1);
                     MainActivity.selectFor = -1;
                 }
             }
@@ -578,7 +576,7 @@ public class InventoryRfidSimpleFragment extends CommonFragment {
                 }
             } else if (mDid.indexOf("E28011") == 0) bNeedSelectedTagByTID = false;
             if (bNeedSelectedTagByTID) {
-                MainActivity.csLibrary4A.setSelectCriteriaDisable(0);
+                MainActivity.csLibrary4A.setSelectCriteriaDisable(-1);
                 MainActivity.csLibrary4A.setInvAlgo(MainActivity.csLibrary4A.getInvAlgo());
             }
         }

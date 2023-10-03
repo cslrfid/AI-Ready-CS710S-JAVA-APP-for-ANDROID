@@ -48,13 +48,13 @@ public class Cs108Connector extends BleConnector {
             appendToLogView("BtData: isInventoring is true when writeData " + byteArrayToString(buffer));
         }
         boolean result = writeBleStreamOut(buffer);
-        if (result == false) appendToLog("!!! failure to writeData with previous btSendTimeout = " + btSendTimeOut + ", btSendTime = " + btSendTime);
-        else appendToLog("BtDataOut: Success to writeData with previous btSendTimeout = " + btSendTimeOut + ", btSendTime = " + btSendTime);
+        if (result == false) appendToLog("!!! failure to writeBleStreamOut");
         if (true) {
             btSendTime = System.currentTimeMillis();
             btSendTimeOut = timeout + 60;
             if (isCharacteristicListRead() == false) btSendTimeOut += 3000;
         }
+        appendToLog("BtDataOut: done writeBleStreamOut with timeout = " + timeout + ", btSendTimeout = " + btSendTimeOut + ", btSendTime = " + btSendTime);
         return result;
     }
 
@@ -269,6 +269,7 @@ public class Cs108Connector extends BleConnector {
                             cs108DataReadStart = -1;
                             if (mCs108DataReadRequest == false) {
                                 mCs108DataReadRequest = true;
+                                appendToLog("ready2Write: start immediate mReadWriteRunnable");
                                 mHandler.removeCallbacks(mReadWriteRunnable); mHandler.post(mReadWriteRunnable);
                             }
                         }
@@ -370,6 +371,7 @@ public class Cs108Connector extends BleConnector {
 
         cs108ConnectorDataInit();
         mHandler.removeCallbacks(runnableProcessBleStreamInData); mHandler.post(runnableProcessBleStreamInData);
+        appendToLog("ready2Write: start immediate mReadWriteRunnable");
         mHandler.removeCallbacks(mReadWriteRunnable); mHandler.post(mReadWriteRunnable);
         mHandler.removeCallbacks(runnableRx000UplinkHandler); mHandler.post(runnableRx000UplinkHandler);
     }
@@ -427,7 +429,7 @@ public class Cs108Connector extends BleConnector {
 
         @Override
         public void run() {
-            if (DEBUGTHREAD) appendToLog("mReadWriteRunnable starts");
+            if (DEBUGTHREAD || true) appendToLog("ready2Write: mReadWriteRunnable starts");
             if (timer2Write != 0 || getStreamInBufferSize() != 0 || mRfidDevice.mRfidToRead.size() != 0) {
                 validBuffer = true;
                 if (DEBUG) appendToLog("mReadWriteRunnable(): START, timer2Write=" + timer2Write + ", streamInBufferSize = " + getStreamInBufferSize() + ", mRfidToRead.size=" + mRfidDevice.mRfidToRead.size() + ", mRx000ToRead.size=" + mRfidDevice.mRfidReaderChip.mRx000ToRead.size());
@@ -449,6 +451,7 @@ public class Cs108Connector extends BleConnector {
                 if (DEBUG) appendToLog("mReadWriteRunnable(): barcodePowerOnTimeOut = " + barcodePowerOnTimeOut);
 
             long lTime = System.currentTimeMillis();
+            appendToLog("ready2Write: start new mReadWriteRunnable after " + intervalReadWrite + " ms");
             mHandler.postDelayed(mReadWriteRunnable, intervalReadWrite);
             if (mRfidDevice.mRfidReaderChip == null) return;
 
@@ -468,15 +471,15 @@ public class Cs108Connector extends BleConnector {
                         mCs108DataRead.remove(0);
                         if (DEBUG) appendToLog("mReadWriteRunnable(): mCs108DataRead.dataValues = " + byteArrayToString(cs108ReadData.dataValues));
                         if (mRfidDevice.isMatchRfidToWrite(cs108ReadData)) {
-                            if (writeDataCount > 0) writeDataCount--; ready2Write = true; //btSendTime = 0; aborting = false; appendToLog("mReadWriteRunnable: 1 btSendTime is set to 0 to allow new sending.");
+                            if (writeDataCount > 0) writeDataCount--; //ready2Write = true; //btSendTime = 0; aborting = false; appendToLog("mReadWriteRunnable: 1 btSendTime is set to 0 to allow new sending.");
                         } else if (mBarcodeDevice.isMatchBarcodeToWrite(cs108ReadData)) {
-                            if (writeDataCount > 0) writeDataCount--; ready2Write = true; //btSendTime = 0; appendToLog("mReadWriteRunnable: 2 btSendTime is set to 0 to allow new sending.");
+                            if (writeDataCount > 0) writeDataCount--; //ready2Write = true; appendToLog("ready2Write is set true after true isMatchBarcodeToWrite ");//btSendTime = 0; appendToLog("mReadWriteRunnable: 2 btSendTime is set to 0 to allow new sending.");
                         } else if (mNotificationDevice.isMatchNotificationToWrite(cs108ReadData)) {
-                            if (writeDataCount > 0) writeDataCount--; ready2Write = true; btSendTime = 0; if (DEBUG_PKDATA) appendToLog("PkData: mReadWriteRunnable: matched notification. btSendTime is set to 0 to allow new sending.");
+                            if (writeDataCount > 0) writeDataCount--; ready2Write = true; appendToLog("ready2Write is set true after true isMatchNotificationToWrite "); btSendTime = 0; if (DEBUG_PKDATA) appendToLog("PkData: mReadWriteRunnable: matched notification. btSendTime is set to 0 to allow new sending.");
                         } else if (mSiliconLabIcDevice.isMatchSiliconLabIcToWrite(cs108ReadData)) {
-                            if (writeDataCount > 0) writeDataCount--; ready2Write = true; btSendTime = 0; if (DEBUG_PKDATA) appendToLog("PkData: mReadWriteRunnable: matched AtmelIc. btSendTime is set to 0 to allow new sending.");
+                            if (writeDataCount > 0) writeDataCount--; ready2Write = true; appendToLog("ready2Write is set true after true isMatchSiliconLabIcToWrite "); btSendTime = 0; if (DEBUG_PKDATA) appendToLog("PkData: mReadWriteRunnable: matched AtmelIc. btSendTime is set to 0 to allow new sending.");
                         } else if (mBluetoothConnector.mBluetoothIcDevice.isMatchBluetoothIcToWrite(cs108ReadData)) {
-                            if (writeDataCount > 0) writeDataCount--; ready2Write = true; btSendTime = 0; if (DEBUG_PKDATA) appendToLog("PKData: mReadWriteRunnable: matched bluetoothIc. btSendTime is set to 0 to allow new sending.");
+                            if (writeDataCount > 0) writeDataCount--; ready2Write = true; appendToLog("ready2Write is set true after true isMatchBluetoothIcToWrite "); btSendTime = 0; if (DEBUG_PKDATA) appendToLog("PKData: mReadWriteRunnable: matched bluetoothIc. btSendTime is set to 0 to allow new sending.");
                         } else if (mRfidDevice.isRfidToRead(cs108ReadData)) { mRfidDevice.rfidValid = true;
                         } else if (mBarcodeDevice.isBarcodeToRead(cs108ReadData)) {
                         } else if (mNotificationDevice.isNotificationToRead(cs108ReadData)) {
@@ -489,15 +492,27 @@ public class Cs108Connector extends BleConnector {
                                 appendToLog("mReadWriteRunnable: endingMessage: changed timeReady");
                             }*/
                         } else appendToLog("mReadWriteRunnable: !!! CANNOT process " + byteArrayToString(cs108ReadData.dataValues) + " with mDataToWriteRemoved = " + mBarcodeDevice.mDataToWriteRemoved);
-                        if (mBarcodeDevice.mDataToWriteRemoved)  { mBarcodeDevice.mDataToWriteRemoved = false; ready2Write = true; btSendTime = 0; if (DEBUG_PKDATA) appendToLog("PkData: mReadWriteRunnable: processed barcode. btSendTime is set to 0 to allow new sending."); }
+                        if (mBarcodeDevice.mDataToWriteRemoved)  { mBarcodeDevice.mDataToWriteRemoved = false; ready2Write = true; appendToLog("ready2Write is set true after true mBarcodeDevice.mDataToWriteRemoved "); btSendTime = 0; if (DEBUG_PKDATA) appendToLog("PkData: mReadWriteRunnable: processed barcode. btSendTime is set to 0 to allow new sending."); }
                     } catch (Exception ex) {
                     }
                 }
             }
-            if (mRfidDevice.mRfidToWriteRemoved)  { mRfidDevice.mRfidToWriteRemoved = false; ready2Write = true; btSendTime = 0; if (DEBUG_PKDATA) appendToLog("PkData: mReadWriteRunnable: processed Rfidcode. btSendTime is set to 0 to allow new sending."); }
-            int timeout2Ready = 2000; if (aborting || sendFailure) timeout2Ready = 200;
-            if (System.currentTimeMillis() > timeReady + timeout2Ready) ready2Write = true;
-            if (mBarcodeDevice.mBarcodeToWrite.size() != 0 && DEBUG) appendToLog("mBarcodeToWrite.size = " + mBarcodeDevice.mBarcodeToWrite.size() + ", ready2write = " + ready2Write);
+
+            lTime = System.currentTimeMillis();
+            if (mRfidDevice.mRfidToWriteRemoved)  {
+                mRfidDevice.mRfidToWriteRemoved = false; ready2Write = true; appendToLog("ready2Write is set true after true mRfidDevice.mRfidToWriteRemoved ");
+                btSendTime = (lTime - btSendTimeOut + 60);
+                appendToLog("ready2Write: start new mReadWriteRunnable after " + 60 + " ms");
+                mHandler.removeCallbacks(mReadWriteRunnable); mHandler.postDelayed(mReadWriteRunnable, 60 + 2);
+                if (DEBUG_PKDATA || true) appendToLog("PkData: mReadWriteRunnable: processed Rfidcode. btSendTime is set to 0 to allow new sending with systime = " + lTime); }
+            //int timeout2Ready = 2000; if (aborting || sendFailure) timeout2Ready = 200;
+            //if (lTime > timeReady + timeout2Ready) ready2Write = true;
+            //if (mBarcodeDevice.mBarcodeToWrite.size() != 0 && DEBUG) appendToLog("mBarcodeToWrite.size = " + mBarcodeDevice.mBarcodeToWrite.size() + ", ready2write = " + ready2Write);
+            if (ready2Write == false && lTime - btSendTime > btSendTimeOut) {
+                appendToLog("ready2Write is set to true from false with difference = " + (lTime - btSendTime) + ", systime = " + lTime + ", btSendTime = " + btSendTime + ", btSendTimeOut = " + btSendTime);
+                ready2Write = true;
+            }
+            appendToLog("ready2Write = " + ready2Write);
             if (ready2Write) {
                 timeReady = System.currentTimeMillis();
                 timer2Write = 0;
@@ -531,12 +546,20 @@ public class Cs108Connector extends BleConnector {
                 }
                 if (mBarcodeDevice.mBarcodeToWrite.size() != 0 && DEBUG) appendToLog("mBarcodeToWrite.size = " + mBarcodeDevice.mBarcodeToWrite.size() + ", bisRfidCommandStop = " + bisRfidCommandStop);
                 if (bisRfidCommandStop) {
+                    appendToLog("BtDataOut: going to sendRfidToWrite as bisRfidCommandStop is true");
                     mRfidDevice.sendRfidToWrite();
                     ready2Write = false;    //
+                    appendToLog("ready2Write is set false after sendRfidToWrite");
                 } else if (mRfidDevice.isInventoring()) {
-                    if (mRfidDevice.sendRfidToWrite()) ready2Write = false;
+                    appendToLog("BtDataOut: done sendRfidToWrite with isInventoring is true");
+                    boolean bValue1 = mRfidDevice.sendRfidToWrite();
+                    if (bValue1) {
+                        ready2Write = false;
+                        appendToLog("ready2Write is set false after true sendRfidToWrite");
+                    }
                 } else if (mSiliconLabIcDevice.sendSiliconLabIcToWrite()) { //SiliconLab version afffects Notification operation
                     ready2Write = false;    //
+                    appendToLog("ready2Write is set false after true sendSiliconLabIcToWrite");
                 } else if (mBluetoothConnector.mBluetoothIcDevice.mBluetoothIcToWrite.size() != 0) {   //Bluetooth version affects Barcode operation
                     if (isBleConnected() == false) mBluetoothConnector.mBluetoothIcDevice.mBluetoothIcToWrite.clear();
                     else if (System.currentTimeMillis() - btSendTime > btSendTimeOut) {
@@ -557,19 +580,27 @@ public class Cs108Connector extends BleConnector {
                         }
                     }
                     ready2Write = false;
+                    appendToLog("ready2Write is set false after non-zero mBluetoothIcToWrite.size()");
                 } else if (mNotificationDevice.sendNotificationToWrite()) {
                     ready2Write = false;
+                    appendToLog("ready2Write is set false after true sendNotificationToWrite");
                 } else if (mBarcodeDevice.sendBarcodeToWrite()) {
                     ready2Write = false;
-                } else if (mRfidDevice.sendRfidToWrite()) {
-                    ready2Write = false;
+                    appendToLog("ready2Write is set false after true sendBarcodeToWrite");
+                } else {
+                    //appendToLog("BtDataOut: going to sendRfidToWrite 3");
+                    boolean bValue1 = mRfidDevice.sendRfidToWrite();
+                    if (bValue1) {
+                        appendToLog("ready2Write is set false after true sendRfidToWrite");
+                        ready2Write = false;
+                    }
                 }
             }
             if (validBuffer) {
                 if (DEBUG)  appendToLog("mReadWriteRunnable: END, timer2Write=" + timer2Write + ", streamInBufferSize = " + getStreamInBufferSize() + ", mRfidToRead.size=" + mRfidDevice.mRfidToRead.size() + ", mRx000ToRead.size=" + mRfidDevice.mRfidReaderChip.mRx000ToRead.size());
             }
             mRfidDevice.mRfidReaderChip.mRx000UplinkHandler();
-            if (DEBUGTHREAD) appendToLog("mReadWriteRunnable: mReadWriteRunnable ends");
+            if (DEBUGTHREAD || true) appendToLog("ready2Write: mReadWriteRunnable: mReadWriteRunnable ends");
         }
     };
 
@@ -642,7 +673,9 @@ public class Cs108Connector extends BleConnector {
                 if (false) appendToLogView(byteArrayToString(dataOut));
                 if (DEBUG_PKDATA) appendToLog(String.format("PkData: write Rfid.%s.%s with mRfidDevice.sendRfidToWriteSent = %d", dataIn.rfidPayloadEvent.toString(), byteArrayToString(dataIn.dataValues), sendRfidToWriteSent));
                 if (sendRfidToWriteSent != 0) appendToLog("!!! mRfidDevice.sendRfidToWriteSent = " + sendRfidToWriteSent);
-                return writeData(dataOut, (dataIn.waitUplinkResponse ? 500 : 0));
+                boolean bValue1 = writeData(dataOut, (dataIn.waitUplinkResponse ? 500 : 0));
+                appendToLog("done writeData with waitUplinkResponse = " + dataIn.waitUplinkResponse);
+                return bValue1;
             }
             return false;
         }
@@ -703,15 +736,14 @@ public class Cs108Connector extends BleConnector {
         boolean rfidFailure = false; boolean rfidValid = false;
         private boolean sendRfidToWrite() {
             boolean DEBUG = false;
+            boolean bValue = false;
             if (rfidPowerOnTimeOut != 0) {
                 if (DEBUG) appendToLog("rfidPowerOnTimeOut = " + rfidPowerOnTimeOut + ", mRfidToWrite.size() = " + mRfidToWrite.size());
-                return false;
-            }
-            if (rfidFailure == false && mRfidToWrite.size() != 0) {
+            } else if (rfidFailure == false && mRfidToWrite.size() != 0) {
                 if (isBleConnected() == false) {
                     mRfidToWrite.clear();
                 } else {
-                    appendToLog("BtDataOut: currentTime = " + System.currentTimeMillis() + ", btSendTime = " + btSendTime + ", difference = " + (System.currentTimeMillis() - btSendTime) + ", btSendTime = " + btSendTime);
+                    appendToLog("BtDataOut: currentTime = " + System.currentTimeMillis() + ", btSendTime = " + btSendTime + ", difference = " + (System.currentTimeMillis() - btSendTime) + ", btSendTimeOut = " + btSendTimeOut);
                     if (System.currentTimeMillis() - btSendTime > btSendTimeOut) {
                         RfidPayloadEvents rfidPayloadEvents = mRfidToWrite.get(0).rfidPayloadEvent;
                         if (sendRfidToWriteSent >= 4) {
@@ -731,20 +763,20 @@ public class Cs108Connector extends BleConnector {
                             }
                             if (DEBUG) appendToLog("done");
                         } else {
-                            if (DEBUG) appendToLog("size = " + mRfidToWrite.size() + ", PayloadEvents = " + rfidPayloadEvents.toString() + ", data=" + byteArrayToString(mRfidToWrite.get(0).dataValues));
                             boolean retValue = writeRfid(mRfidToWrite.get(0));
+                            if (DEBUG || true) appendToLog("BtDataOut: done writeRfid with size = " + mRfidToWrite.size() + ", PayloadEvents = " + rfidPayloadEvents.toString() + ", data=" + byteArrayToString(mRfidToWrite.get(0).dataValues));
                             sendRfidToWriteSent++;
                             if (retValue)   {
                                 mRfidToWriteRemoved = false;
                                 if (DEBUG) appendToLog("writeRfid() with sendRfidToWriteSent = " + sendRfidToWriteSent);
                                 sendFailure = false;
+                                bValue = true;
                             } else sendFailure = true;
                         }
                     }
                 }
-                return true;
             }
-            return false;
+            return bValue;
         }
 
         private boolean isRfidToRead(Cs108ReadData cs108ReadData) {

@@ -305,8 +305,7 @@ public class AccessXerxesLoggerFragment extends CommonFragment {
         else {
             if (changedSelectIndex) {
                 changedSelectIndex = false; MainActivity.selectFor = 0;
-                MainActivity.csLibrary4A.setSelectCriteriaDisable(2);
-                MainActivity.csLibrary4A.setSelectCriteriaDisable(1);
+                MainActivity.csLibrary4A.setSelectCriteriaDisable(-1);
             }
             accessResult = accessTask.accessResult;
             if (accessResult == null) {

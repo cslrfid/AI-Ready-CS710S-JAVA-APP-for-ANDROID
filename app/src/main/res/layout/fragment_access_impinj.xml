@@ -446,7 +446,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         style="@style/style_normal_font"
-                        android:text="AutoTune Configuration: " />
+                        android:text="Configuration value:" />
 
                     <TextView
                         android:id="@+id/accessImpinjConfiguration"
@@ -456,6 +456,7 @@
                 </TableRow>
 
                 <TableRow
+                    android:visibility="gone"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:paddingLeft="@dimen/default_left_padding">

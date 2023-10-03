@@ -545,8 +545,7 @@ public class AccessMicronFragment extends CommonFragment {
         else {
             if (changedSelectIndex) {
                 changedSelectIndex = false; MainActivity.selectFor = 0;
-                MainActivity.csLibrary4A.setSelectCriteriaDisable(2);
-                MainActivity.csLibrary4A.setSelectCriteriaDisable(1);
+                MainActivity.csLibrary4A.setSelectCriteriaDisable(-1);
             }
             accessResult = accessTask.accessResult;
             if (accessResult == null) {
@@ -630,7 +629,7 @@ public class AccessMicronFragment extends CommonFragment {
             else if (modelCode == 5) offset = 0x3D0;
             bSkipClearPrefilter = true;
             MainActivity.csLibrary4A.setSelectCriteriaDisable(-1);
-            MainActivity.csLibrary4A.setSelectCriteria(-1, true, 4, 5, selectHold,3, offset, "3F");
+            MainActivity.csLibrary4A.setSelectCriteria(-1, true, 4, 5, selectHold,3, offset, "1F");
             changedSelectIndex = true;
             accBank = 0; accOffset = 13; if (modelCode == 1) { accBank = 3; accOffset = 9; }
             accSize = 1; readWriteTypes = ReadWriteTypes.RSSICODE; checkProcessing = 4;

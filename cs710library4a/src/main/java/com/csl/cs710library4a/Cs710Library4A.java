@@ -2554,21 +2554,25 @@ public class Cs710Library4A extends Cs108Connector {
         }
         return bValue;
     }
+    int findFirstEmptySelect() {
+        int iValue = -1;
+        for (int i = 0; i < 3; i++) {
+            if (mRfidDevice.mRfidReaderChip.mRx000Setting.selectConfiguration[i][0] == 0) {
+                iValue = i;
+                appendToLog("cs710Library4A: setSelectCriteria 1 with New index = " + iValue);
+                break;
+            }
+        }
+        return iValue;
+    }
     public boolean setSelectCriteria(int index, boolean enable, int target, int action, int bank, int offset, String mask, boolean maskbit) {
         appendToLog("cs710Library4A: setSelectCriteria 1 with index = " + index + ", enable = " + enable + ", target = " + target + ", action = " + action + ", bank = " + bank + ", offset = " + offset + ", mask = " + mask + ", maskbit = " + maskbit);
         if (index == 0) preFilterData = new PreFilterData(enable, target, action, bank, offset, mask, maskbit);
-        if (index < 0) {
-            for (int i = 0; i < 3; i++) {
-                if (mRfidDevice.mRfidReaderChip.mRx000Setting.selectConfiguration[i][0] == 0) {
-                    index = i;
-                    appendToLog("cs710Library4A: setSelectCriteria 1 with New index = " + index);
-                    break;
-                }
-            }
-        }
+        if (index < 0) index = findFirstEmptySelect();
         if (index < 0) {
             appendToLog("cs710Library4A: no index is available !!!"); return false;
         }
+
         int maskblen = mask.length() * 4;
         String maskHex = ""; int iHex = 0;
         if (maskbit) {
@@ -2592,6 +2596,11 @@ public class Cs710Library4A extends Cs108Connector {
     public boolean setSelectCriteria(int index, boolean enable, int target, int action, int delay, int bank, int offset, String mask) {
         boolean bValue = false, DEBUG = false;
         appendToLog("cs710Library4A: setSelectCriteria 2 with index = " + index + ", enable = " + enable + ", target = " + target + ", action = " + action + ", delay = " + delay + ", bank = " + bank + ", offset = " + offset + ", mask = " + mask);
+        if (index < 0) index = findFirstEmptySelect();
+        if (index < 0) {
+            appendToLog("cs710Library4A: no index is available !!!"); return false;
+        }
+
         if (mRfidDevice.mRfidReaderChip.mRx000Setting.selectConfiguration[index] == null) appendToLog("CANNOT continue as selectConfiguration[" + index + "] is null !!!");
         else if (mRfidDevice.mRfidReaderChip.mRx000Setting.selectConfiguration[index][0] != 0 || enable != false) {
             if (DEBUG) appendToLog("0 selectConfiguration[" + index + "] = " + byteArrayToString(mRfidDevice.mRfidReaderChip.mRx000Setting.selectConfiguration[index]));
