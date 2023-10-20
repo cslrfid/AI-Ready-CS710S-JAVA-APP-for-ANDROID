@@ -19,7 +19,7 @@ public class Ucode8Fragment extends CommonFragment {
     private ViewPager viewPager;
     Ucode8Adapter mAdapter;
 
-    private String[] tabs = {"Configuration", "Scan" }; // {"Configuration", "Scan", "Untrace"};
+    private String[] tabs = {"Configure", "Scan", "Security", "Untrace"};
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {

@@ -22,7 +22,7 @@ import com.csl.cs710ademoapp.GenericTextWatcher;
 import com.csl.cs710ademoapp.MainActivity;
 import com.csl.cs710ademoapp.R;
 import com.csl.cs710library4a.CsLibrary4A;
-import com.csl.cs710library4a.ReaderDevice;
+import com.csl.cslibrary4a.ReaderDevice;
 
 public class AccessMicronFragment extends CommonFragment {
     final boolean DEBUG = true;

@@ -22,13 +22,18 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import static java.lang.Math.log10;
 
-public class Cs710Library4A extends Cs108Connector {
+import com.csl.cs108library4a.BuildConfig;
+import com.csl.cslibrary4a.NotificationController;
+import com.csl.cslibrary4a.ReaderDevice;
+
+public class Cs710Library4A extends CsReaderConnector {
     final boolean DEBUG = false;
     Context context;
     private Handler mHandler = new Handler();
@@ -146,9 +151,7 @@ public class Cs710Library4A extends Cs108Connector {
         }
     }
 
-    public String getlibraryVersion() {
-        return BuildConfig.VERSION_NAME;
-    }
+    public String getlibraryVersion() { return utility.getCombinedVersion(BuildConfig.VERSION_NAME); }
 
     public String byteArrayToString(byte[] packet) {
         return super.byteArrayToString(packet);
@@ -284,7 +287,7 @@ public class Cs710Library4A extends Cs108Connector {
                     //barcodeSendCommandLoadUserDefault();
                     //barcodeSendQuerySystem();
 
-                    setBatteryAutoReport(true); //0xA003
+                    notificationController.setBatteryAutoReport(true); //0xA003
                 }
                 abortOperation();
                 if (true) {
@@ -296,6 +299,7 @@ public class Cs710Library4A extends Cs108Connector {
                     mRfidDevice.mRfidReaderChip.mRx000Setting.getMultibankReadConfig(0);
                     mRfidDevice.mRfidReaderChip.mRx000Setting.getMultibankReadConfig(1);
                     mRfidDevice.mRfidReaderChip.mRx000Setting.getRx000AccessPassword();
+                    mRfidDevice.mRfidReaderChip.mRx000Setting.getRx000KillPassword();
                     mRfidDevice.mRfidReaderChip.mRx000Setting.getDupElimRollWindow();
                     mRfidDevice.mRfidReaderChip.mRx000Setting.getEventPacketUplinkEnable();
                     mRfidDevice.mRfidReaderChip.mRx000Setting.getIntraPacketDelay();
@@ -487,8 +491,8 @@ public class Cs710Library4A extends Cs108Connector {
         setIntraPkDelay((byte)4);
         setDupDelay((byte)0);
 
-        setTriggerReporting(triggerReportingDefault);
-        setTriggerReportingCount(triggerReportingCountSettingDefault);
+        notificationController.setTriggerReporting(notificationController.triggerReportingDefault);
+        notificationController.setTriggerReportingCount(notificationController.triggerReportingCountSettingDefault);
         setInventoryBeep(inventoryBeepDefault);
         setBeepCount(beepCountSettingDefault);
         setInventoryVibrate(inventoryVibrateDefault);
@@ -506,7 +510,7 @@ public class Cs710Library4A extends Cs108Connector {
         setServerTimeout(serverTimeoutDefault);
         barcode2TriggerMode = barcode2TriggerModeDefault;
 
-        setUserDebugEnable(mBluetoothConnector.userDebugEnableDefault);
+        setUserDebugEnable(bluetoothConnector.userDebugEnableDefault);
         preFilterData = null;
     }
 
@@ -538,15 +542,15 @@ public class Cs710Library4A extends Cs108Connector {
                     if (DEBUG_CONNECT) appendToLog("3 checkVersionRunnable"); ///5
                     if (mBarcodeDevice.checkPreSuffix(prefixRef, suffixRef) == false) barcodeSendCommandSetPreSuffix();
                     if (mBarcodeDevice.bBarcodeTriggerMode != 0x30) barcodeSendCommandTrigger();
-                    getAutoRFIDAbort(); getAutoBarStartSTop(); //setAutoRFIDAbort(false); setAutoBarStartSTop(true);
+                    notificationController.getAutoRFIDAbort(); notificationController.getAutoBarStartSTop(); //setAutoRFIDAbort(false); setAutoBarStartSTop(true);
                 }
                 setAntennaCycle(0xffff);
                 if (false) {
-                    if (mBluetoothConnector.getCsModel() == 463) {
+                    if (bluetoothConnector.getCsModel() == 463) {
                         appendToLog("4 checkVersionRunnable");
                         setAntennaDwell(2000);
                         setAntennaInvCount(0);
-                    } else if (mBluetoothConnector.getCsModel() == 108) {
+                    } else if (bluetoothConnector.getCsModel() == 108) {
                         if (DEBUG_CONNECT) appendToLog("5 checkVersionRunnable"); ///8
                         setAntennaDwell(0);
                         setAntennaInvCount(0xfffffffeL);
@@ -639,7 +643,7 @@ public class Cs710Library4A extends Cs108Connector {
                             } else if (dataArray[0].matches("rxGain")) {
                                 setRxGain(Integer.valueOf(dataArray[1]));
                             } else if (dataArray[0].matches("deviceName")) {
-                                mBluetoothConnector.mBluetoothIcDevice.deviceName = dataArray[1].getBytes();
+                                bluetoothConnector.deviceName = dataArray[1].getBytes();
                             } else if (dataArray[0].matches("batteryDisplay")) {
                                 setBatteryDisplaySetting(Integer.valueOf(dataArray[1]));
                             } else if (dataArray[0].matches("rssiDisplay")) {
@@ -654,9 +658,9 @@ public class Cs710Library4A extends Cs108Connector {
                                 setDupDelay(Byte.valueOf(dataArray[1]));
 
                             } else if (dataArray[0].matches(("triggerReporting"))) {
-                                setTriggerReporting(dataArray[1].matches("true") ? true : false);
+                                notificationController.setTriggerReporting(dataArray[1].matches("true") ? true : false);
                             } else if (dataArray[0].matches(("triggerReportingCount"))) {
-                                setTriggerReportingCount(Short.valueOf(dataArray[1]));
+                                notificationController.setTriggerReportingCount(Short.valueOf(dataArray[1]));
                             } else if (dataArray[0].matches(("inventoryBeep"))) {
                                 setInventoryBeep(dataArray[1].matches("true") ? true : false);
                             } else if (dataArray[0].matches(("inventoryBeepCount"))) {
@@ -721,7 +725,7 @@ public class Cs710Library4A extends Cs108Connector {
                                 if (dataArray[1].matches("true")) preFilterData.maskbit = true;
                                 else preFilterData.maskbit = false;
                             } else if (dataArray[0].matches(("userDebugEnable"))) {
-                                mBluetoothConnector.userDebugEnable = dataArray[1].matches("true") ? true : false;
+                                bluetoothConnector.userDebugEnable = dataArray[1].matches("true") ? true : false;
                             }
                         }
                     }
@@ -779,8 +783,8 @@ public class Cs710Library4A extends Cs108Connector {
             write2FileStream(stream, "intraPkDelay," + String.valueOf(getIntraPkDelay() + "\n"));
             write2FileStream(stream, "dupDelay," + String.valueOf(getDupDelay() + "\n"));
 
-            write2FileStream(stream, "triggerReporting," + String.valueOf(getTriggerReporting() + "\n"));
-            write2FileStream(stream, "triggerReportingCount," + String.valueOf(getTriggerReportingCount() + "\n"));
+            write2FileStream(stream, "triggerReporting," + String.valueOf(notificationController.getTriggerReporting() + "\n"));
+            write2FileStream(stream, "triggerReportingCount," + String.valueOf(notificationController.getTriggerReportingCount() + "\n"));
             write2FileStream(stream, "inventoryBeep," + String.valueOf(getInventoryBeep() + "\n"));
             write2FileStream(stream, "inventoryBeepCount," + String.valueOf(getBeepCount() + "\n"));
             write2FileStream(stream, "inventoryVibrate," + String.valueOf(getInventoryVibrate() + "\n"));
@@ -829,7 +833,7 @@ public class Cs710Library4A extends Cs108Connector {
         return mRfidDevice.mRfidReaderChip.mRx000Setting.getMacVer();
     }
 
-    public int getcsModel() { return mBluetoothConnector.getCsModel(); }
+    public int getcsModel() { return bluetoothConnector.getCsModel(); }
 
     //Configuration Calls: RFID
     public int getAntennaCycle() {
@@ -842,7 +846,7 @@ public class Cs710Library4A extends Cs108Connector {
         return mRfidDevice.mRfidReaderChip.mRx000Setting.setAntennaInvCount(antennaInvCount);
     }
     public int getPortNumber() {
-        if (mBluetoothConnector.getCsModel() == 463) return 4;
+        if (bluetoothConnector.getCsModel() == 463) return 4;
         else return 1;
     }
     public int getAntennaSelect() {
@@ -1042,6 +1046,8 @@ public class Cs710Library4A extends Cs108Connector {
         }
         return iValue;
     }
+
+    public boolean setBasicCurrentLinkProfile() { return mRfidDevice.mRfidReaderChip.mRx000Setting.setCurrentProfile(244); }
     @Keep public boolean setCurrentLinkProfile(int profile) {
         boolean DEBUG = false;
         if (DEBUG) appendToLog("1 setCurrentLinkProfile: input profile = " + profile);
@@ -2205,6 +2211,35 @@ public class Cs710Library4A extends Cs108Connector {
         }
         return bytes;
     }
+
+    @Keep public boolean setTamConfiguration(boolean header, String matchData) {
+        appendToLog("header = " + header + ", matchData.length = " + matchData.length() + ", matchData = " + matchData);
+        if (matchData.length() != 12) return false;
+
+        boolean retValue = false; String preChallenge = matchData.substring(0, 2);
+        int iValue = Integer.parseInt(preChallenge, 16);
+        iValue &= 0x07;
+        if (header) iValue |= 0x04;
+        else iValue &= ~0x04;
+        preChallenge = String.format("%02X", iValue);
+        matchData = preChallenge + matchData.substring(2);
+        appendToLog("new matchData = " + matchData);
+
+        boolean bValue = mRfidDevice.mRfidReaderChip.mRx000Setting.setAuthenticateConfig(((matchData.length() * 4) << 10) | (1 << 2) | 0x03);
+        appendToLog("setAuthenticateConfiguration 1 revised matchData = " + matchData + " with bValue = " + (bValue ? "true" : "false"));
+        appendToLog("revised bytes = " + byteArrayToString(string2ByteArray(matchData)));
+        if (bValue) {
+            bValue = mRfidDevice.mRfidReaderChip.mRx000Setting.setAuthenticateMessage(string2ByteArray(matchData));
+            appendToLog("setAuthenticateConfiguration 2: bValue = " + (bValue ? "true" : "false"));
+        }
+        if (bValue) {
+            int iLength = 8 * 8;
+            if (header) iLength = 16 * 8;
+            bValue = mRfidDevice.mRfidReaderChip.mRx000Setting.setAuthenticateResponseLen(iLength);
+            appendToLog("setAuthenticateConfiguration 3: bValue = " + (bValue ? "true" : "false"));
+        }
+        return bValue;
+    }
     @Keep public boolean setTam1Configuration(int keyId, String matchData) {
         appendToLog("keyId " + keyId + ", matchData = " + matchData);
         if (keyId > 255) return false;
@@ -2261,8 +2296,10 @@ public class Cs710Library4A extends Cs108Connector {
             appendToLog("setAuthenticateConfiguration 2: bValue = " + (bValue ? "true" : "false"));
         }
         if (bValue) {
-            bValue = mRfidDevice.mRfidReaderChip.mRx000Setting.setAuthenticateResponseLen(16 * 8);
-            appendToLog("setAuthenticateConfiguration 3: bValue = " + (bValue ? "true" : "false"));
+            int iSize = 32;
+            if (protMode > 2) iSize = 44;
+            bValue = mRfidDevice.mRfidReaderChip.mRx000Setting.setAuthenticateResponseLen(iSize * 8);
+            appendToLog("setAuthenticateConfiguration 3: protMode = " + protMode + ", bValue = " + (bValue ? "true" : "false"));
         }
         return bValue;
     }
@@ -2381,10 +2418,10 @@ public class Cs710Library4A extends Cs108Connector {
     }
 
     @Keep public boolean getUserDebugEnable() {
-        boolean bValue = mBluetoothConnector.userDebugEnable; appendToLog("bValue = " + bValue); return bValue; }
+        boolean bValue = bluetoothConnector.userDebugEnable; appendToLog("bValue = " + bValue); return bValue; }
     @Keep public boolean setUserDebugEnable(boolean userDebugEnable) {
         appendToLog("new userDebug = " + userDebugEnable);
-        mBluetoothConnector.userDebugEnable = userDebugEnable;
+        bluetoothConnector.userDebugEnable = userDebugEnable;
         return true;
     }
 
@@ -2416,15 +2453,8 @@ public class Cs710Library4A extends Cs108Connector {
     @Keep public int getMinQValue() {
         return mRfidDevice.mRfidReaderChip.mRx000Setting.getAlgoMinQ(3);
     }
-    public int getRetryCount() {
-        int algoSelect;
-        algoSelect = mRfidDevice.mRfidReaderChip.mRx000Setting.getAlgoSelect();
-        if (algoSelect == 0 || algoSelect == 3) {
-            return mRfidDevice.mRfidReaderChip.mRx000Setting.getAlgoRetry(algoSelect);
-        }
-        else return -1;
-    }
-    public boolean setRetryCount(int retryCount) { return mRfidDevice.mRfidReaderChip.mRx000Setting.setAlgoRetry(retryCount); }
+    public int getRetryCount() { return mRfidDevice.mRfidReaderChip.mRx000Setting.getAlgoMinQCycles(); }
+    public boolean setRetryCount(int retryCount) { return mRfidDevice.mRfidReaderChip.mRx000Setting.setAlgoMinQCycles(retryCount); }
 
     @Keep public boolean setDynamicQParms(int startQValue, int minQValue, int maxQValue, int retryCount) {
         appendToLog("setTagGroup: going to setAlgoSelect with input as 3");
@@ -2442,7 +2472,7 @@ public class Cs710Library4A extends Cs108Connector {
         return mRfidDevice.mRfidReaderChip.mRx000Setting.getAlgoStartQ(0);
     }
     @Keep public int getFixedRetryCount() {
-        return mRfidDevice.mRfidReaderChip.mRx000Setting.getAlgoRetry(0);
+        return mRfidDevice.mRfidReaderChip.mRx000Setting.getAlgoMinQCycles();
     }
     @Keep public boolean getRepeatUnitNoTags() {
         return mRfidDevice.mRfidReaderChip.mRx000Setting.getAlgoRunTilZero(0) == 1 ? true : false;
@@ -2795,15 +2825,6 @@ public class Cs710Library4A extends Cs108Connector {
         }
         return retValue;
     }
-    boolean resetSiliconLab() {
-        boolean bRetValue = false;
-        if (mSiliconLabIcDevice != null) {
-            bRetValue = mSiliconLabIcDevice.mSiliconLabIcToWrite.add(SiliconLabIcPayloadEvents.RESET);
-            appendToLog("add RESET to mSiliconLabIcWrite with length = " + mSiliconLabIcDevice.mSiliconLabIcToWrite.size());
-        }
-        mRfidDevice.setInventoring(false);
-        return bRetValue;
-    }
     @Keep public boolean abortOperation() {
         boolean bRetValue = false;
         if (mRfidDevice.mRfidReaderChip != null) {
@@ -2813,7 +2834,6 @@ public class Cs710Library4A extends Cs108Connector {
         return bRetValue;
     }
     @Keep public void restoreAfterTagSelect() {
-
         appendToLog("!!! Start");
         if (true) loadSetting1File();
         else if (DEBUG) appendToLog("postMatchDataChanged = " + postMatchDataChanged + ",  preMatchDataChanged = " + preMatchDataChanged + ", macVersion = " + getMacVer());
@@ -3884,7 +3904,7 @@ public class Cs710Library4A extends Cs108Connector {
             mBarcodeDevice.mBarcodeToRead.clear(); barcodeDataStore = null;
             if (getBarcodeOnStatus() == false) { result = setBarcodeOn(true); appendToLog("TTestPoint 1"); }
             if (barcode2TriggerMode && result) {
-                if (getTriggerButtonStatus() && getAutoBarStartSTop()) {  appendToLog("TTestPoint 2"); barcodeAutoStarted = true; result = true; }
+                if (getTriggerButtonStatus() && notificationController.getAutoBarStartSTop()) {  appendToLog("TTestPoint 2"); barcodeAutoStarted = true; result = true; }
                 else {  appendToLog("TTestPoint 3"); result = barcodeSendCommand(new byte[]{0x1b, 0x33}); }
             } else  appendToLog("TTestPoint 4");
             appendToLog("TTestPoint 5");
@@ -3903,26 +3923,26 @@ public class Cs710Library4A extends Cs108Connector {
 
     //Configuration Calls: System
     @Keep public String getBluetoothICFirmwareVersion() {
-        return mBluetoothConnector.mBluetoothIcDevice.getBluetoothIcVersion();
+        return bluetoothConnector.getBluetoothIcVersion();
     }
     @Keep public String getBluetoothICFirmwareName() {
         boolean DEBUG = false;
         if (DEBUG) appendToLog("2 getBluetoothIcName");
-        String strValue = mBluetoothConnector.mBluetoothIcDevice.getBluetoothIcName();
+        String strValue = bluetoothConnector.getBluetoothIcName();
         if (DEBUG) appendToLog("2A getBluetoothIcName = " + strValue);
         return strValue;
     }
     @Keep public boolean setBluetoothICFirmwareName(String name) {
-        return mBluetoothConnector.mBluetoothIcDevice.setBluetoothIcName(name);
+        return bluetoothConnector.setBluetoothIcName(name);
     }
     @Keep public boolean forceBTdisconnect() {
-        return mBluetoothConnector.mBluetoothIcDevice.forceBTdisconnect();
+        return bluetoothConnector.forceBTdisconnect();
     }
     @Keep public String hostProcessorICGetFirmwareVersion() {
-        return mSiliconLabIcDevice.getSiliconLabIcVersion();
+        return controllerConnector.getVersion();
     }
     @Keep public String getHostProcessorICSerialNumber() {
-        String str = mSiliconLabIcDevice.getSerialNumber();
+        String str = controllerConnector.getSerialNumber();
         appendToLog("str = " + str);
         if (str != null) {
             if (str.length() >= 16) return str.substring(0, 16);
@@ -3930,7 +3950,7 @@ public class Cs710Library4A extends Cs108Connector {
         return null;
     }
     @Keep public String getHostProcessorICBoardVersion() {
-        String str = mSiliconLabIcDevice.getSerialNumber();
+        String str = controllerConnector.getSerialNumber();
         if (false) appendToLog("str = " + str);
         if (str == null) return null;
         if (str.length() < 16+4) return null;
@@ -3957,72 +3977,26 @@ public class Cs710Library4A extends Cs108Connector {
     UpdateBluetoothProcessorFirmwareBootloader(filename,result)
     */
     @Keep public boolean batteryLevelRequest() {
-        Cs108NotificatiionData cs108NotificatiionData = new Cs108NotificatiionData();
-        cs108NotificatiionData.notificationPayloadEvent = NotificationPayloadEvents.NOTIFICATION_GET_BATTERY_VOLTAGE;
-        boolean bValue = mNotificationDevice.mNotificationToWrite.add(cs108NotificatiionData);
-        if (DEBUG_PKDATA) appendToLog("PkData: add NOTIFICATION_GET_BATTERY_VOLTAGE to mNotificationToWrite with length = " + mNotificationDevice.mNotificationToWrite.size());
-        return bValue;
+        if (mRfidDevice.isInventoring()) {
+            appendToLog("Skip batteryLevelREquest as inventoring !!!");
+            return true;
+        }
+        return notificationController.batteryLevelRequest();
     }
-    boolean triggerButtoneStatusRequest() {
-        Cs108NotificatiionData cs108NotificatiionData = new Cs108NotificatiionData();
-        cs108NotificatiionData.notificationPayloadEvent = NotificationPayloadEvents.NOTIFICATION_GET_TRIGGER_STATUS;
-        boolean bValue = mNotificationDevice.mNotificationToWrite.add(cs108NotificatiionData);
-        if (DEBUG_PKDATA) appendToLog("PkData: add NOTIFICATION_GET_TRIGGER_STATUS to mNotificationToWrite with length = " + mNotificationDevice.mNotificationToWrite.size());
-        return bValue;
-    }
-    @Keep public boolean setBatteryAutoReport(boolean on) {
-        Cs108NotificatiionData cs108NotificatiionData = new Cs108NotificatiionData();
-        cs108NotificatiionData.notificationPayloadEvent = (on ? NotificationPayloadEvents.NOTIFICATION_AUTO_BATTERY_VOLTAGE: NotificationPayloadEvents.NOTIFICATION_STOPAUTO_BATTERY_VOLTAGE);
-        boolean bValue = mNotificationDevice.mNotificationToWrite.add(cs108NotificatiionData);
-        if (DEBUG_PKDATA) appendToLog("PkData: add " + cs108NotificatiionData.notificationPayloadEvent.toString() + " to mNotificationToWrite with length = " + mNotificationDevice.mNotificationToWrite.size());
-        return bValue;
-    }
-    @Keep public boolean setAutoRFIDAbort(boolean enable) {
-        Cs108NotificatiionData cs108NotificatiionData = new Cs108NotificatiionData();
-        cs108NotificatiionData.notificationPayloadEvent = NotificationPayloadEvents.NOTIFICATION_AUTO_RFIDINV_ABORT;
-        cs108NotificatiionData.dataValues = new byte[1];
-        mNotificationDevice.setAutoRfidAbortStatus(enable);
-        cs108NotificatiionData.dataValues[0] = (enable ? (byte)1 : 0);
-        boolean bValue = mNotificationDevice.mNotificationToWrite.add(cs108NotificatiionData);
-        if (DEBUG_PKDATA) appendToLog("PkData: add NOTIFICATION_AUTO_RFIDINV_ABORT." + byteArrayToString(cs108NotificatiionData.dataValues) + " to mNotificationToWrite with length = " + mNotificationDevice.mNotificationToWrite.size());
-        return bValue;
-    }
-    @Keep public boolean getAutoRFIDAbort() {
-        return mNotificationDevice.getAutoRfidAbortStatus(); }
 
-    @Keep public boolean setAutoBarStartSTop(boolean enable) {
-        boolean autoBarStartStopStatus = getAutoBarStartSTop();
-        if (enable & autoBarStartStopStatus) return true;
-        else if (enable == false && autoBarStartStopStatus == false) return true;
+    @Keep public boolean setAutoBarStartSTop(boolean enable) { return notificationController.setAutoBarStartSTop(enable); }
+    @Keep public boolean getAutoBarStartSTop() { return notificationController.getAutoBarStartStopStatus(); }
 
-        Cs108NotificatiionData cs108NotificatiionData = new Cs108NotificatiionData();
-        cs108NotificatiionData.notificationPayloadEvent = NotificationPayloadEvents.NOTIFICATION_AUTO_BARINV_STARTSTOP;
-        cs108NotificatiionData.dataValues = new byte[1];
-        mNotificationDevice.setAutoBarStartStopStatus(enable);
-        cs108NotificatiionData.dataValues[0] = (enable ? (byte)1 :  0);
-        boolean bValue = mNotificationDevice.mNotificationToWrite.add(cs108NotificatiionData);
-        if (DEBUG_PKDATA) appendToLog("PkData: add NOTIFICATION_AUTO_BARINV_STARTSTOP." + byteArrayToString(cs108NotificatiionData.dataValues) + " to mNotificationToWrite with length = " + mNotificationDevice.mNotificationToWrite.size());
-        return bValue;
-    }
-    @Keep public boolean getAutoBarStartSTop() { return mNotificationDevice.getAutoBarStartStopStatus(); }
-
-    boolean triggerReportingDefault = true, triggerReporting = triggerReportingDefault;
-    public boolean getTriggerReporting() { return triggerReporting; }
-    public boolean setTriggerReporting(boolean triggerReporting) {
-        boolean bValue = false;
-        //if (this.triggerReporting == triggerReporting) return true;
-        if (triggerReporting) {
-            bValue = setAutoTriggerReporting((byte) triggerReportingCountSetting);
-        } else bValue = stopAutoTriggerReporting();
-        if (bValue) this.triggerReporting = triggerReporting;
-        return bValue;
-    }
+    public boolean getTriggerReporting() { return notificationController.triggerReporting; }
+    public boolean setTriggerReporting(boolean triggerReporting) { return notificationController.setTriggerReporting(triggerReporting); }
 
     public final int iNO_SUCH_SETTING = 10000;
     short triggerReportingCountSettingDefault = 1, triggerReportingCountSetting = triggerReportingCountSettingDefault;
     public short getTriggerReportingCount() {
-        if (getcsModel() != 108) return iNO_SUCH_SETTING;
-        else return triggerReportingCountSetting;
+        boolean bValue = false;
+        if (getcsModel() == 108) bValue = checkHostProcessorVersion(hostProcessorICGetFirmwareVersion(),  1, 0, 16);
+        if (bValue == false) return iNO_SUCH_SETTING; else
+            return triggerReportingCountSetting;
     }
     public boolean setTriggerReportingCount(short triggerReportingCount) {
         boolean bValue = false;
@@ -4035,22 +4009,7 @@ public class Cs710Library4A extends Cs108Connector {
         return true;
     }
 
-    public boolean setAutoTriggerReporting(byte timeSecond) {
-        Cs108NotificatiionData cs108NotificatiionData = new Cs108NotificatiionData();
-        cs108NotificatiionData.notificationPayloadEvent = NotificationPayloadEvents.NOTIFICATION_AUTO_TRIGGER_REPORT;
-        cs108NotificatiionData.dataValues = new byte[1];
-        cs108NotificatiionData.dataValues[0] = timeSecond;
-        boolean bValue = mNotificationDevice.mNotificationToWrite.add(cs108NotificatiionData);
-        if (DEBUG_PKDATA) appendToLog("PkData: add NOTIFICATION_AUTO_TRIGGER_REPORT." + byteArrayToString(cs108NotificatiionData.dataValues) + " to mNotificationToWrite with length = " + mNotificationDevice.mNotificationToWrite.size());
-        return bValue;
-    }
-    public boolean stopAutoTriggerReporting() {
-        Cs108NotificatiionData cs108NotificatiionData = new Cs108NotificatiionData();
-        cs108NotificatiionData.notificationPayloadEvent = NotificationPayloadEvents.NOTIFICATION_STOP_TRIGGER_REPORT;
-        boolean bValue = mNotificationDevice.mNotificationToWrite.add(cs108NotificatiionData);
-        if (DEBUG_PKDATA) appendToLog("PkData: add NOTIFICATION_STOP_TRIGGER_REPORT to mNotificationToWrite with length = " + mNotificationDevice.mNotificationToWrite.size());
-        return bValue;
-    }
+    public boolean setAutoTriggerReporting(byte timeSecond) { return notificationController.setAutoTriggerReporting(timeSecond); }
 
     @Keep public String getBatteryDisplay(boolean voltageDisplay) {
         float floatValue = (float) getBatteryLevel() / 1000;
@@ -4194,11 +4153,11 @@ public class Cs710Library4A extends Cs108Connector {
 
     @Keep public int getBatteryLevel() { return mCs108ConnectorData.getVoltageMv(); }
     @Keep public int getBatteryCount() { return mCs108ConnectorData.getVoltageCnt(); }
-    @Keep public boolean getTriggerButtonStatus() { return mNotificationDevice.getTriggerStatus(); }
+    @Keep public boolean getTriggerButtonStatus() { return notificationController.getTriggerStatus(); }
     public int getTriggerCount() { return mCs108ConnectorData.getTriggerCount(); }
 
-    public interface NotificationListener { void onChange(); }
-    @Keep public void setNotificationListener(NotificationListener listener) { mNotificationDevice.setNotificationListener0(listener); }
+    //public interface NotificationListener { void onChange(); }
+    @Keep public void setNotificationListener(NotificationController.NotificationListener listener) { notificationController.setNotificationListener0(listener); }
 
     int batteryDisplaySelectDefault = 1, batteryDisplaySelect = batteryDisplaySelectDefault;
     @Keep public int getBatteryDisplaySetting() { return batteryDisplaySelect; }
@@ -4260,6 +4219,7 @@ public class Cs710Library4A extends Cs108Connector {
     }
 
     @Keep public Rx000pkgData onRFIDEvent() {
+        boolean DEBUG = false;
         Rx000pkgData rx000pkgData = null;
         //if (mrfidToWriteSize() != 0) mRfidDevice.mRfidReaderChip.mRx000ToRead.clear();
         if (mRfidDevice.mRfidReaderChip.bRx000ToReading == false && mRfidDevice.mRfidReaderChip.mRx000ToRead.size() != 0) {
@@ -4268,9 +4228,9 @@ public class Cs710Library4A extends Cs108Connector {
             try {
                 rx000pkgData = mRfidDevice.mRfidReaderChip.mRx000ToRead.get(index);
                 if (false && rx000pkgData.responseType == HostCmdResponseTypes.TYPE_COMMAND_END)
-                    appendToLog("get mRx000ToRead with COMMAND_END");
+                    if (DEBUG) appendToLog("get mRx000ToRead with COMMAND_END");
                 mRfidDevice.mRfidReaderChip.mRx000ToRead.remove(index);
-                if (false) appendToLog("got one mRx000ToRead with responseType = " + rx000pkgData.responseType.toString() + ", and remained size = " + mRfidDevice.mRfidReaderChip.mRx000ToRead.size());
+                if (DEBUG) appendToLog("got one mRx000ToRead with responseType = " + rx000pkgData.responseType.toString() + ", and remained size = " + mRfidDevice.mRfidReaderChip.mRx000ToRead.size());
             } catch (Exception ex) {
                 rx000pkgData = null;
             }
@@ -4278,20 +4238,56 @@ public class Cs710Library4A extends Cs108Connector {
         }
         if (rx000pkgData != null && rx000pkgData.responseType != null) {
             if (rx000pkgData.responseType == HostCmdResponseTypes.TYPE_18K6C_INVENTORY || rx000pkgData.responseType == HostCmdResponseTypes.TYPE_18K6C_INVENTORY_COMPACT) {
-                appendToLog("Before adjustment, decodedRssi = " + rx000pkgData.decodedRssi);
+                if (DEBUG) appendToLog("Before adjustment, decodedRssi = " + rx000pkgData.decodedRssi);
                 rx000pkgData.decodedRssi += dBuV_dBm_constant;
-                appendToLog("After adjustment, decodedRssi = " + rx000pkgData.decodedRssi);
+                if (DEBUG) appendToLog("After adjustment, decodedRssi = " + rx000pkgData.decodedRssi);
+                if (mRfidDevice.mRfidReaderChip.mRx000Setting.getInvMatchEnable() > 0) {
+                    byte[] bytesCompared = new byte[rx000pkgData.decodedEpc.length];
+                    System.arraycopy(rx000pkgData.decodedEpc, 0, bytesCompared, 0, rx000pkgData.decodedEpc.length);
+                    //bytesCompared = new byte[] { (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0x2F };
+                    //bytesCompared = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, (byte) 0xFF, (byte) 0xFF, (byte) 0x2F };
+                    appendToLog("decodedEpc = " + byteArrayToString(rx000pkgData.decodedEpc));
+                    if (mRfidDevice.mRfidReaderChip.mRx000Setting.getInvMatchOffset() > 0) {
+                        appendToLog("getInvMatchOffset = " + mRfidDevice.mRfidReaderChip.mRx000Setting.getInvMatchOffset());
+                        BigInteger bigInt = new BigInteger(bytesCompared);
+                        BigInteger shiftInt = bigInt.shiftLeft(mRfidDevice.mRfidReaderChip.mRx000Setting.getInvMatchOffset());
+                        byte [] shifted = shiftInt.toByteArray();
+                        appendToLog("shifted = " + byteArrayToString(shifted));
+                        if (shifted.length > bytesCompared.length) System.arraycopy(shifted, shifted.length - bytesCompared.length, bytesCompared, 0, bytesCompared.length);
+                        else if (shifted.length < bytesCompared.length) {
+                            System.arraycopy(shifted, 0, bytesCompared, bytesCompared.length - shifted.length, shifted.length);
+                            for (int i = 0; i < bytesCompared.length - shifted.length; i++) {
+                                if ((shifted[0] & 0x80) == 0) bytesCompared[i] = 0;
+                                else bytesCompared[i] = (byte)0xFF;
+                            }
+                        }
+                        appendToLog("new bytesCompared 1 = " + byteArrayToString(bytesCompared));
+                    }
+
+                    if (mRfidDevice.mRfidReaderChip.mRx000Setting.getInvMatchType() > 0) {
+                        appendToLog("getInvMatchType = " + mRfidDevice.mRfidReaderChip.mRx000Setting.getInvMatchType());
+                        for (int i = 0; i < bytesCompared.length; i++) {
+                            bytesCompared[i] ^= (byte) 0xFF;
+                        }
+                    }
+                    appendToLog("new bytesCompared 2 = " + byteArrayToString(bytesCompared));
+                    appendToLog("getInvMatchData = " + mRfidDevice.mRfidReaderChip.mRx000Setting.getInvMatchData());
+                    if (byteArrayToString(bytesCompared).indexOf(mRfidDevice.mRfidReaderChip.mRx000Setting.getInvMatchData()) != 0) {
+                        appendToLog("Post Mis-Matched !!!");
+                        rx000pkgData = null;
+                    }
+                }
             }
         }
-        if (rx000pkgData != null) appendToLog("response = " + rx000pkgData.responseType.toString() + ", " + byteArrayToString(rx000pkgData.dataValues));
+        if (rx000pkgData != null && DEBUG) appendToLog("response = " + rx000pkgData.responseType.toString() + ", " + byteArrayToString(rx000pkgData.dataValues));
         return rx000pkgData;
     }
 
     @Keep public byte[] onNotificationEvent() {
         byte[] notificationData = null;
-        if (mNotificationDevice.mNotificationToRead.size() != 0) {
-            Cs108NotificatiionData cs108NotificatiionData = mNotificationDevice.mNotificationToRead.get(0);
-            mNotificationDevice.mNotificationToRead.remove(0);
+        if (notificationController.notificationToRead.size() != 0) {
+            NotificationController.Cs108NotificatiionData cs108NotificatiionData = notificationController.notificationToRead.get(0);
+            notificationController.notificationToRead.remove(0);
             if (cs108NotificatiionData != null) notificationData = cs108NotificatiionData.dataValues;
         }
         return notificationData;
@@ -4434,7 +4430,7 @@ public class Cs710Library4A extends Cs108Connector {
     }
     @Keep public String getModelName() {
         boolean DEBUG = false;
-        String strModelName = mSiliconLabIcDevice.getModelName();
+        String strModelName = controllerConnector.getModelName();
         if (DEBUG) appendToLog("getModelName 0xb006 = " + strModelName);
         if (true) {
             String strModelName1 = mRfidDevice.mRfidReaderChip.mRx000Setting.getModelCode();
@@ -4449,8 +4445,8 @@ public class Cs710Library4A extends Cs108Connector {
 
 
     @Keep public boolean setRx000KillPassword(String password) { return mRfidDevice.mRfidReaderChip.mRx000Setting.setRx000KillPassword(password); }
-    @Keep public boolean setRx000AccessPassword(String password) {return mRfidDevice.mRfidReaderChip.mRx000Setting.setRx000AccessPassword(password); }
-    @Keep public boolean setAccessRetry(boolean accessVerfiy, int accessRetry) {return mRfidDevice.mRfidReaderChip.mRx000Setting.setAccessRetry(accessVerfiy, accessRetry); }
+    @Keep public boolean setRx000AccessPassword(String password) { return mRfidDevice.mRfidReaderChip.mRx000Setting.setRx000AccessPassword(password); }
+    @Keep public boolean setAccessRetry(boolean accessVerfiy, int accessRetry) { return mRfidDevice.mRfidReaderChip.mRx000Setting.setAccessRetry(accessVerfiy, accessRetry); }
     @Keep public boolean setInvModeCompact(boolean invModeCompact) { appendToLog("2EE setInvAlgo"); return mRfidDevice.mRfidReaderChip.mRx000Setting.setInvModeCompact(invModeCompact); }
     @Keep public boolean setAccessLockAction(int accessLockAction, int accessLockMask) { return mRfidDevice.mRfidReaderChip.mRx000Setting.setAccessLockAction(accessLockAction, accessLockMask); }
     @Keep public boolean setAccessBank(int accessBank) { return mRfidDevice.mRfidReaderChip.mRx000Setting.setAccessBank(accessBank); }
@@ -4464,11 +4460,11 @@ public class Cs710Library4A extends Cs108Connector {
 
     public enum HostCommands {
         NULL, CMD_WROEM, CMD_RDOEM, CMD_ENGTEST, CMD_MBPRDREG, CMD_MBPWRREG,
-        CMD_18K6CINV, CMD_18K6CREAD, CMD_18K6CWRITE, CMD_18K6CLOCK, CMD_18K6CKILL, CMD_SETPWRMGMTCFG, CMD_18K6CAUTHENTICATE,
+        CMD_18K6CINV, CMD_18K6CREAD, CMD_18K6CWRITE, CMD_18K6CLOCK, CMD_18K6CKILL, CMD_SETPWRMGMTCFG, CMD_18K6CAUTHENTICATE, CMD_UNTRACEABLE,
         CMD_UPDATELINKPROFILE,
         CMD_18K6CBLOCKWRITE,
         CMD_CHANGEEAS, CMD_GETSENSORDATA,
-        CMD_READBUFFER, CMD_UNTRACEABLE,
+        CMD_READBUFFER,
         CMD_FDM_RDMEM, CMD_FDM_WRMEM, CMD_FDM_AUTH, CMD_FDM_GET_TEMPERATURE, CMD_FDM_START_LOGGING, CMD_FDM_STOP_LOGGING,
         CMD_FDM_WRREG, CMD_FDM_RDREG, CMD_FDM_DEEP_SLEEP, CMD_FDM_OPMODE_CHECK, CMD_FDM_INIT_REGFILE, CMD_FDM_LED_CTRL,
         CMD_18K6CINV_SELECT,

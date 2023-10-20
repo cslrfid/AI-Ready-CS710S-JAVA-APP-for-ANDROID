@@ -10,7 +10,7 @@
 # Add any project specific keep options here:
 -keep public class com.csl.cs108library4a.ReaderDevice
 -keep public class com.csl.cs108library4a.Cs108Library4A
--keep public class com.csl.cs108library4a.Cs108Connector
+-keep public class com.csl.cs108library4a.CsReaderConnector
 
 # If your project uses WebView with JS, uncomment the following
 # and specify the fully qualified class name to the JavaScript interface

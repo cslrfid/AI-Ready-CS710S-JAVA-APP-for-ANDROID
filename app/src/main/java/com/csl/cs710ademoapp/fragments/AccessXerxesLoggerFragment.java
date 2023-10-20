@@ -21,7 +21,7 @@ import com.csl.cs710ademoapp.GenericTextWatcher;
 import com.csl.cs710ademoapp.MainActivity;
 import com.csl.cs710ademoapp.R;
 import com.csl.cs710library4a.CsLibrary4A;
-import com.csl.cs710library4a.ReaderDevice;
+import com.csl.cslibrary4a.ReaderDevice;
 
 public class AccessXerxesLoggerFragment extends CommonFragment {
     final boolean DEBUG = true;
@@ -123,7 +123,7 @@ public class AccessXerxesLoggerFragment extends CommonFragment {
         editTextaccessRWAntennaPower = (EditText) getActivity().findViewById(R.id.accessXXAntennaPower);
         editTextaccessRWAntennaPower.setText(String.valueOf(300));
 
-        buttonRead = (Button) getActivity().findViewById(R.id.accessXXReadButton);
+        buttonRead = (Button) getActivity().findViewById(R.id.accessRWReadButton);
         buttonRead.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -138,7 +138,7 @@ public class AccessXerxesLoggerFragment extends CommonFragment {
             }
         });
 
-        buttonWrite = (Button) getActivity().findViewById(R.id.accessXXWriteButton);
+        buttonWrite = (Button) getActivity().findViewById(R.id.accessRWWriteButton);
         buttonWrite.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

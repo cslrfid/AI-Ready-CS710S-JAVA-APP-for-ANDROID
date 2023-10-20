@@ -200,6 +200,8 @@ public class SettingOperateFragment extends CommonFragment {
         targetAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerInvAlgo.setAdapter(targetAdapter);
 
+        TextView textViewRetry = (TextView) getActivity().findViewById(R.id.settingOperateRetryLabel);
+        if (MainActivity.csLibrary4A.get98XX() == 2) textViewRetry.setText("Minimum minQ cycles");
         editTextRetry = (EditText) getActivity().findViewById(R.id.settingOperateRetry);
 
         spinnerProfile = (Spinner) getActivity().findViewById(R.id.settingOperateProfile);

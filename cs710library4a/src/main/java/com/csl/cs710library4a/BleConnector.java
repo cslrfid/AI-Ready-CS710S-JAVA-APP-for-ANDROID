@@ -41,9 +41,13 @@ import static android.content.Context.LAYOUT_INFLATER_SERVICE;
 import static android.content.Context.LOCATION_SERVICE;
 import static androidx.core.app.ActivityCompat.requestPermissions;
 
+import com.csl.cslibrary4a.CustomAlertDialog;
+import com.csl.cslibrary4a.ReaderDevice;
+import com.csl.cslibrary4a.Utility;
+
 class BleConnector extends BluetoothGattCallback {
     boolean DEBUG_PKDATA, DEBUG_APDATA;
-    final boolean DEBUG_SCAN = false, DEBUG_CONNECT = true, DEBUG_BTDATA = false, DEBUG_FILE = false;
+    final boolean DEBUG_SCAN = false, DEBUG_CONNECT = false, DEBUG_BTDATA = false, DEBUG_FILE = false;
     final boolean DEBUG = true, DEBUG_BTOP = false;
     static final String TAG = "Hello";
 

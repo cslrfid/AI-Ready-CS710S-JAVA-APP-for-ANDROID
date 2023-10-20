@@ -9,7 +9,7 @@ import android.widget.Toast;
 
 import com.csl.cs710ademoapp.adapters.ReaderListAdapter;
 import com.csl.cs710library4a.CsLibrary4A;
-import com.csl.cs710library4a.ReaderDevice;
+import com.csl.cslibrary4a.ReaderDevice;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -19,7 +19,7 @@ import java.util.Date;
 public class InventoryRfidTask extends AsyncTask<Void, String, String> {
     final boolean DEBUG = false; final boolean ALLOW_WEDGE = true; boolean ALLOW_RTSAVE = false;
     public enum TaskCancelRReason {
-        NULL, INVALD_REQUEST, DESTORY, STOP, BUTTON_RELEASE, TIMEOUT, RFID_RESET
+        NULL, INVALD_REQUEST, DESTORY, STOP, BUTTON_RELEASE, TIMEOUT, RFID_RESET, ERROR
     }
     final private boolean bAdd2End = false;
     final boolean endingRequest = true;
@@ -119,6 +119,7 @@ public class InventoryRfidTask extends AsyncTask<Void, String, String> {
         inventoryHandler_setup();
     }
 
+    byte[] notificationData;
     @Override
     protected String doInBackground(Void... a) {
         boolean ending = false, triggerReleased = false; long triggerReleaseTime = 0;
@@ -134,6 +135,8 @@ public class InventoryRfidTask extends AsyncTask<Void, String, String> {
                 runTimeMillis = System.currentTimeMillis();
                 publishProgress("WW");
             }
+
+            notificationData = MainActivity.csLibrary4A.onNotificationEvent();
             rx000pkgData = MainActivity.csLibrary4A.onRFIDEvent();
             if (rx000pkgData != null && MainActivity.csLibrary4A.mrfidToWriteSize() == 0) {
                 if (rx000pkgData.responseType == null) {
@@ -167,6 +170,10 @@ public class InventoryRfidTask extends AsyncTask<Void, String, String> {
                         MainActivity.csLibrary4A.startOperation(CsLibrary4A.OperationTypes.TAG_INVENTORY_COMPACT);
                     } else  ending = true;
                 }
+            } else if (false && notificationData != null) {
+                MainActivity.csLibrary4A.appendToLog("matched Error: resultError=" + MainActivity.csLibrary4A.byteArrayToString(notificationData));
+                publishProgress("P");
+                taskCancelReason = TaskCancelRReason.ERROR;
             }
             if (false) {
                 if (MainActivity.csLibrary4A.mrfidToWriteSize() != 0)   timeMillis = System.currentTimeMillis();
@@ -243,6 +250,9 @@ public class InventoryRfidTask extends AsyncTask<Void, String, String> {
                 break;
             case TIMEOUT:
                 message = "Time Out";
+                break;
+            case ERROR:
+                message = "Inventory Notification Error code A101: " + MainActivity.csLibrary4A.byteArrayToString(notificationData);
                 break;
             default:
                 message = taskCancelReason.name();
@@ -340,6 +350,7 @@ public class InventoryRfidTask extends AsyncTask<Void, String, String> {
 
                     int iPc = Integer.parseInt(strPc, 16);
                     String strXpc = null; int iSensorData = ReaderDevice.INVALID_SENSORDATA; if ((iPc & 0x0200) != 0 && strEpc != null && strEpc.length() >= 8) {
+                        MainActivity.csLibrary4A.appendToLog("strPc = " + strPc + ", strEpc = " + strEpc);
                         int iXpcw1 = Integer.parseInt(strEpc.substring(0, 4), 16);
                         if ((iXpcw1 & 0x8000) != 0) {
                             strXpc = strEpc.substring(0, 8);

@@ -24,7 +24,7 @@ import android.widget.Toast;
 import com.csl.cs710ademoapp.CustomPopupWindow;
 import com.csl.cs710ademoapp.MainActivity;
 import com.csl.cs710ademoapp.R;
-import com.csl.cs710library4a.CustomAlertDialog;
+import com.csl.cslibrary4a.CustomAlertDialog;
 
 public abstract class CommonFragment extends Fragment {
     final boolean DEBUG = false; final String TAG = "Hello";
@@ -74,6 +74,12 @@ public abstract class CommonFragment extends Fragment {
         @Override
         public void run() {
             short reportCount = 5;
+            byte[] notificationData = MainActivity.csLibrary4A.onNotificationEvent();
+            if (false && notificationData != null) {
+                MainActivity.csLibrary4A.appendToLog("2 matched Error: " + MainActivity.csLibrary4A.byteArrayToString(notificationData));
+                CustomPopupWindow customPopupWindow = new CustomPopupWindow(MainActivity.mContext);
+                customPopupWindow.popupStart("Common Notification Error Code A101: " + MainActivity.csLibrary4A.byteArrayToString(notificationData), false);
+            }
             if (MainActivity.csLibrary4A.isBleConnected()) reportCount = MainActivity.csLibrary4A.getTriggerReportingCount();
             mHandler.postDelayed(updateTriggerRunnable, reportCount * 1100);
             if (menuTriggerItem == null) return;

@@ -1,5 +1,6 @@
 package com.csl.cs710ademoapp.fragments;
 
+import android.app.Activity;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -19,13 +20,15 @@ import com.csl.cs710ademoapp.AccessTask;
 import com.csl.cs710ademoapp.GenericTextWatcher;
 import com.csl.cs710ademoapp.MainActivity;
 import com.csl.cs710ademoapp.R;
+import com.csl.cs710ademoapp.SelectTag;
 import com.csl.cs710library4a.CsLibrary4A;
-import com.csl.cs710library4a.ReaderDevice;
+import com.csl.cslibrary4a.ReaderDevice;
 
 public class UtraceFragment extends CommonFragment {
     final boolean DEBUG = true;
+    SelectTag selectTag;
     Spinner memoryBankSpinner;
-	EditText editTextRWTagID, editTextAccessRWAccPassword, editTextaccessRWAntennaPower;
+	EditText editTextRWTagID, editTextAccessRWAccPassword;
     CheckBox checkBoxHideXpc, checkBoxHideEpc, checkBoxHideTid, checkBoxHideUser, checkBoxHideRange;
     RadioButton radioButtonRangeToggle, radioButtonRangeReduced, radioButtonHideSomeTid, radioButtonHideAllTid;
 
@@ -43,16 +46,7 @@ public class UtraceFragment extends CommonFragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        memoryBankSpinner = (Spinner) getActivity().findViewById(R.id.utraceBank);
-        ArrayAdapter<CharSequence> memoryBankAdapter = ArrayAdapter.createFromResource(getActivity(), R.array.read_memoryBank_options, R.layout.custom_spinner_layout);
-        memoryBankAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        memoryBankSpinner.setAdapter(memoryBankAdapter);
-        memoryBankSpinner.setEnabled(true);
-
-        editTextRWTagID = (EditText) getActivity().findViewById(R.id.utraceTagID);
-        editTextAccessRWAccPassword = (EditText) getActivity().findViewById(R.id.utracePasswordValue);
-        editTextAccessRWAccPassword.addTextChangedListener(new GenericTextWatcher(editTextAccessRWAccPassword, 8));
-        editTextAccessRWAccPassword.setText("00000000");
+        selectTag = new SelectTag((Activity)getActivity(), 2);
 
         checkBoxHideXpc = (CheckBox) getActivity().findViewById(R.id.utraceAssertUXPC);
         checkBoxHideEpc = (CheckBox) getActivity().findViewById(R.id.utraceHideEpc);
@@ -108,8 +102,7 @@ public class UtraceFragment extends CommonFragment {
 
         editTextEpcSize = (EditText) getActivity().findViewById(R.id.utraceEpcLength);
 
-        editTextaccessRWAntennaPower = (EditText) getActivity().findViewById(R.id.utraceAntennaPower);
-        editTextaccessRWAntennaPower.setText(String.valueOf(300));
+        selectTag.editTextAccessAntennaPower.setText(String.valueOf(300));
 
         buttonUntrace = (Button) getActivity().findViewById(R.id.utraceUntraceButton);
         buttonUntrace.setOnClickListener(new View.OnClickListener() {
@@ -126,8 +119,14 @@ public class UtraceFragment extends CommonFragment {
             }
         });
 
-        setupTagID();
+        MainActivity.csLibrary4A.appendToLog("going to setupTagID"); setupTagID();
         MainActivity.csLibrary4A.setSameCheck(false);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        MainActivity.csLibrary4A.appendToLog("going to setupTagID"); setupTagID();
     }
 
     @Override
@@ -141,7 +140,7 @@ public class UtraceFragment extends CommonFragment {
     public void setUserVisibleHint(boolean isVisibleToUser) {
         super.setUserVisibleHint(isVisibleToUser);
         if(getUserVisibleHint()) {
-            setupTagID();
+            MainActivity.csLibrary4A.appendToLog("going to setupTagID"); setupTagID();
             userVisibleHint = true;
             MainActivity.csLibrary4A.appendToLog("UtraceFragment is now VISIBLE");
         } else {
@@ -155,12 +154,20 @@ public class UtraceFragment extends CommonFragment {
     }
 
     void setupTagID() {
+        MainActivity.csLibrary4A.appendToLog("selectTag 1 = " + (selectTag != null ? "Valid" : "Null"));
+        if (selectTag == null) return;
         ReaderDevice tagSelected = MainActivity.tagSelected;
+        MainActivity.csLibrary4A.appendToLog("Start with tagSelected = " + (tagSelected == null ? "NULL" : (tagSelected.getSelected() + ", " + tagSelected.getAddress())));
         boolean bSelected = false;
         if (tagSelected != null) {
             if (tagSelected.getSelected() == true) {
                 bSelected = true;
-                if (editTextRWTagID != null) editTextRWTagID.setText(tagSelected.getAddress());
+                MainActivity.csLibrary4A.appendToLog("selectTag is " + (selectTag == null ? "NULL" : "valid"));
+                if (selectTag != null) MainActivity.csLibrary4A.appendToLog("selectTag.editTextTag is " + (selectTag.editTextTagID == null ? "NULL" : "valid"));
+                if (selectTag.editTextTagID != null) {
+                    MainActivity.csLibrary4A.appendToLog("editTextRWTagID.setText " + tagSelected.getAddress());
+                    selectTag.editTextTagID.setText(tagSelected.getAddress());
+                }
 
                 String stringDetail = tagSelected.getDetails();
                 int indexUser = stringDetail.indexOf("USER=");
@@ -171,6 +178,8 @@ public class UtraceFragment extends CommonFragment {
                     boolean bEnableBAPMode = false;
                     int number = Integer.valueOf(stringUser.substring(3, 4), 16);
                     if ((number % 2) == 1) bEnableBAPMode = true;
+//                    CheckBox checkBoxBAP = (CheckBox) getActivity().findViewById(R.id.coldChainEnableBAP);
+//                    checkBoxBAP.setChecked(bEnableBAPMode);
                 }
             }
         }
@@ -219,12 +228,12 @@ public class UtraceFragment extends CommonFragment {
                 boolean invalid = (MainActivity.csLibrary4A.setUntraceable(rangeValue, checkBoxHideUser.isChecked(), tidValue, epcValue, checkBoxHideEpc.isChecked(), checkBoxHideXpc.isChecked()) == false);
                 MainActivity.csLibrary4A.appendToLog("processTickItems, invalid = " + invalid);
 
-                Button button = null; int selectBank = memoryBankSpinner.getSelectedItemPosition() + 1; MainActivity.csLibrary4A.appendToLog("selectBank = " + selectBank);
-                if (strUntraceButtonBackup == null) strUntraceButtonBackup = buttonUntrace.getText().toString(); buttonUntrace.setText("Show"); button = buttonUntrace;
+                Button button = buttonUntrace; int selectBank = selectTag.spinnerSelectBank.getSelectedItemPosition() + 1; MainActivity.csLibrary4A.appendToLog("selectBank = " + selectBank);
+                //if (strUntraceButtonBackup == null) strUntraceButtonBackup = buttonUntrace.getText().toString(); buttonUntrace.setText("Show"); button = buttonUntrace;
                 accessTask = new AccessTask(
                         button, null, invalid,
-                        editTextRWTagID.getText().toString(), selectBank, (selectBank == 1 ? 32 : 0),
-                        editTextAccessRWAccPassword.getText().toString(), Integer.valueOf(editTextaccessRWAntennaPower.getText().toString()), CsLibrary4A.HostCommands.CMD_UNTRACEABLE,
+                        selectTag.editTextTagID.getText().toString(), selectBank, (selectBank == 1 ? 32 : 0),
+                        selectTag.editTextAccessPassword.getText().toString(), Integer.valueOf(selectTag.editTextAccessAntennaPower.getText().toString()), CsLibrary4A.HostCommands.CMD_UNTRACEABLE,
                         0, 0, true, false,
                         null, null, null, null, null);
                 MainActivity.csLibrary4A.appendToLog("setSelectCriteria: going to execute accessTask");
@@ -247,7 +256,7 @@ public class UtraceFragment extends CommonFragment {
         else if (accessTask.getStatus() != AsyncTask.Status.FINISHED) return false;
         else {
             accessResult = accessTask.accessResult;
-            if (strUntraceButtonBackup != null) buttonUntrace.setText(strUntraceButtonBackup); strUntraceButtonBackup = null;
+            //if (strUntraceButtonBackup != null) buttonUntrace.setText(strUntraceButtonBackup); strUntraceButtonBackup = null;
             accessTask = null;
             return true;
         }

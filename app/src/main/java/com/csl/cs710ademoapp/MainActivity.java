@@ -24,7 +24,7 @@ import com.csl.cs710ademoapp.DrawerListContent.DrawerPositions;
 import com.csl.cs710ademoapp.adapters.DrawerListAdapter;
 import com.csl.cs710ademoapp.fragments.*;
 import com.csl.cs710library4a.CsLibrary4A;
-import com.csl.cs710library4a.ReaderDevice;
+import com.csl.cslibrary4a.ReaderDevice;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -154,6 +154,7 @@ public class MainActivity extends AppCompatActivity {
     private void selectItem(DrawerPositions position) {
         if (DEBUG) Log.i(TAG, "MainActivity.selectItem: position = " + position);
         if (position != DrawerPositions.MAIN
+                && position != DrawerPositions.SPECIAL
                 && position != DrawerPositions.ABOUT
                 && position != DrawerPositions.CONNECT
                 && position != DrawerPositions.DIRECTWEDGE && csLibrary4A.isBleConnected() == false) {
@@ -250,8 +251,6 @@ public class MainActivity extends AppCompatActivity {
                 fragment = new AccessReadWriteUserFragment();
                 break;
             case WEDGE:
-                fragment = new HomeSpecialFragment();
-                break;
             case DIRECTWEDGE:
                 fragment = new DirectWedgeFragment();
                 break;
@@ -365,17 +364,15 @@ public class MainActivity extends AppCompatActivity {
     public void ctesiusClicked(View view) { selectItem(DrawerPositions.CTESIUS); }
     public void asygnClicked(View view) { selectItem(DrawerPositions.ASYGNTAG); }
 
-    public void regClicked(View view) {
-        selectItem(DrawerPositions.REGISTER);
-    }
+    public void regClicked(View view) { selectItem(DrawerPositions.REGISTER); }
     public static boolean wedged = false;
     public void wedgeClicked(View view) {
-        if (true) {
+        if (false) {
             wedged = true;
             Intent i = new Intent(Intent.ACTION_MAIN);
             i.addCategory(Intent.CATEGORY_HOME);
             startActivity(i);
-        }
+        } else selectItem(DrawerPositions.WEDGE);
     }
     public void directWedgeClicked(View view) {
         selectItem(DrawerPositions.DIRECTWEDGE);

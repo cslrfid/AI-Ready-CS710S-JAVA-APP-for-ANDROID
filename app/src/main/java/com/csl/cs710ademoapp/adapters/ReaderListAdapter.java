@@ -11,7 +11,7 @@ import android.widget.TextView;
 
 import com.csl.cs710ademoapp.MainActivity;
 import com.csl.cs710ademoapp.R;
-import com.csl.cs710library4a.ReaderDevice;
+import com.csl.cslibrary4a.ReaderDevice;
 
 import java.util.ArrayList;
 
