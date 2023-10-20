@@ -107,7 +107,7 @@ public class AccessTask extends AsyncTask<Void, String, String> {
     }
 
     void preExecute() {
-        accessResult = null;
+        accessResult = null; MainActivity.csLibrary4A.appendToLog("accessResult is set null");
         playerO = MainActivity.sharedObjects.playerO;
         playerN = MainActivity.sharedObjects.playerN;
         //playerN.start();
@@ -182,10 +182,13 @@ public class AccessTask extends AsyncTask<Void, String, String> {
         }
     }
 
+    boolean accessCompleteReceived = false;
+
     @Override
     protected String doInBackground(Void... a) {
         boolean ending = false;
         int iTimeOut = 5000;
+        accessCompleteReceived = false;
 
         while (MainActivity.csLibrary4A.isBleConnected() && isCancelled() == false && ending == false) {
             int batteryCount = MainActivity.csLibrary4A.getBatteryCount();
@@ -204,6 +207,7 @@ public class AccessTask extends AsyncTask<Void, String, String> {
                 if (rx000pkgData.responseType == null) {
                     publishProgress("null response");
                 } else if (rx000pkgData.responseType == CsLibrary4A.HostCmdResponseTypes.TYPE_18K6C_TAG_ACCESS) {
+                    accessCompleteReceived = true;
                     MainActivity.csLibrary4A.appendToLog("rx000pkgData.dataValues = " + MainActivity.csLibrary4A.byteArrayToString(rx000pkgData.dataValues));
                     if (rx000pkgData.decodedError == null) {
                         if (done == false) {
@@ -217,6 +221,7 @@ public class AccessTask extends AsyncTask<Void, String, String> {
                     } else publishProgress(rx000pkgData.decodedError);
                     iTimeOut = 1000;
                 } else if (rx000pkgData.responseType == CsLibrary4A.HostCmdResponseTypes.TYPE_COMMAND_END) {
+                    if (hostCommand == CsLibrary4A.HostCommands.CMD_18K6CKILL && accessCompleteReceived == false) accessResult = "";
                     MainActivity.csLibrary4A.appendToLog("BtData: repeat = " + repeat + ", decodedError = " + rx000pkgData.decodedError + ", resultError = " + resultError);
                     if (rx000pkgData.decodedError != null) { endingMessaage = rx000pkgData.decodedError; ending = true; }
                     else if (repeat > 0 && resultError.length() == 0) {

@@ -6,8 +6,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 
+import com.csl.cs710ademoapp.MainActivity;
 import com.csl.cs710ademoapp.R;
+import com.google.android.material.tabs.TabLayout;
 
 public class HomeSpecialFragment extends CommonFragment {
     final boolean DEBUG = false;
@@ -25,6 +28,14 @@ public class HomeSpecialFragment extends CommonFragment {
             ActionBar actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
             actionBar.setTitle(R.string.title_activity_special);
         }
+
+        Button buttonFdmicro = (Button) getActivity().findViewById(R.id.SpecialButtonFdmicro);
+        Button buttonLanda = (Button) getActivity().findViewById(R.id.SpecialButtonLanda);
+        if (MainActivity.csLibrary4A.get98XX() == 2) {
+            buttonFdmicro.setVisibility(View.GONE); buttonLanda.setVisibility(View.GONE);
+        }
+        MainActivity.mDid = null;
+        MainActivity.csLibrary4A.restoreAfterTagSelect();
     }
 
     public HomeSpecialFragment() {

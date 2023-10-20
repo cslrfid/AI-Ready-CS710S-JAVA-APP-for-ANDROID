@@ -8,13 +8,16 @@ import android.widget.TextView;
 import androidx.annotation.Keep;
 
 import com.csl.cs108library4a.Cs108Library4A;
+import com.csl.cslibrary4a.NotificationController;
+import com.csl.cslibrary4a.ReaderDevice;
+import com.csl.cslibrary4a.Utility;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class CsLibrary4A {
     boolean DEBUG = false, DEBUG2 = false;
-    String stringVersion = "4.9.2";
+    String stringVersion = "4.9.6";
     Utility utility;
     Cs710Library4A cs710Library4A;
     com.csl.cs108library4a.Cs108Library4A cs108Library4A;
@@ -30,12 +33,13 @@ public class CsLibrary4A {
 
     public String getlibraryVersion() { //called before connection
         if (DEBUG) Log.i("Hello2", "getlibraryVersion");
-        if (false) {
-            String string710 = cs710Library4A.getlibraryVersion();
-            String string108 = cs108Library4A.getlibraryVersion();
-            return stringVersion + "." + string710.substring(string710.length()-1, string710.length()) + "." + string108.substring(string108.length()-1, string108.length());
-        }
-        return stringVersion;
+        String string710 = cs710Library4A.getlibraryVersion(); appendToLog("string710 = " + string710);
+        int iPos0 = string710.indexOf(".");
+        int iPos1 = string710.substring(iPos0 + 1).indexOf(".");
+        String string108 = cs108Library4A.getlibraryVersion(); appendToLog("string108 = " + string108);
+        int iPos2 = string108.indexOf(".");
+        int iPos3 = string108.substring(iPos2 + 1).indexOf(".");
+        return stringVersion + "-" + string710.substring(iPos0 + iPos1 + 2) + "-" + string108.substring(iPos2 + iPos3 + 2);
     } //152
 
     public String byteArrayToString(byte[] packet) { //called before connection
@@ -114,8 +118,8 @@ public class CsLibrary4A {
         if (readerDevice == null) iServiceUuid = iServiceUuidConnectedBefore;
         else iServiceUuid = readerDevice.getServiceUUID2p1();
         if (iServiceUuid == 0) {
-            com.csl.cs108library4a.ReaderDevice readerDevice1 = null;
-            if (readerDevice != null) readerDevice1 = new com.csl.cs108library4a.ReaderDevice(
+            ReaderDevice readerDevice1 = null;
+            if (readerDevice != null) readerDevice1 = new ReaderDevice(
                     readerDevice.getName(), readerDevice.getAddress(), readerDevice.getSelected(),
                     readerDevice.getDetails(), readerDevice.getCount(), readerDevice.getRssi(),
                     readerDevice.getServiceUUID2p1());
@@ -382,8 +386,15 @@ public class CsLibrary4A {
         return -1;
     } //905
 
+    public boolean setBasicCurrentLinkProfile() {
+        if (DEBUG) Log.i("Hello2", "setBasicCurrentLinkProfile");
+        if (isCs108Connected()) return true;
+        else if (isCs710Connected()) return cs710Library4A.setBasicCurrentLinkProfile();
+        else Log.i("Hello2", "setBasicCurrentLinkProfile" + stringNOTCONNECT);
+        return false;
+    } //930
     public boolean setCurrentLinkProfile(int profile) {
-        if (DEBUG) Log.i("Hello2", "setCurrentLinkProfile");
+        if (DEBUG) Log.i("Hello2", "setCurrentLinkProfile to " + profile);
         if (isCs108Connected()) return cs108Library4A.setCurrentLinkProfile(profile);
         else if (isCs710Connected()) return cs710Library4A.setCurrentLinkProfile(profile);
         else Log.i("Hello2", "setCurrentLinkProfile" + stringNOTCONNECT);
@@ -515,6 +526,13 @@ public class CsLibrary4A {
         else Log.i("Hello2", "getAuthenticateReplyLength" + stringNOTCONNECT);
     } //2069
 
+    public boolean setTamConfiguration(boolean header, String matchData) {
+        if (DEBUG | true) Log.i("Hello2", "setTamConfiguration with header = " + header + ", matchData = " + matchData);
+        if (isCs108Connected()) return cs108Library4A.setTamConfiguration(header, matchData);
+        else if (isCs710Connected()) return cs710Library4A.setTamConfiguration(header, matchData);
+        else Log.i("Hello2", "setTam1Configuration");
+        return false;
+    } //2072
     public boolean setTam1Configuration(int keyId, String matchData) {
         if (DEBUG | true) Log.i("Hello2", "setTam1Configuration with KeyId = " + keyId + ", matchData = " + matchData);
         if (isCs108Connected()) return cs108Library4A.setTam1Configuration(keyId, matchData);
@@ -542,8 +560,12 @@ public class CsLibrary4A {
         Log.i("Hello2", "setUntraceable 1");
         return false; } //2127
     public boolean setUntraceable(int range, boolean user, int tid, int epcLength, boolean epc, boolean uxpc) {
-        Log.i("Hello2", "setUntraceable 2");
-        return false; } //2130
+        if (DEBUG) Log.i("Hello2", "setUntraceable");
+        if (isCs108Connected()) return cs108Library4A.setUntraceable(range, user, tid, epcLength, epc, uxpc);
+        else if (isCs710Connected()) return false;
+        else Log.i("Hello2", "setUntraceable" + stringNOTCONNECT);
+        return false;
+    }
 
     public boolean setAuthenticateConfiguration() {
         if (DEBUG) Log.i("Hello2", "setAuthenticateConfiguration");
@@ -1417,14 +1439,14 @@ public class CsLibrary4A {
     public void setNotificationListener(NotificationListener listener) {
         if (DEBUG) Log.i("Hello2", "setNotificationListener");
         if (isCs108Connected()) {
-            cs108Library4A.setNotificationListener(new com.csl.cs108library4a.Cs108Library4A.NotificationListener() {
+            cs108Library4A.setNotificationListener(new NotificationController.NotificationListener() {
                 @Override
                 public void onChange() {
                     listener.onChange();
                 }
             });
         } else if (isCs710Connected()) {
-            cs710Library4A.setNotificationListener(new Cs710Library4A.NotificationListener() {
+            cs710Library4A.setNotificationListener(new NotificationController.NotificationListener() {
                 @Override
                 public void onChange() {
                     listener.onChange();
@@ -1808,11 +1830,11 @@ public class CsLibrary4A {
 
     public enum HostCommands {
         NULL, CMD_WROEM, CMD_RDOEM, CMD_ENGTEST, CMD_MBPRDREG, CMD_MBPWRREG,
-        CMD_18K6CINV, CMD_18K6CREAD, CMD_18K6CWRITE, CMD_18K6CLOCK, CMD_18K6CKILL, CMD_SETPWRMGMTCFG, CMD_18K6CAUTHENTICATE,
+        CMD_18K6CINV, CMD_18K6CREAD, CMD_18K6CWRITE, CMD_18K6CLOCK, CMD_18K6CKILL, CMD_SETPWRMGMTCFG, CMD_18K6CAUTHENTICATE, CMD_UNTRACEABLE,
         CMD_UPDATELINKPROFILE,
         CMD_18K6CBLOCKWRITE,
         CMD_CHANGEEAS, CMD_GETSENSORDATA,
-        CMD_READBUFFER, CMD_UNTRACEABLE,
+        CMD_READBUFFER,
         CMD_FDM_RDMEM, CMD_FDM_WRMEM, CMD_FDM_AUTH, CMD_FDM_GET_TEMPERATURE, CMD_FDM_START_LOGGING, CMD_FDM_STOP_LOGGING,
         CMD_FDM_WRREG, CMD_FDM_RDREG, CMD_FDM_DEEP_SLEEP, CMD_FDM_OPMODE_CHECK, CMD_FDM_INIT_REGFILE, CMD_FDM_LED_CTRL,
         CMD_18K6CINV_SELECT,
@@ -1861,10 +1883,50 @@ public class CsLibrary4A {
                 case CMD_18K6CAUTHENTICATE:
                     hostCommands1 = com.csl.cs108library4a.Cs108Library4A.HostCommands.CMD_18K6CAUTHENTICATE;
                     break;
+                case CMD_UNTRACEABLE:
+                    hostCommands1 = com.csl.cs108library4a.Cs108Library4A.HostCommands.CMD_UNTRACEABLE;
+                    break;
                 case CMD_GETSENSORDATA:
                     hostCommands1 = com.csl.cs108library4a.Cs108Library4A.HostCommands.CMD_GETSENSORDATA;
+                    break;
+                case CMD_FDM_RDMEM:
+                    hostCommands1 = com.csl.cs108library4a.Cs108Library4A.HostCommands.CMD_FDM_RDMEM;
+                    break;
+                case CMD_FDM_WRMEM:
+                    hostCommands1 = com.csl.cs108library4a.Cs108Library4A.HostCommands.CMD_FDM_WRMEM;
+                    break;
+                case CMD_FDM_AUTH:
+                    hostCommands1 = com.csl.cs108library4a.Cs108Library4A.HostCommands.CMD_FDM_AUTH;
+                    break;
+                case CMD_FDM_GET_TEMPERATURE:
+                    hostCommands1 = com.csl.cs108library4a.Cs108Library4A.HostCommands.CMD_FDM_GET_TEMPERATURE;
+                    break;
+                case CMD_FDM_START_LOGGING:
+                    hostCommands1 = com.csl.cs108library4a.Cs108Library4A.HostCommands.CMD_FDM_START_LOGGING;
+                    break;
+                case CMD_FDM_STOP_LOGGING:
+                    hostCommands1 = com.csl.cs108library4a.Cs108Library4A.HostCommands.CMD_FDM_STOP_LOGGING;
+                    break;
+                case CMD_FDM_WRREG:
+                    hostCommands1 = com.csl.cs108library4a.Cs108Library4A.HostCommands.CMD_FDM_WRREG;
+                    break;
+                case CMD_FDM_RDREG:
+                    hostCommands1 = com.csl.cs108library4a.Cs108Library4A.HostCommands.CMD_FDM_RDREG;
+                    break;
+                case CMD_FDM_DEEP_SLEEP:
+                    hostCommands1 = com.csl.cs108library4a.Cs108Library4A.HostCommands.CMD_FDM_DEEP_SLEEP;
+                    break;
+                case CMD_FDM_OPMODE_CHECK:
+                    hostCommands1 = com.csl.cs108library4a.Cs108Library4A.HostCommands.CMD_FDM_OPMODE_CHECK;
+                    break;
+                case CMD_FDM_INIT_REGFILE:
+                    hostCommands1 = com.csl.cs108library4a.Cs108Library4A.HostCommands.CMD_FDM_INIT_REGFILE;
+                    break;
+                case CMD_FDM_LED_CTRL:
+                    hostCommands1 = com.csl.cs108library4a.Cs108Library4A.HostCommands.CMD_FDM_LED_CTRL;
+                    break;
                 default:
-                    Log.i("Hello2", "sendHostRegRequestHST_CMD: hostCommand = " + hostCommand.toString());
+                    Log.i("Hello2", "Skip sendHostRegRequestHST_CMD: hostCommand = " + hostCommand.toString());
                     break;
             }
             if (hostCommands1 == null) return false;
@@ -1887,6 +1949,9 @@ public class CsLibrary4A {
                 case CMD_18K6CAUTHENTICATE:
                     hostCommands1 = Cs710Library4A.HostCommands.CMD_18K6CAUTHENTICATE;
                     break;
+                case CMD_UNTRACEABLE:
+                    hostCommands1 = Cs710Library4A.HostCommands.CMD_UNTRACEABLE;
+                    break;
                 case CMD_GETSENSORDATA:
                     hostCommands1 = Cs710Library4A.HostCommands.CMD_GETSENSORDATA;
                 default:
@@ -1908,28 +1973,44 @@ public class CsLibrary4A {
     } //4241
 
     public void macWrite(int address, long value) {
-        Log.i("Hello2", "macWrite");
+        if (DEBUG) Log.i("Hello2", "macWrite");
+        if (isCs108Connected()) cs108Library4A.macWrite(address, value);
+        else if (isCs710Connected()) { }
     } //4248
     public void set_fdCmdCfg(int value) {
-        Log.i("Hello2", "set_fdCmdCfg");
+        if (DEBUG) Log.i("Hello2", "set_fdCmdCfg");
+        if (isCs108Connected()) cs108Library4A.set_fdCmdCfg(value);
+        else if (isCs710Connected()) { }
     } //4250
     public void set_fdRegAddr(int addr) {
-        Log.i("Hello2", "set_fdRegAddr");
+        if (DEBUG) Log.i("Hello2", "set_fdRegAddr");
+        if (isCs108Connected()) cs108Library4A.set_fdRegAddr(addr);
+        else if (isCs710Connected()) { }
     } //4253
     public void set_fdWrite(int addr, long value) {
-        Log.i("Hello2", "set_fdWrite");
+        if (DEBUG) Log.i("Hello2", "set_fdWrite");
+        if (isCs108Connected()) cs108Library4A.set_fdWrite(addr, value);
+        else if (isCs710Connected()) { }
     } //4254
     public void set_fdPwd(int value) {
-        Log.i("Hello2", "set_fdPwd");
+        if (DEBUG) Log.i("Hello2", "set_fdPwd");
+        if (isCs108Connected()) cs108Library4A.set_fdPwd(value);
+        else if (isCs710Connected()) { }
     } //4258
     public void set_fdBlockAddr4GetTemperature(int addr) {
-        Log.i("Hello2", "set_fdBlockAddr4GetTemperature");
+        if (DEBUG) Log.i("Hello2", "set_fdBlockAddr4GetTemperature");
+        if (isCs108Connected()) cs108Library4A.set_fdBlockAddr4GetTemperature(addr);
+        else if (isCs710Connected()) { }
     } //4259
     public void set_fdReadMem(int addr, long len) {
-        Log.i("Hello2", "set_fdReadMem");
+        if (DEBUG) Log.i("Hello2", "set_fdReadMem");
+        if (isCs108Connected()) cs108Library4A.set_fdReadMem(addr, len);
+        else if (isCs710Connected()) { }
     } //4262
     public void set_fdWriteMem(int addr, int len, long value) {
-        Log.i("Hello2", "set_fdWriteMem");
+        if (DEBUG) Log.i("Hello2", "set_fdWriteMem");
+        if (isCs108Connected()) cs108Library4A.set_fdWriteMem(addr, len, value);
+        else if (isCs710Connected()) { }
     } //4266
 
     public void setImpinJExtension(boolean tagFocus, boolean fastId) {
@@ -1940,17 +2021,29 @@ public class CsLibrary4A {
     } //4271
 
     public String strFloat16toFloat32(String strData) {
-        Log.i("Hello2", "strFloat16toFloat32");
-        return null; } //4387
+        if (DEBUG) Log.i("Hello2", "strFloat16toFloat32");
+        if (isCs108Connected()) return cs108Library4A.strFloat16toFloat32(strData);
+        else if (isCs710Connected()) return cs710Library4A.strFloat16toFloat32(strData);
+        return null;
+    } //4387
     public String str2float16(String strData) {
-        Log.i("Hello2", "str2float16");
-        return null; } //4393
+        if (DEBUG) Log.i("Hello2", "str2float16");
+        if (isCs108Connected()) return cs108Library4A.str2float16(strData);
+        else if (isCs710Connected()) return cs710Library4A.str2float16(strData);
+        return null;
+    } //4393
     public String temperatureC2F(String strValue) {
-        Log.i("Hello2", "temperatureC2F");
-        return null; } //4424
+        if (DEBUG) Log.i("Hello2", "temperatureC2F");
+        if (isCs108Connected()) return cs108Library4A.temperatureC2F(strValue);
+        else if (isCs710Connected()) return cs710Library4A.temperatureC2F(strValue);
+        return null;
+    } //4424
     public String temperatureF2C(String strValue) {
-        Log.i("Hello2", "temperatureF2C");
-        return null; } //4436
+        if (DEBUG) Log.i("Hello2", "temperatureF2C");
+        if (isCs108Connected()) return cs108Library4A.temperatureF2C(strValue);
+        else if (isCs710Connected()) return cs710Library4A.temperatureF2C(strValue);
+        return null;
+    } //4436
 
     public int get98XX() {
         if (DEBUG) Log.i("Hello2", "get98XX");

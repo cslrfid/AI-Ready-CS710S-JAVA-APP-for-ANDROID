@@ -25,7 +25,7 @@ import com.csl.cs710ademoapp.SelectTag;
 import com.csl.cs710ademoapp.MainActivity;
 import com.csl.cs710ademoapp.R;
 import com.csl.cs710library4a.CsLibrary4A;
-import com.csl.cs710library4a.ReaderDevice;
+import com.csl.cslibrary4a.ReaderDevice;
 
 import static com.csl.cs710ademoapp.MainActivity.mContext;
 import static com.csl.cs710ademoapp.MainActivity.tagSelected;
@@ -65,7 +65,7 @@ public class AccessReadWriteFragment extends CommonFragment {
         actionBar.setIcon(R.drawable.dl_access);
         actionBar.setTitle(R.string.title_activity_readwrite);
 
-        selectTag = new SelectTag((Activity)getActivity ());
+        selectTag = new SelectTag((Activity)getActivity(), 0);
 
         spinnerSelectBank = (Spinner) getActivity().findViewById(R.id.selectMemoryBank);
         ArrayAdapter<CharSequence> targetAdapter = ArrayAdapter.createFromResource(getActivity(), R.array.read_memoryBank_options, R.layout.custom_spinner_layout);

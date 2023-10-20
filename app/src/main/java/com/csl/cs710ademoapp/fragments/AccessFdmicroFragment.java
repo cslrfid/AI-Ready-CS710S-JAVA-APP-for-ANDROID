@@ -55,7 +55,7 @@ public class AccessFdmicroFragment extends CommonFragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        selectTag = new SelectTag((Activity) getActivity());
+        selectTag = new SelectTag((Activity)getActivity(), 0);
 
         tableRowOffsetLength = (TableRow) getActivity().findViewById(R.id.accessFDOffsetLengthRow);
         tableRowValue = (TableRow) getActivity().findViewById(R.id.accessFDValueRow);
@@ -192,7 +192,7 @@ public class AccessFdmicroFragment extends CommonFragment {
             }
         });
 
-        buttonRead = (Button) getActivity().findViewById(R.id.accessCCReadButton);
+        buttonRead = (Button) getActivity().findViewById(R.id.accessRWReadButton);
         buttonRead.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -202,7 +202,7 @@ public class AccessFdmicroFragment extends CommonFragment {
             }
         });
 
-        buttonWrite = (Button) getActivity().findViewById(R.id.accessCCWriteButton);
+        buttonWrite = (Button) getActivity().findViewById(R.id.accessRWWriteButton);
         buttonWrite.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

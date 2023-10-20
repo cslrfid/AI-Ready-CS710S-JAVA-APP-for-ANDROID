@@ -18,7 +18,7 @@ public class UcodeFragment extends CommonFragment {
     private ViewPager viewPager;
     UcodeAdapter mAdapter;
 
-    private String[] tabs = {"Scan", "Configuration"};
+    private String[] tabs = {"Scan", "Authenticate"};
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {

@@ -29,9 +29,10 @@ import java.util.List;
 
 import static java.lang.Math.log10;
 
-import com.csl.cs108library4a.BuildConfig;
+import com.csl.cslibrary4a.NotificationController;
+import com.csl.cslibrary4a.ReaderDevice;
 
-public class Cs108Library4A extends Cs108Connector {
+public class Cs108Library4A extends CsReaderConnector {
     final boolean DEBUG = false;
     Context context;
     private Handler mHandler = new Handler();
@@ -149,9 +150,7 @@ public class Cs108Library4A extends Cs108Connector {
         }
     }
 
-    public String getlibraryVersion() {
-        return BuildConfig.VERSION_NAME;
-    }
+    public String getlibraryVersion() { return utility.getCombinedVersion(BuildConfig.VERSION_NAME); }
 
     public String byteArrayToString(byte[] packet) {
         return super.byteArrayToString(packet);
@@ -287,7 +286,7 @@ public class Cs108Library4A extends Cs108Connector {
                     //barcodeSendCommandLoadUserDefault();
                     //barcodeSendQuerySystem();
 
-                    setBatteryAutoReport(true); //0xA003
+                    notificationController.setBatteryAutoReport(true); //0xA003
                 }
                 abortOperation();
                 getHostProcessorICSerialNumber(); //0xb004 (but access Oem as bluetooth version is not got)
@@ -437,9 +436,7 @@ public class Cs108Library4A extends Cs108Connector {
 
     @Keep
     public long getStreamInRate() { return super.getStreamInRate(); }
-    public long getTagRate() {
-        return -1;
-    }
+    public long getTagRate() { return -1; }
 
     @Keep public boolean getRfidOnStatus() { return mRfidDevice.getOnStatus(); }
     public boolean setRfidOn(boolean onStatus) { return mRfidDevice.mRfidReaderChip.turnOn(onStatus); }
@@ -487,8 +484,8 @@ public class Cs108Library4A extends Cs108Connector {
         setIntraPkDelay((byte)4);
         setDupDelay((byte)0);
 
-        setTriggerReporting(triggerReportingDefault);
-        setTriggerReportingCount(triggerReportingCountSettingDefault);
+        notificationController.setTriggerReporting(notificationController.triggerReportingDefault);
+        notificationController.setTriggerReportingCount(notificationController.triggerReportingCountSettingDefault);
         setInventoryBeep(inventoryBeepDefault);
         setBeepCount(beepCountSettingDefault);
         setInventoryVibrate(inventoryVibrateDefault);
@@ -506,7 +503,7 @@ public class Cs108Library4A extends Cs108Connector {
         setServerTimeout(serverTimeoutDefault);
         barcode2TriggerMode = barcode2TriggerModeDefault;
 
-        setUserDebugEnable(mBluetoothConnector.userDebugEnableDefault);
+        setUserDebugEnable(bluetoothConnector.userDebugEnableDefault);
         preFilterData = null;
     }
 
@@ -541,15 +538,15 @@ public class Cs108Library4A extends Cs108Connector {
                     if (DEBUG) appendToLog("checkVersionRunnable: Checkpoint 2");
                     if (mBarcodeDevice.checkPreSuffix(prefixRef, suffixRef) == false) barcodeSendCommandSetPreSuffix();
                     if (mBarcodeDevice.bBarcodeTriggerMode != 0x30) barcodeSendCommandTrigger();
-                    getAutoRFIDAbort(); getAutoBarStartSTop(); //setAutoRFIDAbort(false); setAutoBarStartSTop(true);
+                    notificationController.getAutoRFIDAbort(); notificationController.getAutoBarStartSTop(); //setAutoRFIDAbort(false); setAutoBarStartSTop(true);
                 }
                 if (DEBUG) appendToLog("checkVersionRunnable: Checkpoint 3");
                 setAntennaCycle(0xffff);
-                if (mBluetoothConnector.getCsModel() == 463) {
+                if (bluetoothConnector.getCsModel() == 463) {
                     if (DEBUG) appendToLog("checkVersionRunnable: Checkpoint 4");
                     setAntennaDwell(2000);
                     setAntennaInvCount(0);
-                } else if (mBluetoothConnector.getCsModel() == 108) {
+                } else if (bluetoothConnector.getCsModel() == 108) {
                     if (DEBUG) appendToLog("checkVersionRunnable: Checkpoint 5");
                     setAntennaDwell(0);
                     setAntennaInvCount(0xfffffffeL);
@@ -639,7 +636,7 @@ public class Cs108Library4A extends Cs108Connector {
                             } else if (dataArray[0].matches("rxGain")) {
                                 setRxGain(Integer.valueOf(dataArray[1]));
                             } else if (dataArray[0].matches("deviceName")) {
-                                mBluetoothConnector.mBluetoothIcDevice.deviceName = dataArray[1].getBytes();
+                                bluetoothConnector.deviceName = dataArray[1].getBytes();
                             } else if (dataArray[0].matches("batteryDisplay")) {
                                 setBatteryDisplaySetting(Integer.valueOf(dataArray[1]));
                             } else if (dataArray[0].matches("rssiDisplay")) {
@@ -654,9 +651,9 @@ public class Cs108Library4A extends Cs108Connector {
                                 setDupDelay(Byte.valueOf(dataArray[1]));
 
                             } else if (dataArray[0].matches(("triggerReporting"))) {
-                                setTriggerReporting(dataArray[1].matches("true") ? true : false);
+                                notificationController.setTriggerReporting(dataArray[1].matches("true") ? true : false);
                             } else if (dataArray[0].matches(("triggerReportingCount"))) {
-                                setTriggerReportingCount(Short.valueOf(dataArray[1]));
+                                notificationController.setTriggerReportingCount(Short.valueOf(dataArray[1]));
                             } else if (dataArray[0].matches(("inventoryBeep"))) {
                                 setInventoryBeep(dataArray[1].matches("true") ? true : false);
                             } else if (dataArray[0].matches(("inventoryBeepCount"))) {
@@ -721,7 +718,7 @@ public class Cs108Library4A extends Cs108Connector {
                                 if (dataArray[1].matches("true")) preFilterData.maskbit = true;
                                 else preFilterData.maskbit = false;
                             } else if (dataArray[0].matches(("userDebugEnable"))) {
-                                mBluetoothConnector.userDebugEnable = dataArray[1].matches("true") ? true : false;
+                                bluetoothConnector.userDebugEnable = dataArray[1].matches("true") ? true : false;
                             }
                         }
                     }
@@ -779,8 +776,8 @@ public class Cs108Library4A extends Cs108Connector {
             outData = "intraPkDelay," + String.valueOf(getIntraPkDelay() +"\n"); stream.write(outData.getBytes()); appendToLog("outData = " + outData);
             outData = "dupDelay," + String.valueOf(getDupDelay() +"\n"); stream.write(outData.getBytes()); appendToLog("outData = " + outData);
 
-            outData = "triggerReporting," + String.valueOf(getTriggerReporting() + "\n"); stream.write(outData.getBytes()); appendToLog("outData = " + outData);
-            outData = "triggerReportingCount," + String.valueOf(getTriggerReportingCount() + "\n"); stream.write(outData.getBytes()); appendToLog("outData = " + outData);
+            outData = "triggerReporting," + String.valueOf(notificationController.getTriggerReporting() + "\n"); stream.write(outData.getBytes()); appendToLog("outData = " + outData);
+            outData = "triggerReportingCount," + String.valueOf(notificationController.getTriggerReportingCount() + "\n"); stream.write(outData.getBytes()); appendToLog("outData = " + outData);
             outData = "inventoryBeep," + String.valueOf(getInventoryBeep() + "\n"); stream.write(outData.getBytes()); appendToLog("outData = " + outData);
             outData = "inventoryBeepCount," + String.valueOf(getBeepCount() + "\n"); stream.write(outData.getBytes()); appendToLog("outData = " + outData);
             outData = "inventoryVibrate," + String.valueOf(getInventoryVibrate() + "\n"); stream.write(outData.getBytes()); appendToLog("outData = " + outData);
@@ -825,7 +822,7 @@ public class Cs108Library4A extends Cs108Connector {
         return mRfidDevice.mRfidReaderChip.mRx000Setting.getMacVer();
     }
 
-    public int getcsModel() { return mBluetoothConnector.getCsModel(); }
+    public int getcsModel() { return bluetoothConnector.getCsModel(); }
 
     //Configuration Calls: RFID
     public int getAntennaCycle() {
@@ -838,7 +835,7 @@ public class Cs108Library4A extends Cs108Connector {
         return mRfidDevice.mRfidReaderChip.mRx000Setting.setAntennaInvCount(antennaInvCount);
     }
     public int getPortNumber() {
-        if (mBluetoothConnector.getCsModel() == 463) return 4;
+        if (bluetoothConnector.getCsModel() == 463) return 4;
         else return 1;
     }
     public int getAntennaSelect() {
@@ -2399,6 +2396,27 @@ public class Cs108Library4A extends Cs108Connector {
     @Keep public void getAuthenticateReplyLength() {
         mRfidDevice.mRfidReaderChip.mRx000Setting.getAuthenticateReplyLength();
     }
+    @Keep public boolean setTamConfiguration(boolean header, String matchData) {
+        appendToLog("header = " + header + ", matchData.length = " + matchData.length() + ", matchData = " + matchData);
+        if (matchData.length() != 12) return false;
+
+        boolean retValue = false; String preChallenge = matchData.substring(0, 2);
+        int iValue = Integer.parseInt(preChallenge, 16);
+        iValue &= 0x07;
+        if (header) iValue |= 0x04;
+        else iValue &= ~0x04;
+        preChallenge = String.format("%02X", iValue);
+        matchData = preChallenge + matchData.substring(2);
+        appendToLog("new matchData = " + matchData);
+
+        retValue = setAuthMatchData(matchData);
+        appendToLog("setAuthMatchData returns " + retValue);
+        if (retValue) {
+            retValue = mRfidDevice.mRfidReaderChip.mRx000Setting.setHST_AUTHENTICATE_CFG(true, false, 1, matchData.length() * 4);
+            appendToLog("setHST_AUTHENTICATE_CFG returns " + retValue);
+        }
+        return retValue;
+    }
     @Keep public boolean setTam1Configuration(int keyId, String matchData) {
         appendToLog("keyId = " + keyId + ", matchData.length = " + matchData.length());
         if (keyId > 255) return false;
@@ -2555,10 +2573,10 @@ public class Cs108Library4A extends Cs108Connector {
         return true;
     }
     @Keep public boolean getUserDebugEnable() {
-        boolean bValue = mBluetoothConnector.userDebugEnable; appendToLog("bValue = " + bValue); return bValue; }
+        boolean bValue = bluetoothConnector.userDebugEnable; appendToLog("bValue = " + bValue); return bValue; }
     @Keep public boolean setUserDebugEnable(boolean userDebugEnable) {
         appendToLog("new userDebug = " + userDebugEnable);
-        mBluetoothConnector.userDebugEnable = userDebugEnable;
+        bluetoothConnector.userDebugEnable = userDebugEnable;
         return true;
     }
 
@@ -2960,7 +2978,7 @@ public class Cs108Library4A extends Cs108Connector {
                     mRfidDevice.mRfidReaderChip.mRx000Setting.setCycleDelay(cycleDelaySetting);
                     mRfidDevice.mRfidReaderChip.mRx000Setting.setInvModeCompact(false);
                 }
-                getAutoRFIDAbort(); setAutoRFIDAbort(true); getAutoRFIDAbort();
+                notificationController.getAutoRFIDAbort(); notificationController.setAutoRFIDAbort(true); notificationController.getAutoRFIDAbort();
                 mRfidDevice.mRfidReaderChip.setPwrManagementMode(false);
                 appendToLog("going to sendHostRegRequestHST_CMD(Cs108Library4A.HostCommands.CMD_18K6CINV)");
 
@@ -2971,18 +2989,10 @@ public class Cs108Library4A extends Cs108Connector {
         }
         return retValue;
     }
-    boolean resetSiliconLab() {
-        boolean bRetValue = false;
-        if (mSiliconLabIcDevice != null) {
-            bRetValue = mSiliconLabIcDevice.mSiliconLabIcToWrite.add(SiliconLabIcPayloadEvents.RESET);
-        }
-        mRfidDevice.setInventoring(false);
-        return bRetValue;
-    }
     @Keep public boolean abortOperation() {
         boolean bRetValue = false;
         if (mRfidDevice.mRfidReaderChip != null) {
-            bRetValue = mRfidDevice.mRfidReaderChip.sendControlCommand(Cs108Connector.ControlCommands.ABORT);
+            bRetValue = mRfidDevice.mRfidReaderChip.sendControlCommand(CsReaderConnector.ControlCommands.ABORT);
         }
         mRfidDevice.setInventoring(false);
         return bRetValue;
@@ -3822,7 +3832,7 @@ public class Cs108Library4A extends Cs108Connector {
             mBarcodeDevice.mBarcodeToRead.clear(); barcodeDataStore = null;
             if (getBarcodeOnStatus() == false) { result = setBarcodeOn(true); appendToLog("TTestPoint 1"); }
             if (barcode2TriggerMode && result) {
-                if (getTriggerButtonStatus() && getAutoBarStartSTop()) {  appendToLog("TTestPoint 2"); barcodeAutoStarted = true; result = true; }
+                if (getTriggerButtonStatus() && notificationController.getAutoBarStartSTop()) {  appendToLog("TTestPoint 2"); barcodeAutoStarted = true; result = true; }
                 else {  appendToLog("TTestPoint 3"); result = barcodeSendCommand(new byte[]{0x1b, 0x33}); }
             } else  appendToLog("TTestPoint 4");
             appendToLog("TTestPoint 5");
@@ -3839,23 +3849,23 @@ public class Cs108Library4A extends Cs108Connector {
 
     //Configuration Calls: System
     @Keep public String getBluetoothICFirmwareVersion() {
-        return mBluetoothConnector.mBluetoothIcDevice.getBluetoothIcVersion();
+        return bluetoothConnector.getBluetoothIcVersion();
     }
     @Keep public String getBluetoothICFirmwareName() {
-        return mBluetoothConnector.mBluetoothIcDevice.getBluetoothIcName();
+        return bluetoothConnector.getBluetoothIcName();
     }
     @Keep public boolean setBluetoothICFirmwareName(String name) {
-        return mBluetoothConnector.mBluetoothIcDevice.setBluetoothIcName(name);
+        return bluetoothConnector.setBluetoothIcName(name);
     }
     @Keep public boolean forceBTdisconnect() {
-        return mBluetoothConnector.mBluetoothIcDevice.forceBTdisconnect();
+        return bluetoothConnector.forceBTdisconnect();
     }
     @Keep public String hostProcessorICGetFirmwareVersion() {
-        return mSiliconLabIcDevice.getSiliconLabIcVersion();
+        return controllerConnector.getVersion();
     }
     @Keep public String getHostProcessorICSerialNumber() {
         String str;
-        if (mBluetoothConnector.getCsModel() == 108) str = mSiliconLabIcDevice.getSerialNumber();
+        if (bluetoothConnector.getCsModel() == 108) str = controllerConnector.getSerialNumber();
         else str = mRfidDevice.mRfidReaderChip.mRx000OemSetting.getProductSerialNumber();
         if (str != null) {
             if (str.length() > 13) return str.substring(0, 13);
@@ -3864,14 +3874,16 @@ public class Cs108Library4A extends Cs108Connector {
     }
     @Keep public String getHostProcessorICBoardVersion() {
         String str;
-        if (mBluetoothConnector.getCsModel() == 108) str = mSiliconLabIcDevice.getSerialNumber();
+        if (bluetoothConnector.getCsModel() == 108) str = controllerConnector.getSerialNumber();
         else str = mRfidDevice.mRfidReaderChip.mRx000OemSetting.getProductSerialNumber();
+        if (false) appendToLog("getBoardVersion = " + str);
         if (str != null) {
             if (str.length() == 16) {
                 String strOut = "";
                 if (str.substring(13, 14).matches("0") == false) strOut = str.substring(13, 14);
                 strOut += (strOut.length() != 0 ? "." : "") + str.substring(14, 15);
                 if (str.substring(15, 16).matches("0") == false || strOut.length() < 3) strOut += (strOut.length() < 3 ? "." : "") + str.substring(15, 16);
+                if (false) appendToLog("getBoardVersion 1 = " + str);
                 return strOut;
             }
         }
@@ -3884,92 +3896,24 @@ public class Cs108Library4A extends Cs108Connector {
     UpdateBluetoothProcessorFirmwareBootloader(filename,result)
     */
     @Keep public boolean batteryLevelRequest() {
-        Cs108NotificatiionData cs108NotificatiionData = new Cs108NotificatiionData();
-        cs108NotificatiionData.notificationPayloadEvent = NotificationPayloadEvents.NOTIFICATION_GET_BATTERY_VOLTAGE;
         if (mRfidDevice.isInventoring()) {
             appendToLog("Skip batteryLevelREquest as inventoring !!!");
             return true;
         }
-        return mNotificationDevice.mNotificationToWrite.add(cs108NotificatiionData);
-    }
-    boolean triggerButtoneStatusRequest() {
-        Cs108NotificatiionData cs108NotificatiionData = new Cs108NotificatiionData();
-        cs108NotificatiionData.notificationPayloadEvent = NotificationPayloadEvents.NOTIFICATION_GET_TRIGGER_STATUS;
-        return mNotificationDevice.mNotificationToWrite.add(cs108NotificatiionData);
-    }
-    @Keep public boolean setBatteryAutoReport(boolean on) {
-        Cs108NotificatiionData cs108NotificatiionData = new Cs108NotificatiionData();
-        cs108NotificatiionData.notificationPayloadEvent = (on ? NotificationPayloadEvents.NOTIFICATION_AUTO_BATTERY_VOLTAGE: NotificationPayloadEvents.NOTIFICATION_STOPAUTO_BATTERY_VOLTAGE);
-        return mNotificationDevice.mNotificationToWrite.add(cs108NotificatiionData);
-    }
-    @Keep public boolean setAutoRFIDAbort(boolean enable) {
-        Cs108NotificatiionData cs108NotificatiionData = new Cs108NotificatiionData();
-        cs108NotificatiionData.notificationPayloadEvent = NotificationPayloadEvents.NOTIFICATION_AUTO_RFIDINV_ABORT;
-        cs108NotificatiionData.dataValues = new byte[1];
-        mNotificationDevice.setAutoRfidAbortStatus(enable);
-        cs108NotificatiionData.dataValues[0] = (enable ? (byte)1 : 0);
-        return mNotificationDevice.mNotificationToWrite.add(cs108NotificatiionData);
-    }
-    @Keep public boolean getAutoRFIDAbort() {
-        return mNotificationDevice.getAutoRfidAbortStatus(); }
-
-    @Keep public boolean setAutoBarStartSTop(boolean enable) {
-        boolean autoBarStartStopStatus = getAutoBarStartSTop();
-        if (enable & autoBarStartStopStatus) return true;
-        else if (enable == false && autoBarStartStopStatus == false) return true;
-
-        Cs108NotificatiionData cs108NotificatiionData = new Cs108NotificatiionData();
-        cs108NotificatiionData.notificationPayloadEvent = NotificationPayloadEvents.NOTIFICATION_AUTO_BARINV_STARTSTOP;
-        cs108NotificatiionData.dataValues = new byte[1];
-        mNotificationDevice.setAutoBarStartStopStatus(enable);
-        cs108NotificatiionData.dataValues[0] = (enable ? (byte)1 :  0);
-        return mNotificationDevice.mNotificationToWrite.add(cs108NotificatiionData);
-    }
-    @Keep public boolean getAutoBarStartSTop() { return mNotificationDevice.getAutoBarStartStopStatus(); }
-
-    boolean triggerReportingDefault = true, triggerReporting = triggerReportingDefault;
-    public boolean getTriggerReporting() { return triggerReporting; }
-    public boolean setTriggerReporting(boolean triggerReporting) {
-        boolean bValue = false;
-        //if (this.triggerReporting == triggerReporting) return true;
-        if (triggerReporting) {
-            bValue = setAutoTriggerReporting((byte) triggerReportingCountSetting);
-        } else bValue = stopAutoTriggerReporting();
-        if (bValue) this.triggerReporting = triggerReporting;
-        return bValue;
+        return notificationController.batteryLevelRequest();
     }
 
+    public boolean setAutoBarStartSTop(boolean enable) { return notificationController.setAutoBarStartSTop(enable); }
+    public boolean getTriggerReporting() { return notificationController.triggerReporting; }
+    public boolean setTriggerReporting(boolean triggerReporting) { return notificationController.setTriggerReporting(triggerReporting); }
     public final int iNO_SUCH_SETTING = 10000;
-    short triggerReportingCountSettingDefault = 1, triggerReportingCountSetting = triggerReportingCountSettingDefault;
     public short getTriggerReportingCount() {
         boolean bValue = false;
         if (getcsModel() == 108) bValue = checkHostProcessorVersion(hostProcessorICGetFirmwareVersion(),  1, 0, 16);
         if (bValue == false) return iNO_SUCH_SETTING; else
-            return triggerReportingCountSetting;
+            return notificationController.triggerReportingCountSetting;
     }
-    public boolean setTriggerReportingCount(short triggerReportingCount) {
-        boolean bValue = false;
-        if (triggerReportingCount < 0 || triggerReportingCount > 255) return false;
-        if (getTriggerReporting()) {
-            if (triggerReportingCountSetting == triggerReportingCount) return true;
-            bValue = setAutoTriggerReporting((byte)(triggerReportingCount & 0xFF));
-        } else bValue = true;
-        if (bValue) triggerReportingCountSetting = triggerReportingCount;
-        return true;
-    }
-
-    public boolean setAutoTriggerReporting(byte timeSecond) {
-        Cs108NotificatiionData cs108NotificatiionData = new Cs108NotificatiionData();
-        cs108NotificatiionData.notificationPayloadEvent = NotificationPayloadEvents.NOTIFICATION_AUTO_TRIGGER_REPORT;
-        cs108NotificatiionData.dataValues = new byte[1];
-        cs108NotificatiionData.dataValues[0] = timeSecond;
-        return mNotificationDevice.mNotificationToWrite.add(cs108NotificatiionData);
-    }
-    public boolean stopAutoTriggerReporting() {
-        Cs108NotificatiionData cs108NotificatiionData = new Cs108NotificatiionData();
-        cs108NotificatiionData.notificationPayloadEvent = NotificationPayloadEvents.NOTIFICATION_STOP_TRIGGER_REPORT;
-        return mNotificationDevice.mNotificationToWrite.add(cs108NotificatiionData);
-    }
+    public boolean setTriggerReportingCount(short triggerReportingCount) { return notificationController.setTriggerReportingCount(triggerReportingCount); }
 
     @Keep public String getBatteryDisplay(boolean voltageDisplay) {
         float floatValue = (float) getBatteryLevel() / 1000;
@@ -4113,9 +4057,9 @@ public class Cs108Library4A extends Cs108Connector {
 
     @Keep public int getBatteryLevel() { return mCs108ConnectorData.getVoltageMv(); }
     @Keep public int getBatteryCount() { return mCs108ConnectorData.getVoltageCnt(); }
-    @Keep public boolean getTriggerButtonStatus() { return mNotificationDevice.getTriggerStatus(); }
+    @Keep public boolean getTriggerButtonStatus() { return notificationController.getTriggerStatus(); }
     public int getTriggerCount() { return mCs108ConnectorData.getTriggerCount(); }
-    @Keep public void setNotificationListener(NotificationListener listener) { mNotificationDevice.setNotificationListener0(listener); }
+    @Keep public void setNotificationListener(NotificationController.NotificationListener listener) { notificationController.setNotificationListener0(listener); }
 
     int batteryDisplaySelectDefault = 1, batteryDisplaySelect = batteryDisplaySelectDefault;
     @Keep public int getBatteryDisplaySetting() { return batteryDisplaySelect; }
@@ -4198,9 +4142,9 @@ public class Cs108Library4A extends Cs108Connector {
 
     @Keep public byte[] onNotificationEvent() {
         byte[] notificationData = null;
-        if (mNotificationDevice.mNotificationToRead.size() != 0) {
-            Cs108NotificatiionData cs108NotificatiionData = mNotificationDevice.mNotificationToRead.get(0);
-            mNotificationDevice.mNotificationToRead.remove(0);
+        if (notificationController.notificationToRead.size() != 0) {
+            NotificationController.Cs108NotificatiionData cs108NotificatiionData = notificationController.notificationToRead.get(0);
+            notificationController.notificationToRead.remove(0);
             if (cs108NotificatiionData != null) notificationData = cs108NotificatiionData.dataValues;
         }
         return notificationData;
@@ -4334,7 +4278,7 @@ public class Cs108Library4A extends Cs108Connector {
         return strCountryCode;
     }
     @Keep public String getModelName() {
-        return mSiliconLabIcDevice.getModelName();
+        return controllerConnector.getModelName();
     }
 
     @Keep public boolean setRx000KillPassword(String password) { return mRfidDevice.mRfidReaderChip.mRx000Setting.setRx000KillPassword(password); }
@@ -4353,11 +4297,11 @@ public class Cs108Library4A extends Cs108Connector {
 
     public enum HostCommands {
         NULL, CMD_WROEM, CMD_RDOEM, CMD_ENGTEST, CMD_MBPRDREG, CMD_MBPWRREG,
-        CMD_18K6CINV, CMD_18K6CREAD, CMD_18K6CWRITE, CMD_18K6CLOCK, CMD_18K6CKILL, CMD_SETPWRMGMTCFG, CMD_18K6CAUTHENTICATE,
+        CMD_18K6CINV, CMD_18K6CREAD, CMD_18K6CWRITE, CMD_18K6CLOCK, CMD_18K6CKILL, CMD_SETPWRMGMTCFG, CMD_18K6CAUTHENTICATE, CMD_UNTRACEABLE,
         CMD_UPDATELINKPROFILE,
         CMD_18K6CBLOCKWRITE,
         CMD_CHANGEEAS, CMD_GETSENSORDATA,
-        CMD_READBUFFER, CMD_UNTRACEABLE,
+        CMD_READBUFFER,
         CMD_FDM_RDMEM, CMD_FDM_WRMEM, CMD_FDM_AUTH, CMD_FDM_GET_TEMPERATURE, CMD_FDM_START_LOGGING, CMD_FDM_STOP_LOGGING,
         CMD_FDM_WRREG, CMD_FDM_RDREG, CMD_FDM_DEEP_SLEEP, CMD_FDM_OPMODE_CHECK, CMD_FDM_INIT_REGFILE, CMD_FDM_LED_CTRL,
     }

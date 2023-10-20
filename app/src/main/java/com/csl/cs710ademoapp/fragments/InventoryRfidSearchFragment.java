@@ -27,7 +27,7 @@ import com.csl.cs710ademoapp.SelectTag;
 import com.csl.cs710ademoapp.MainActivity;
 import com.csl.cs710ademoapp.R;
 import com.csl.cs710library4a.CsLibrary4A;
-import com.csl.cs710library4a.ReaderDevice;
+import com.csl.cslibrary4a.ReaderDevice;
 
 public class InventoryRfidSearchFragment extends CommonFragment {
     double dBuV_dBm_constant = MainActivity.csLibrary4A.dBuV_dBm_constant;
@@ -68,7 +68,7 @@ public class InventoryRfidSearchFragment extends CommonFragment {
         actionBar.setIcon(R.drawable.dl_loc);
         actionBar.setTitle(R.string.title_activity_geiger);
 
-        selectTag = new SelectTag((Activity)getActivity ());
+        selectTag = new SelectTag((Activity)getActivity(), 0);
         TableRow tableRowProgressLabel;
         TextView textViewProgressLabelMin = (TextView) getActivity().findViewById(R.id.geigerProgressLabelMin);
         TextView textViewProgressLabelMid = (TextView) getActivity().findViewById(R.id.geigerProgressLabelMid);

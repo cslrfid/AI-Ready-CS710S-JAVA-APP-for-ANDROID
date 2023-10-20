@@ -27,7 +27,7 @@ import com.csl.cs710ademoapp.R;
 import com.csl.cs710ademoapp.SaveList2ExternalTask;
 import com.csl.cs710ademoapp.adapters.ReaderListAdapter;
 import com.csl.cs710library4a.CsLibrary4A;
-import com.csl.cs710library4a.ReaderDevice;
+import com.csl.cslibrary4a.ReaderDevice;
 
 import java.util.Collections;
 import java.util.Comparator;
@@ -336,7 +336,9 @@ public class InventoryRfidiMultiFragment extends CommonFragment {
 
     boolean needResetData = false;
     void resetSelectData() {
-        MainActivity.csLibrary4A.restoreAfterTagSelect();
+        MainActivity.csLibrary4A.appendToLog("mDid = " + mDid + ", MainActivity.mDid = " + MainActivity.mDid);
+        if (MainActivity.mDid != null && MainActivity.mDid.indexOf("E282405") == 0) { }
+        else MainActivity.csLibrary4A.restoreAfterTagSelect();
         if (needResetData) {
             MainActivity.csLibrary4A.setTagRead(0);
             MainActivity.csLibrary4A.setAccessBank(1);
@@ -389,8 +391,12 @@ public class InventoryRfidiMultiFragment extends CommonFragment {
         String mDid = this.mDid;
 
         MainActivity.csLibrary4A.appendToLog("Rin: mDid = " + mDid + ", MainActivity.mDid = " + MainActivity.mDid);
+        if (mDid != null && MainActivity.mDid != null) {
+            if (MainActivity.mDid.indexOf("E280B12") != 0) mDid = MainActivity.mDid;
+        }
         if (mDid != null) {
-            if (MainActivity.csLibrary4A.getSelectEnable()) MainActivity.csLibrary4A.setSelectCriteriaDisable(-1);
+            //if (MainActivity.csLibrary4A.getSelectEnable())
+                MainActivity.csLibrary4A.setSelectCriteriaDisable(-1);
             if (MainActivity.mDid != null && mDid.length() == 0) mDid = MainActivity.mDid;
             extra2Bank = 2;
             extra2Offset = 0;
@@ -498,7 +504,8 @@ public class InventoryRfidiMultiFragment extends CommonFragment {
                 }
             }
             boolean bNeedSelectedTagByTID = true;
-            if (mDid.matches("E2806894")) {
+            if (mDid.indexOf("E2806894") == 0) {
+                mDid = "E2806894";
                 Log.i(TAG, "HelloK: Find E2806894 with MainActivity.mDid = " + MainActivity.mDid);
                 if (MainActivity.mDid.matches("E2806894A")) {
                     Log.i(TAG, "HelloK: Find E2806894A");
@@ -522,7 +529,7 @@ public class InventoryRfidiMultiFragment extends CommonFragment {
             if (bNeedSelectedTagByTID) {
                 String strMdid = mDid;
                 if (strMdid.indexOf("E28011") == 0) {
-                    int iValue = Integer.valueOf(strMdid.substring(6, 8), 16); iValue &= 0x07;
+                    int iValue = Integer.valueOf(strMdid.substring(6, 8), 16); iValue &= 0x0F;
                     MainActivity.csLibrary4A.appendToLog(String.format("iValue = 0x%X", iValue));
                     if (iValue == 1) strMdid = "E2C011A2";
                     else if (iValue == 2) strMdid = "E28011C";
@@ -531,14 +538,15 @@ public class InventoryRfidiMultiFragment extends CommonFragment {
                     else if (iValue == 5) strMdid = "E280119";
                     else if (iValue == 6) strMdid = "E2801171";
                     else if (iValue == 7) strMdid = "E2801170";
-                    else strMdid = strMdid.substring(0, 6);
+                    else if (iValue == 8) strMdid = "E2801150";
+                    else strMdid = "E2001"; //strMdid.substring(0, 5); even E2801 or E2C01 will return
                 }
                 MainActivity.csLibrary4A.appendToLog("revised mDid = " + strMdid + " with checkBoxFilterByTid.isChecked() = " + checkBoxFilterByTid.isChecked());
                 if (checkBoxFilterByTid.isChecked()) {
                     MainActivity.csLibrary4A.appendToLog("setSelectCriteria: Going to setSelectedByTID");
                     MainActivity.csLibrary4A.setSelectedTagByTID(strMdid, -1);
                 } else {
-                    MainActivity.csLibrary4A.setSelectCriteriaDisable(-1);
+                    //MainActivity.csLibrary4A.setSelectCriteriaDisable(-1);
                     MainActivity.csLibrary4A.setInvAlgo(MainActivity.csLibrary4A.getInvAlgo());
                 }
             }

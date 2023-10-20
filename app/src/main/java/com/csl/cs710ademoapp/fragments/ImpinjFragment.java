@@ -20,7 +20,7 @@ public class ImpinjFragment extends CommonFragment {
     private ViewPager viewPager;
     ImpinjAdapter mAdapter;
 
-    private String[] tabs = {"Configuration", "Scan"};
+    private String[] tabs = {"Configure", "Scan", "Authenticate"};
     int iTargetOld, iSessionOld;
 
     @Override

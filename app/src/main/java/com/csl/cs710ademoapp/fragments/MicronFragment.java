@@ -81,6 +81,8 @@ public class MicronFragment extends CommonFragment {
             public void onTabReselected(TabLayout.Tab tab) {
             }
         });
+
+        MainActivity.csLibrary4A.setBasicCurrentLinkProfile();
     }
 
     @Override

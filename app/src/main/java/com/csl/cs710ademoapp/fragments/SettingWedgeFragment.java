@@ -26,7 +26,7 @@ public class SettingWedgeFragment extends DialogFragment {
         View view = getActivity().getLayoutInflater().inflate(R.layout.fragment_directwedge_settings, null);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setTitle("Simple Wedge Settings");
+        builder.setTitle("Wedge Settings");
         //builder.setMessage("simple wedge setttings");
         builder.setView(view);
         builder.setPositiveButton("Save", new DialogInterface.OnClickListener() {

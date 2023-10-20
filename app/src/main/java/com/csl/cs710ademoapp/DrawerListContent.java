@@ -84,8 +84,6 @@ public class DrawerListContent {
         addItem(new DrawerItem("9", "Security", R.drawable.dl_access));
 
         addItem(new DrawerItem("10", "Impinj Special Features", R.drawable.dl_loc));
-        //addItem(new DrawerItem("10", "Impinj M775", R.drawable.dl_loc));
-        //addItem(new DrawerItem("11", "Impinj Autotune", R.drawable.dl_loc));
         addItem(new DrawerItem("11", "Alien", R.drawable.dl_loc));
         addItem(new DrawerItem("12", "NXP UCODE 8", R.drawable.dl_loc));
         addItem(new DrawerItem("13", "NXP UCODE DNA", R.drawable.dl_loc));
@@ -94,7 +92,6 @@ public class DrawerListContent {
         addItem(new DrawerItem("16", "uEm Aura-sense", R.drawable.dl_loc));
         addItem(new DrawerItem("17", "Kiloway KX2005X-BL", R.drawable.dl_rr));
         addItem(new DrawerItem("18", "Axzon", R.drawable.dl_loc));
-        //addItem(new DrawerItem("18", "Axzon Magnus", R.drawable.dl_loc));
         addItem(new DrawerItem("19", "FM13DT160", R.drawable.dl_loc));
         addItem(new DrawerItem("20", "Landa CTESIUS", R.drawable.dl_loc));
         addItem(new DrawerItem("21", "Asygn AS321x", R.drawable.dl_loc));

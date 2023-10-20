@@ -1,6 +1,8 @@
 package com.csl.cs710ademoapp.fragments;
 
 import android.os.Bundle;
+
+import com.csl.cs710ademoapp.MainActivity;
 import com.google.android.material.tabs.TabLayout;
 import androidx.viewpager.widget.ViewPager;
 import androidx.appcompat.app.ActionBar;
@@ -18,7 +20,7 @@ public class ColdChainFragment extends CommonFragment {
     private ViewPager viewPager;
     ColdChainAdapter mAdapter;
 
-    private String[] tabs = {"Select Tag", "One-shot", "Logging"};
+    private String[] tabs = {"Select Tag", "Logging", "One-shot"};
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -62,7 +64,9 @@ public class ColdChainFragment extends CommonFragment {
         viewPager.setAdapter(mAdapter);
         viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
 
-        for (String tab_name : tabs) {
+        for (int i = 0; i < tabs.length; i++) {
+            if (MainActivity.csLibrary4A.get98XX() == 2 && i == tabs.length -1) break;;
+            String tab_name = tabs[i];
             tabLayout.addTab(tabLayout.newTab().setText(tab_name));
         }
 

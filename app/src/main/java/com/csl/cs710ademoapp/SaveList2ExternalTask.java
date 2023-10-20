@@ -13,7 +13,7 @@ import android.provider.Settings;
 import android.widget.Toast;
 
 import com.csl.cs710library4a.CsLibrary4A;
-import com.csl.cs710library4a.ReaderDevice;
+import com.csl.cslibrary4a.ReaderDevice;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -385,12 +385,13 @@ public class SaveList2ExternalTask extends AsyncTask<Void,Void,String> {
             errorDisplay = "denied WRITE_EXTERNAL_STORAGE Permission !!!";
         } else if (Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState()) == false) errorDisplay = "Error in mouting external storage !!!";
         else {
-            File path = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + Environment.DIRECTORY_DOWNLOADS + "/csReaderJava");
+            String strDir = "csReaderJava";
+            File path = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + Environment.DIRECTORY_DOWNLOADS + "/" + strDir);
             if (path.exists() == false) path.mkdirs();
             if (path.exists() == false) errorDisplay = "Error in making directory !!!";
             else {
                 String dateTime = new SimpleDateFormat("yyMMdd_HHmmss").format(new Date());
-                String fileName = "csReaderJava_" + dateTime + (csLibrary4A.getSavingFormatSetting() == 0 ? ".txt" : ".csv");
+                String fileName = strDir + "_" + dateTime + (csLibrary4A.getSavingFormatSetting() == 0 ? ".txt" : ".csv");
                 File file = new File(path, fileName);
                 if (file == null) errorDisplay = "Error in making directory !!!";
                 else {
@@ -401,7 +402,7 @@ public class SaveList2ExternalTask extends AsyncTask<Void,Void,String> {
                         outputStream.write(messageStr.getBytes());
                         errorDisplay = "Error in close()"; outputStream.close();
                         MediaScannerConnection.scanFile(mContext, new String[]{file.getAbsolutePath()}, null, null);
-                        resultDisplay = "Success in saving data to Download/csReaderJava/" + fileName;
+                        resultDisplay = "Success in saving data to Download/" + strDir + "/" + fileName;
                         errorDisplay = null;
                     } catch (Exception ex) {
                         errorDisplay += ex.getMessage();
