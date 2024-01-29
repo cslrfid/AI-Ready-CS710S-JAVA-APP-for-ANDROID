@@ -26,6 +26,7 @@ public class InventoryRfidTask extends AsyncTask<Void, String, String> {
 
     Context context;
     public TaskCancelRReason taskCancelReason;
+    public boolean bSgtinOnly = false, bProtectOnly;
     private boolean invalidRequest;
     boolean beepEnable;
 
@@ -536,7 +537,21 @@ public class InventoryRfidTask extends AsyncTask<Void, String, String> {
                         }
                     }
                     if (ALLOW_WEDGE) MainActivity.sharedObjects.serviceArrayList.add(strEpc);
-                    if (match == false) {
+
+                    boolean bAddDevice = true; String strValue = null;
+                    if (bSgtinOnly) {
+                        strValue = MainActivity.csLibrary4A.getUpcSerial(strEpc);
+                        MainActivity.csLibrary4A.appendToLog("bSgtinOnly = " + bSgtinOnly + ", strValue = " + (strValue == null ? "null" : strValue));
+                        if (strValue == null) bAddDevice = false;
+                    } else if (bProtectOnly) {
+                        bAddDevice = false;
+                        strValue = strExtra1.substring(strExtra1.length()-1);
+                        int iValue = Integer.parseInt(strValue, 16);
+                        MainActivity.csLibrary4A.appendToLog("bProtectOnly = " + bProtectOnly + ", strExtra1 = " + (strExtra1 == null ? "null" : strExtra1) + ", iValue = " + iValue);
+                        if ((iValue & 0x02) != 0) bAddDevice = true;
+                    }
+                    if (bAddDevice == false) { }
+                    else if (match == false) {
                         if (tagsList == null) {
                             strEpcOld = strEpc;
                             updated = true;
@@ -549,6 +564,7 @@ public class InventoryRfidTask extends AsyncTask<Void, String, String> {
                                     new SimpleDateFormat("yyyy/MM/dd HH:mm:ss.SSS").format(new Date()), new SimpleDateFormat("z").format(new Date()).replaceAll("GMT", ""),
                                     MainActivity.mSensorConnector.mLocationDevice.getLocation(), MainActivity.mSensorConnector.mSensorDevice.getEcompass(),
                                     1, rssi, phase, chidx, port, portstatus, backport1, backport2, codeSensor, codeRssi, codeTempC, brand, iSensorData);
+                            if (bSgtinOnly && strValue != null) readerDevice.setUpcSerial(strValue);
                             if (strMdid != null) {
                                 if (strMdid.indexOf("E282402") == 0) readerDevice.setCodeSensorMax(0x1F);
                                 else readerDevice.setCodeSensorMax(0x1FF);
@@ -575,7 +591,7 @@ public class InventoryRfidTask extends AsyncTask<Void, String, String> {
                         requestNewSound = true; requestNewVibrate = true;
                         requestSound = true;
                     }
-                    if (updated) {
+                    if (updated && bAddDevice) {
                         total++;
                         allTotal++;
                     }

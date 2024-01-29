@@ -15,6 +15,10 @@ import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.epctagcoder.exception.EPCParseException;
+import org.epctagcoder.parse.SGTIN.ParseSGTIN;
+import org.epctagcoder.result.SGTIN;
+
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -387,4 +391,82 @@ public class Utility {
         }
         return temperature;
     } //4278
+
+    public enum EpcClass {
+        SGTIN, SSCC, SGLN, GRAI, GIAI, GSRN, GSRNP, GDTI, CPI, SGCN
+    }
+    public String getEpc4upcSerial(EpcClass epcClass, String filter, String companyPrefix, String itemReference, String serialNumber) {
+        String strValue = null;
+        ParseSGTIN parseSGTIN = null;
+        String strURI = "urn:epc:tag:";
+        appendToLog("epcClass is " + epcClass.toString());
+        switch (epcClass) {
+            default:
+                strURI += "sgtin-96:";
+                break;
+        }
+        strURI += (filter + "." + companyPrefix + "." + itemReference + "." + serialNumber);
+        try {
+            parseSGTIN = ParseSGTIN.Builder()
+                    .withEPCTagURI( strURI).build();
+            SGTIN sgtin = parseSGTIN.getSGTIN();
+            strValue = sgtin.getRfidTag();
+        } catch (EPCParseException e) {
+            //throw new RuntimeException(e);
+        }
+        return strValue;
+    }
+
+    public String getUpcSerial(String strEpc) {
+        ParseSGTIN parseSGTIN = null;
+        String strValue = null;
+        try {
+            parseSGTIN = ParseSGTIN.Builder()
+                    .withRFIDTag(strEpc)
+                    .build();
+            SGTIN sgtin = parseSGTIN.getSGTIN();
+            //strValue = sgtin.toString();
+            //strValue = sgtin.getEpcRawURI();
+            strValue = sgtin.getEpcTagURI();
+            String strHeader = "urn:epc:tag:";
+            if (strValue.indexOf(strHeader) == 0) strValue = strValue.substring(strHeader.length());
+        } catch (Exception e) {
+            appendToLog("parseSSCC exception: " + e.getMessage());
+            //throw new RuntimeException(e);
+        }
+        return strValue;
+    }
+    public String getUpcSerialDetail(String strUpcSerial) {
+        String strValue = null, strTmp, strCmp;
+        strCmp = ":"; strTmp = strUpcSerial.substring(0, strUpcSerial.indexOf(strCmp));
+        if (strTmp != null) {
+            if (strValue != null) strValue += "\n";
+            strValue = "Epc Class: " + strTmp;
+            strUpcSerial = strUpcSerial.substring(strUpcSerial.indexOf(strCmp) + 1);
+        }
+        strCmp = "."; strTmp = strUpcSerial.substring(0, strUpcSerial.indexOf(strCmp));
+        if (strTmp != null) {
+            if (strValue != null) strValue += "\n";
+            strValue += "Filter: " + strTmp;
+            strUpcSerial = strUpcSerial.substring(strUpcSerial.indexOf(strCmp) + 1);
+        }
+        strCmp = "."; strTmp = strUpcSerial.substring(0, strUpcSerial.indexOf(strCmp));
+        if (strTmp != null) {
+            if (strValue != null) strValue += "\n";
+            strValue += "Company Prefix: " + strTmp;
+            strUpcSerial = strUpcSerial.substring(strUpcSerial.indexOf(strCmp) + 1);
+        }
+        strCmp = "."; strTmp = strUpcSerial.substring(0, strUpcSerial.indexOf(strCmp));
+        if (strTmp != null) {
+            if (strValue != null) strValue += "\n";
+            strValue += "Item Reference: " + strTmp;
+            strUpcSerial = strUpcSerial.substring(strUpcSerial.indexOf(strCmp) + 1);
+        }
+        strTmp = strUpcSerial;
+        if (strTmp != null) {
+            if (strValue != null) strValue += ("\n");
+            strValue += "Serial Number: " + strTmp;
+        }
+        return strValue;
+    }
 }

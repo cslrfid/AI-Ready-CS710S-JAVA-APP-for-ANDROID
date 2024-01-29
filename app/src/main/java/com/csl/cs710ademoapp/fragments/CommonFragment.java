@@ -136,23 +136,27 @@ public abstract class CommonFragment extends Fragment {
             if (MainActivity.csLibrary4A.isRfidFailure()) {
                 if (rfidFailure == false) {
                     rfidFailure = true;
-                    CustomAlertDialog appdialog = new CustomAlertDialog();
-                    appdialog.Confirm((Activity) MainActivity.mContext, "Rfid Transmission failure",
-                            "Do you want to disconnect the Bluetooth ?",
-                            "No thanks", "Disconnect",
-                            new Runnable() {
-                                @Override
-                                public void run() {
-                                    if (DEBUG) MainActivity.csLibrary4A.appendToLog("Confirm is pressed");
-                                    MainActivity.csLibrary4A.forceBTdisconnect();
-                                }
-                            },
-                            new Runnable() {
-                                @Override
-                                public void run() {
-                                    if (DEBUG) MainActivity.csLibrary4A.appendToLog("Cancel is pressed.");
-                                }
-                            });
+                    if (false) {
+                        CustomAlertDialog appdialog = new CustomAlertDialog();
+                        appdialog.Confirm((Activity) MainActivity.mContext, "Rfid Transmission failure",
+                                "Do you want to disconnect the Bluetooth ?",
+                                "No thanks", "Disconnect",
+                                new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        if (DEBUG)
+                                            MainActivity.csLibrary4A.appendToLog("Confirm is pressed");
+                                        MainActivity.csLibrary4A.forceBTdisconnect();
+                                    }
+                                },
+                                new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        if (DEBUG)
+                                            MainActivity.csLibrary4A.appendToLog("Cancel is pressed.");
+                                    }
+                                });
+                    }
                 }
             } else rfidFailure = false;
 

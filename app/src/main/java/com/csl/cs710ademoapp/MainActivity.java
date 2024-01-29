@@ -228,6 +228,9 @@ public class MainActivity extends AppCompatActivity {
             case KILOWAY:
                 fragment = new KilowayFragment();
                 break;
+            case LONGJING:
+                fragment = new LongjingFragment();
+                break;
             case AXZON:
                 fragment = AxzonSelectorFragment.newInstance(true);
                 break;
@@ -331,9 +334,7 @@ public class MainActivity extends AppCompatActivity {
     public void locateClicked(View view) {
         selectItem(DrawerPositions.SEARCH);
     }
-    public void multiBankClicked(View view) {
-        selectItem(DrawerPositions.MULTIBANK);
-    }
+    public void multiBankClicked(View view) { selectItem(DrawerPositions.MULTIBANK); }
     public void settClicked(View view) {
         selectItem(DrawerPositions.SETTING);
     }
@@ -358,6 +359,7 @@ public class MainActivity extends AppCompatActivity {
     public void coldChainClicked(View view) { selectItem(DrawerPositions.COLDCHAIN); }
     public void aurasenseClicked(View view) { selectItem(DrawerPositions.AURASENSE); }
     public void kilowayClicked(View view) { selectItem(DrawerPositions.KILOWAY); }
+    public void longjingClicked(View view) { selectItem(DrawerPositions.LONGJING); }
     public void axzonClicked(View view) { selectItem(DrawerPositions.AXZON); }
     public void rfMicronClicked(View view) { selectItem(DrawerPositions.RFMICRON); }
     public void fdmicroClicked(View view) { selectItem(DrawerPositions.FDMICRO); }

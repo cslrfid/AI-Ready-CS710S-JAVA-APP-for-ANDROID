@@ -258,7 +258,7 @@ public class AccessUcodeFragment extends CommonFragment {
         MainActivity.csLibrary4A.appendToLog("mDid in AccessUcodeFragment = " + MainActivity.mDid);
         if (bImpinJTag) {
             if (MainActivity.csLibrary4A.get98XX() == 0) {
-                Button button = (Button) getActivity().findViewById(R.id.accessUCTam1AuthButton); button.setVisibility(View.GONE);
+                //Button button = (Button) getActivity().findViewById(R.id.accessUCTam1AuthButton); button.setVisibility(View.GONE);
             }
             TextView textView = (TextView) getActivity().findViewById(R.id.accessUCAuthKeyIdLabel); textView.setVisibility(View.GONE);
             EditText editText = (EditText) getActivity().findViewById(R.id.accessUCAuthKeyId); editText.setVisibility(View.GONE);

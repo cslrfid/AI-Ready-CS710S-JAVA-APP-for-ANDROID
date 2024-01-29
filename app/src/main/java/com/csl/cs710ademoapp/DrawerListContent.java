@@ -26,6 +26,7 @@ public class DrawerListContent {
         UCODE8, UCODEDNA,
         BAPCARD, COLDCHAIN, AURASENSE,
         KILOWAY,
+        LONGJING,
         AXZON, RFMICRON,
         FDMICRO,
         CTESIUS,
@@ -55,16 +56,17 @@ public class DrawerListContent {
                 case 15: return COLDCHAIN;
                 case 16: return AURASENSE;
                 case 17: return KILOWAY;
-                case 18: return AXZON;
+                case 18: return LONGJING;
+                case 19: return AXZON;
                 //case 15: return RFMICRON;
-                case 19: return FDMICRO;
-                case 20: return CTESIUS;
-                case 21: return ASYGNTAG;
+                case 20: return FDMICRO;
+                case 21: return CTESIUS;
+                case 22: return ASYGNTAG;
 
-                case 22: return REGISTER;
-                case 23: return READWRITEUSER;
-                case 24: return WEDGE;
-                case 25: return DIRECTWEDGE;
+                case 23: return REGISTER;
+                case 24: return READWRITEUSER;
+                case 25: return WEDGE;
+                case 26: return DIRECTWEDGE;
             }
             return null;
         }

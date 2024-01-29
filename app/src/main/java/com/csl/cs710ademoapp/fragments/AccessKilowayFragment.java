@@ -91,8 +91,10 @@ public class AccessKilowayFragment extends CommonFragment {
         }
     }
 
-    public AccessKilowayFragment() {
+    boolean isLongjing = false;
+    public AccessKilowayFragment(boolean isLongjing) {
         super("AccessLedTagFragment");
+        this.isLongjing = isLongjing;
     }
 
     void setupTagID() {
@@ -193,6 +195,10 @@ public class AccessKilowayFragment extends CommonFragment {
 
         if (checkBox.isChecked() == true && checkProcessing < 1) {
             accBank = 0; accSize = 1; accOffset = 4;
+            if (isLongjing) {
+                accBank = 3; accOffset = 112;
+            }
+
             readWriteTypes = ReadWriteTypes.READVALUE; checkProcessing = 1;
             textViewOk.setText(""); textView.setText("");
         } else {

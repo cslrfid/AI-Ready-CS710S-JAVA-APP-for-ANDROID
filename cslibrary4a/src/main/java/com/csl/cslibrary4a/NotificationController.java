@@ -4,8 +4,6 @@ import android.content.Context;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.Keep;
-
 import java.util.ArrayList;
 
 public class NotificationController {
@@ -167,24 +165,24 @@ public class NotificationController {
             }
             return null;
         }
-        public boolean isMatchNotificationToWrite(Cs108ReadData cs108ReadData) {
+        public boolean isMatchNotificationToWrite(CsReaderData csReaderData) {
             boolean match = false;
-            if (notificationToWrite.size() != 0 && cs108ReadData.dataValues[0] == (byte)0xA0) {
+            if (notificationToWrite.size() != 0 && csReaderData.dataValues[0] == (byte)0xA0) {
                 byte[] dataInCompare = new byte[]{(byte) 0xA0, 0};
-                if (arrayTypeSet(dataInCompare, 1, notificationToWrite.get(0).notificationPayloadEvent) && (cs108ReadData.dataValues.length >= dataInCompare.length + 1)) {
-                    if (match = compareArray(cs108ReadData.dataValues, dataInCompare, dataInCompare.length)) {
+                if (arrayTypeSet(dataInCompare, 1, notificationToWrite.get(0).notificationPayloadEvent) && (csReaderData.dataValues.length >= dataInCompare.length + 1)) {
+                    if (match = compareArray(csReaderData.dataValues, dataInCompare, dataInCompare.length)) {
                         boolean bprocessed = false;
-                        byte[] data1 = new byte[cs108ReadData.dataValues.length - 2]; System.arraycopy(cs108ReadData.dataValues, 2, data1, 0, data1.length);
-                        if (DEBUG_PKDATA) appendToLog("PkData: matched Notification.Reply with payload = " + byteArrayToString(cs108ReadData.dataValues) + " for writeData Notification." + notificationToWrite.get(0).notificationPayloadEvent.toString());
+                        byte[] data1 = new byte[csReaderData.dataValues.length - 2]; System.arraycopy(csReaderData.dataValues, 2, data1, 0, data1.length);
+                        if (DEBUG_PKDATA) appendToLog("PkData: matched Notification.Reply with payload = " + byteArrayToString(csReaderData.dataValues) + " for writeData Notification." + notificationToWrite.get(0).notificationPayloadEvent.toString());
                         if (notificationToWrite.get(0).notificationPayloadEvent == NotificationPayloadEvents.NOTIFICATION_GET_BATTERY_VOLTAGE) {
-                            if (cs108ReadData.dataValues.length >= dataInCompare.length + 2) {
-                                mVoltageValue = (cs108ReadData.dataValues[2] & 0xFF) * 256 + (cs108ReadData.dataValues[3] & 0xFF);
+                            if (csReaderData.dataValues.length >= dataInCompare.length + 2) {
+                                mVoltageValue = (csReaderData.dataValues[2] & 0xFF) * 256 + (csReaderData.dataValues[3] & 0xFF);
                                 mVoltageCount++;
                                 bprocessed = true;
                             }
                             if (DEBUG_PKDATA) appendToLog("PkData: matched Notification.Reply.GetBatteryVoltage with result = " + String.format("%X", mVoltageValue));
                         } else if (notificationToWrite.get(0).notificationPayloadEvent == NotificationPayloadEvents.NOTIFICATION_GET_TRIGGER_STATUS) {
-                            if (cs108ReadData.dataValues[2] != 0) {
+                            if (csReaderData.dataValues[2] != 0) {
                                 setTriggerStatus(true); //mTriggerStatus = true;
                                 triggerButtonStatus = true;
                             } else {
@@ -195,18 +193,18 @@ public class NotificationController {
                             if (DEBUG_PKDATA) appendToLog("PkData: BARTRIGGER: isMatchNotificationToWrite finds trigger = " + getTriggerStatus());
                             bprocessed = true;
                         } else if (notificationToWrite.get(0).notificationPayloadEvent == NotificationPayloadEvents.NOTIFICATION_GET_AUTO_RFIDINV_ABORT) {
-                            if (cs108ReadData.dataValues[2] != 0) setAutoRfidAbortStatus(true);
+                            if (csReaderData.dataValues[2] != 0) setAutoRfidAbortStatus(true);
                             else setAutoRfidAbortStatus(false);
-                            if (DEBUG_PKDATA) appendToLog("PkData: matched Notification.Reply.GetAutoRfidinvAbort with result = " + cs108ReadData.dataValues[2] + " and autoRfidAbortStatus = " + getAutoRfidAbortStatus());
+                            if (DEBUG_PKDATA) appendToLog("PkData: matched Notification.Reply.GetAutoRfidinvAbort with result = " + csReaderData.dataValues[2] + " and autoRfidAbortStatus = " + getAutoRfidAbortStatus());
                             bprocessed = true;
                         } else if (notificationToWrite.get(0).notificationPayloadEvent == NotificationPayloadEvents.NOTIFICATION_GET_AUTO_BARINV_STARTSTOP) {
-                            if (cs108ReadData.dataValues[2] != 0) setAutoBarStartStopStatus(true);
+                            if (csReaderData.dataValues[2] != 0) setAutoBarStartStopStatus(true);
                             else setAutoBarStartStopStatus(false);
-                            if (DEBUG_PKDATA) appendToLog("PkData: matched Notification.Reply.GetAutoBarinvStartstop with result = " + cs108ReadData.dataValues[2] + " and " + getAutoBarStartStopStatus());
+                            if (DEBUG_PKDATA) appendToLog("PkData: matched Notification.Reply.GetAutoBarinvStartstop with result = " + csReaderData.dataValues[2] + " and " + getAutoBarStartStopStatus());
                             bprocessed = true;
                         } else {
                             bprocessed = true;
-                        	if (DEBUG_PKDATA) appendToLog("PkData: matched Notification.Reply." + notificationToWrite.get(0).notificationPayloadEvent.toString() + " with result = " + cs108ReadData.dataValues[2]);
+                        	if (DEBUG_PKDATA) appendToLog("PkData: matched Notification.Reply." + notificationToWrite.get(0).notificationPayloadEvent.toString() + " with result = " + csReaderData.dataValues[2]);
                         }
                         String string = "Up31 " + (bprocessed ? "" : "Unprocessed, ") + notificationToWrite.get(0).notificationPayloadEvent.toString() + ", " + byteArrayToString(data1);
                         utility.writeDebug2File(string);
@@ -219,49 +217,56 @@ public class NotificationController {
         }
 
         public int sendDataToWriteSent = 0;
+        boolean notificationFailure = false;
         public byte[] sendNotificationToWrite() {
             boolean DEBUG = false;
-                    if (sendDataToWriteSent >= 5) {
-                        int oldSize = notificationToWrite.size();
-                        Cs108NotificatiionData cs108NotificatiionData = notificationToWrite.get(0);
-                        notificationToWrite.remove(0); sendDataToWriteSent = 0;
-                        if (DEBUG) appendToLog("Removed after sending count-out with oldSize = " + oldSize + ", updated mNotificationToWrite.size() = " + notificationToWrite.size());
-                        if (DEBUG) appendToLog("Removed after sending count-out.");
-                        String string = "Problem in sending data to Notification Module. Removed data sending after count-out";
-                        if (userDebugEnable) Toast.makeText(context, string, Toast.LENGTH_SHORT).show();
-                        else appendToLogView(string);
-                        if (true) Toast.makeText(context, cs108NotificatiionData.notificationPayloadEvent.toString(), Toast.LENGTH_LONG).show();
-                    } else return writeNotification(notificationToWrite.get(0));
+            if (notificationFailure) {
+                notificationToWrite.remove(0); sendDataToWriteSent = 0;
+            } else if (sendDataToWriteSent >= 5) {
+                int oldSize = notificationToWrite.size();
+                Cs108NotificatiionData cs108NotificatiionData = notificationToWrite.get(0);
+                notificationToWrite.remove(0); sendDataToWriteSent = 0;
+                if (DEBUG) appendToLog("Removed after sending count-out with oldSize = " + oldSize + ", updated mNotificationToWrite.size() = " + notificationToWrite.size());
+                if (DEBUG) appendToLog("Removed after sending count-out.");
+                String string = "Problem in sending data to Notification Module. Removed data sending after count-out";
+                if (userDebugEnable) Toast.makeText(context, string, Toast.LENGTH_SHORT).show();
+                else appendToLogView(string);
+                if (true) Toast.makeText(context, cs108NotificatiionData.notificationPayloadEvent.toString(), Toast.LENGTH_LONG).show();
+                notificationFailure = true; // disconnect(false);
+            } else {
+                sendDataToWriteSent++;
+                return writeNotification(notificationToWrite.get(0));
+            }
             return null;
         }
 
         long timeTriggerRelease;
-        public boolean isNotificationToRead(Cs108ReadData cs108ReadData) {
+        public boolean isNotificationToRead(CsReaderData csReaderData) {
             boolean found = false, DEBUG = false;
             Cs108NotificatiionData cs108NotificatiionData = new Cs108NotificatiionData();
-            byte[] data1 = new byte[cs108ReadData.dataValues.length - 2]; System.arraycopy(cs108ReadData.dataValues, 2, data1, 0, data1.length);
-            if (cs108ReadData.dataValues[0] == (byte) 0xA0 && cs108ReadData.dataValues[1] == (byte) 0x00 && cs108ReadData.dataValues.length >= 4) {
-                mVoltageValue = (cs108ReadData.dataValues[2] & 0xFF) * 256 + (cs108ReadData.dataValues[3] & 0xFF);
+            byte[] data1 = new byte[csReaderData.dataValues.length - 2]; System.arraycopy(csReaderData.dataValues, 2, data1, 0, data1.length);
+            if (csReaderData.dataValues[0] == (byte) 0xA0 && csReaderData.dataValues[1] == (byte) 0x00 && csReaderData.dataValues.length >= 4) {
+                mVoltageValue = (csReaderData.dataValues[2] & 0xFF) * 256 + (csReaderData.dataValues[3] & 0xFF);
                 mVoltageCount++;
                 cs108NotificatiionData.notificationPayloadEvent = NotificationPayloadEvents.NOTIFICATION_GET_BATTERY_VOLTAGE;
                 cs108NotificatiionData.dataValues = data1;
                 if (false) notificationToRead.add(cs108NotificatiionData);
-                if (DEBUG_PKDATA) appendToLog("PkData: found Notification.Uplink with payload = " + byteArrayToString(cs108ReadData.dataValues));
+                if (DEBUG_PKDATA) appendToLog("PkData: found Notification.Uplink with payload = " + byteArrayToString(csReaderData.dataValues));
                 if (DEBUG_PKDATA) appendToLog("PkData: Notification.Uplink.GetCurrentBattteryVoltage is processed as mVoltageValue = " + mVoltageValue + " and mVoltageCount = " + mVoltageCount);
                 found = true;
-            } else if (cs108ReadData.dataValues[0] == (byte) 0xA0 && cs108ReadData.dataValues[1] == (byte) 0x01 && cs108ReadData.dataValues.length >= 3) {
-                if (cs108ReadData.dataValues[2] == 0) triggerButtonStatus = false;
+            } else if (csReaderData.dataValues[0] == (byte) 0xA0 && csReaderData.dataValues[1] == (byte) 0x01 && csReaderData.dataValues.length >= 3) {
+                if (csReaderData.dataValues[2] == 0) triggerButtonStatus = false;
                 else triggerButtonStatus = true;
                 iTriggerCount++;
                 cs108NotificatiionData.notificationPayloadEvent = NotificationPayloadEvents.NOTIFICATION_GET_TRIGGER_STATUS;
                 cs108NotificatiionData.dataValues = data1;
-                if (DEBUG_PKDATA) appendToLog("PkData: found Notification.Uplink with payload = " + byteArrayToString(cs108ReadData.dataValues));
+                if (DEBUG_PKDATA) appendToLog("PkData: found Notification.Uplink with payload = " + byteArrayToString(csReaderData.dataValues));
                 if (DEBUG_PKDATA) appendToLog("PkData: Notification.Uplink.GetCurrentTriggerState is processed as triggerButtonStatus = " + triggerButtonStatus + " and iTriggerCount = " + iTriggerCount);
                 found = true;
-            } else if (cs108ReadData.dataValues[0] == (byte) 0xA1) {
-                if (DEBUG_PKDATA) appendToLog("PkData: found Notification.Uplink with payload = " + byteArrayToString(cs108ReadData.dataValues));
+            } else if (csReaderData.dataValues[0] == (byte) 0xA1) {
+                if (DEBUG_PKDATA) appendToLog("PkData: found Notification.Uplink with payload = " + byteArrayToString(csReaderData.dataValues));
                 //Cs108NotificatiionData cs108NotificatiionData = new Cs108NotificatiionData();
-                switch (cs108ReadData.dataValues[1]) {
+                switch (csReaderData.dataValues[1]) {
                     case 0:
                         if (DEBUG) appendToLog("matched batteryFailed data is found.");
                         cs108NotificatiionData.notificationPayloadEvent = NotificationPayloadEvents.NOTIFICATION_BATTERY_FAILED;
@@ -271,7 +276,7 @@ public class NotificationController {
                         found = true;
                         break;
                     case 1:
-                        if (DEBUG) appendToLog("matched Error data is found, " + byteArrayToString(cs108ReadData.dataValues));
+                        if (DEBUG) appendToLog("matched Error data is found, " + byteArrayToString(csReaderData.dataValues));
                         cs108NotificatiionData.notificationPayloadEvent = NotificationPayloadEvents.NOTIFICATION_BATTERY_ERROR;
                         cs108NotificatiionData.dataValues = data1;
                         if (true) notificationToRead.add(cs108NotificatiionData);
@@ -302,7 +307,7 @@ public class NotificationController {
                         break;
                 }
             }
-            if (DEBUG_PKDATA && found) appendToLog("found Notification.read data = " + byteArrayToString(cs108ReadData.dataValues));
+            if (DEBUG_PKDATA && found) appendToLog("found Notification.read data = " + byteArrayToString(csReaderData.dataValues));
             if (found) utility.writeDebug2File("Up32 " + cs108NotificatiionData.notificationPayloadEvent.toString() + ", " + byteArrayToString(cs108NotificatiionData.dataValues));
             return found;
         }
