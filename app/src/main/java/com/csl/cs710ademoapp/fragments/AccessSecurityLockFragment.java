@@ -18,6 +18,7 @@ import com.csl.cs710ademoapp.MainActivity;
 import com.csl.cs710ademoapp.R;
 import com.csl.cs710library4a.CsLibrary4A;
 import com.csl.cslibrary4a.ReaderDevice;
+import com.csl.cslibrary4a.RfidReaderChipData;
 
 public class AccessSecurityLockFragment extends CommonFragment {
     private EditText editTextTagID, editTextPassword, editTextAntennaPower;
@@ -188,7 +189,7 @@ public class AccessSecurityLockFragment extends CommonFragment {
         }
         accessTask = new AccessTask(button, null, invalidRequest,
                 strTagID, 1, 32,
-                strPassword, powerLevel, CsLibrary4A.HostCommands.CMD_18K6CLOCK,
+                strPassword, powerLevel, RfidReaderChipData.HostCommands.CMD_18K6CLOCK,
                 0, 0, true, false,
                 null, null, null, null, null);
         accessTask.execute();

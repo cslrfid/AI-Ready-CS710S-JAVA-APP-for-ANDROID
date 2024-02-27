@@ -35,6 +35,7 @@ import com.csl.cs710ademoapp.adapters.ReaderListAdapter;
 import com.csl.cs710ademoapp.MainActivity;
 import com.csl.cs710ademoapp.R;
 import com.csl.cs710library4a.CsLibrary4A;
+import com.csl.cslibrary4a.BluetoothGattConnector;
 import com.csl.cslibrary4a.ReaderDevice;
 import com.csl.cslibrary4a.CustomAlertDialog;
 
@@ -266,9 +267,9 @@ public class DirectWedgeFragment extends CommonFragment {
                     readersList.clear(); listUpdated = true;
                 }
                 while (true) {
-                    CsLibrary4A.Cs108ScanData cs108ScanData = MainActivity.csLibrary4A.getNewDeviceScanned();
+                    BluetoothGattConnector.Cs108ScanData cs108ScanData = MainActivity.csLibrary4A.getNewDeviceScanned();
                     if (cs108ScanData != null) {
-                        CsLibrary4A.Cs108ScanData scanResultA = cs108ScanData;
+                        BluetoothGattConnector.Cs108ScanData scanResultA = cs108ScanData;
                         if (getActivity() == null) continue;
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                             if (ActivityCompat.checkSelfPermission(getActivity().getApplicationContext(), Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) continue;

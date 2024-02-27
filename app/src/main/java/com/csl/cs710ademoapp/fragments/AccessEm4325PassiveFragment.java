@@ -14,8 +14,8 @@ import com.csl.cs710ademoapp.AccessTask;
 import com.csl.cs710ademoapp.GenericTextWatcher;
 import com.csl.cs710ademoapp.MainActivity;
 import com.csl.cs710ademoapp.R;
-import com.csl.cs710library4a.CsLibrary4A;
 import com.csl.cslibrary4a.ReaderDevice;
+import com.csl.cslibrary4a.RfidReaderChipData;
 
 public class AccessEm4325PassiveFragment extends CommonFragment {
     final boolean DEBUG = true;
@@ -149,10 +149,10 @@ public class AccessEm4325PassiveFragment extends CommonFragment {
                 MainActivity.csLibrary4A.appendToLog("updateRunnable: processTickItems Result = " + invalid + ", bankprocessing = " + bankProcessing);
                 if (bankProcessing++ != 0 && invalid) rerunRequest = false;
                 else  {
-                    CsLibrary4A.HostCommands hostCommand;
-                    if (readWriteTypes == ReadWriteTypes.TEMPERATURE && operationRead) hostCommand = CsLibrary4A.HostCommands.CMD_GETSENSORDATA;
-                    else if (operationRead) hostCommand = CsLibrary4A.HostCommands.CMD_18K6CREAD;
-                    else hostCommand = CsLibrary4A.HostCommands.CMD_18K6CWRITE;
+                    RfidReaderChipData.HostCommands hostCommand;
+                    if (readWriteTypes == ReadWriteTypes.TEMPERATURE && operationRead) hostCommand = RfidReaderChipData.HostCommands.CMD_GETSENSORDATA;
+                    else if (operationRead) hostCommand = RfidReaderChipData.HostCommands.CMD_18K6CREAD;
+                    else hostCommand = RfidReaderChipData.HostCommands.CMD_18K6CWRITE;
                     MainActivity.csLibrary4A.appendToLog("hostCommand = " + hostCommand.toString());
                     accessTask = new AccessTask(
                             buttonRead, null,

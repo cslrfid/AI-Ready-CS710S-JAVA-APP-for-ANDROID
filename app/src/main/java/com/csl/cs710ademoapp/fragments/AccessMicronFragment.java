@@ -21,8 +21,8 @@ import com.csl.cs710ademoapp.AccessTask;
 import com.csl.cs710ademoapp.GenericTextWatcher;
 import com.csl.cs710ademoapp.MainActivity;
 import com.csl.cs710ademoapp.R;
-import com.csl.cs710library4a.CsLibrary4A;
 import com.csl.cslibrary4a.ReaderDevice;
+import com.csl.cslibrary4a.RfidReaderChipData;
 
 public class AccessMicronFragment extends CommonFragment {
     final boolean DEBUG = true;
@@ -399,7 +399,7 @@ public class AccessMicronFragment extends CommonFragment {
                             selectMask, selectBank, selectOffset,
                             editTextAccessRWAccPassword.getText().toString(),
                             Integer.valueOf(editTextaccessRWAntennaPower.getText().toString()),
-                            (operationRead ? CsLibrary4A.HostCommands.CMD_18K6CREAD: CsLibrary4A.HostCommands.CMD_18K6CWRITE),
+                            (operationRead ? RfidReaderChipData.HostCommands.CMD_18K6CREAD: RfidReaderChipData.HostCommands.CMD_18K6CWRITE),
                             0, 0, true, bSkipClearPrefilter,
                             null, null, null, null, null);
                     accessTask.execute();

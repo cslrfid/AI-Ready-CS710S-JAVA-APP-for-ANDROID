@@ -25,7 +25,7 @@ import com.csl.cs710ademoapp.AccessTask;
 import com.csl.cs710ademoapp.MainActivity;
 import com.csl.cs710ademoapp.R;
 import com.csl.cs710ademoapp.SelectTag;
-import com.csl.cs710library4a.CsLibrary4A;
+import com.csl.cslibrary4a.RfidReaderChipData;
 
 public class AccessAuraSenseFragment extends CommonFragment {
     final boolean DEBUG = true;
@@ -369,16 +369,16 @@ public class AccessAuraSenseFragment extends CommonFragment {
                     String selectMask = selectTag.editTextTagID.getText().toString();
                     int selectBank = selectTag.spinnerSelectBank.getSelectedItemPosition()+1;
                     int selectOffset = Integer.valueOf(selectTag.editTextSelectOffset.getText().toString());
-                    CsLibrary4A.HostCommands hostCommand;
+                    RfidReaderChipData.HostCommands hostCommand;
                     Button buttonAccess;
                     if (readWriteTypes == ReadWriteTypes.COLDCHAIN_TEMPERATURE && operationRead) {
-                        hostCommand = CsLibrary4A.HostCommands.CMD_GETSENSORDATA;
+                        hostCommand = RfidReaderChipData.HostCommands.CMD_GETSENSORDATA;
                         buttonAccess = buttonRead;
                     } else if (operationRead) {
-                        hostCommand = CsLibrary4A.HostCommands.CMD_18K6CREAD;
+                        hostCommand = RfidReaderChipData.HostCommands.CMD_18K6CREAD;
                         buttonAccess = buttonRead;
                     } else {
-                        hostCommand = CsLibrary4A.HostCommands.CMD_18K6CWRITE;
+                        hostCommand = RfidReaderChipData.HostCommands.CMD_18K6CWRITE;
                         buttonAccess = buttonWrite;
                     }
                     MainActivity.csLibrary4A.appendToLog("hostCommand 1 = " + hostCommand.toString());

@@ -28,6 +28,7 @@ import com.csl.cs710ademoapp.MainActivity;
 import com.csl.cs710ademoapp.R;
 import com.csl.cs710library4a.CsLibrary4A;
 import com.csl.cslibrary4a.ReaderDevice;
+import com.csl.cslibrary4a.RfidReaderChipData;
 
 public class InventoryRfidSearchFragment extends CommonFragment {
     double dBuV_dBm_constant = MainActivity.csLibrary4A.dBuV_dBm_constant;
@@ -297,7 +298,7 @@ public class InventoryRfidSearchFragment extends CommonFragment {
             invalidRequest = true;
             MainActivity.csLibrary4A.appendToLog("invalidRequest = " + invalidRequest + ", with setSelectedTag as false, string = " + selectTag.editTextTagID.getText().toString() + ", bank = " + memorybank+1 + ", power = " + powerLevel);
         } else {
-            MainActivity.csLibrary4A.startOperation(CsLibrary4A.OperationTypes.TAG_SEARCHING);
+            MainActivity.csLibrary4A.startOperation(RfidReaderChipData.OperationTypes.TAG_SEARCHING);
         }
         MainActivity.csLibrary4A.appendToLog("invalidRequest = " + invalidRequest);
         geigerSearchTask = new InventoryRfidTask(getContext(), -1,-1, 0, 0, 0, 0, invalidRequest, true,

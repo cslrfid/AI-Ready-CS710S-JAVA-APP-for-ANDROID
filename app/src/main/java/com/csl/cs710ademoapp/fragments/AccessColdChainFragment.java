@@ -19,8 +19,8 @@ import com.csl.cs710ademoapp.AccessTask;
 import com.csl.cs710ademoapp.GenericTextWatcher;
 import com.csl.cs710ademoapp.MainActivity;
 import com.csl.cs710ademoapp.R;
-import com.csl.cs710library4a.CsLibrary4A;
 import com.csl.cslibrary4a.ReaderDevice;
+import com.csl.cslibrary4a.RfidReaderChipData;
 
 public class AccessColdChainFragment extends CommonFragment {
     final boolean DEBUG = true;
@@ -290,10 +290,10 @@ public class AccessColdChainFragment extends CommonFragment {
                 MainActivity.csLibrary4A.appendToLog("processTickItems, invalid = " + invalid);
                 if (bankProcessing++ != 0 && invalid) rerunRequest = false;
                 else  {
-                    CsLibrary4A.HostCommands hostCommand;
-                    if (readWriteTypes == ReadWriteTypes.TEMPERATURE) hostCommand = CsLibrary4A.HostCommands.CMD_GETSENSORDATA;
-                    else if (operationRead) hostCommand = CsLibrary4A.HostCommands.CMD_18K6CREAD;
-                    else hostCommand = CsLibrary4A.HostCommands.CMD_18K6CWRITE;
+                    RfidReaderChipData.HostCommands hostCommand;
+                    if (readWriteTypes == ReadWriteTypes.TEMPERATURE) hostCommand = RfidReaderChipData.HostCommands.CMD_GETSENSORDATA;
+                    else if (operationRead) hostCommand = RfidReaderChipData.HostCommands.CMD_18K6CREAD;
+                    else hostCommand = RfidReaderChipData.HostCommands.CMD_18K6CWRITE;
                     accessTask = new AccessTask(
                             (operationRead ? buttonRead : buttonWrite), null,
                             invalid,

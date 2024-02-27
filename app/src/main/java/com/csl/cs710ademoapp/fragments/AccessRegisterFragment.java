@@ -31,6 +31,7 @@ import com.csl.cs710ademoapp.MainActivity;
 import com.csl.cs710ademoapp.R;
 import com.csl.cs710library4a.CsLibrary4A;
 import com.csl.cslibrary4a.ReaderDevice;
+import com.csl.cslibrary4a.RfidReaderChipData;
 import com.csl.cslibrary4a.Utility;
 
 import java.util.ArrayList;
@@ -222,7 +223,7 @@ public class AccessRegisterFragment extends CommonFragment {
                     long pwrlevel = Integer.parseInt(editTextAntennaPower.getText().toString());
                     MainActivity.csLibrary4A.setTagRead(0);
                     MainActivity.csLibrary4A.setSelectedTag(strTagId, selectBank, pwrlevel);
-                    MainActivity.csLibrary4A.startOperation(CsLibrary4A.OperationTypes.TAG_INVENTORY);
+                    MainActivity.csLibrary4A.startOperation(RfidReaderChipData.OperationTypes.TAG_INVENTORY);
                     inventoryRfidTask = new InventoryRfidTask();
                     inventoryRfidTask.execute();
                     MainActivity.sharedObjects.serviceArrayList.clear(); epcArrayList.clear();
@@ -662,7 +663,7 @@ public class AccessRegisterFragment extends CommonFragment {
                 + ", password = " + password + ", power = " + antennaPower + ", repeatCount = " + repeatCount + ", resetCount = " + resetCount);
         accessTask = new AccessTask(buttonWrite, textViewWriteCount, invalidRequest1,
                 selectMask, selectBank1, selectOffset1,
-                password, antennaPower, CsLibrary4A.HostCommands.CMD_18K6CWRITE,
+                password, antennaPower, RfidReaderChipData.HostCommands.CMD_18K6CWRITE,
                 selectQValue, repeatCount, resetCount, false,
                 textViewRunTime, textViewTagGot, textViewVoltageLevel, textViewYield, textViewTotal);
         accessTask.execute();
