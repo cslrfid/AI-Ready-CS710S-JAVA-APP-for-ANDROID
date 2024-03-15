@@ -4,11 +4,9 @@ import android.content.Context;
 import android.util.Log;
 import android.widget.TextView;
 
-import androidx.annotation.Keep;
-
 import com.csl.cs108library4a.Cs108Library4A;
-import com.csl.cslibrary4a.BluetoothGattConnector;
-import com.csl.cslibrary4a.NotificationController;
+import com.csl.cslibrary4a.BluetoothGatt;
+import com.csl.cslibrary4a.NotificationConnector;
 import com.csl.cslibrary4a.ReaderDevice;
 import com.csl.cslibrary4a.RfidReaderChipData;
 import com.csl.cslibrary4a.Utility;
@@ -17,7 +15,7 @@ import java.util.List;
 
 public class CsLibrary4A {
     boolean DEBUG = false, DEBUG2 = false;
-    String stringVersion = "4.10.2";
+    String stringVersion = "4.10.3";
     Utility utility;
     Cs710Library4A cs710Library4A;
     com.csl.cs108library4a.Cs108Library4A cs108Library4A;
@@ -73,10 +71,7 @@ public class CsLibrary4A {
     	return utility.decodeCtesiusTemperature(strActData, strCalData);
     }
     public float decodeMicronTemperature(int iTag35, String strActData, String strCalData) {
-        appendToLog("iTag35 = " + iTag35 + ", strActData = " + strActData + ", strCalData = " + strCalData);
-        float fValue = utility.decodeMicronTemperature(iTag35, strActData, strCalData);
-        appendToLog(String.format("fValue = %f", fValue));
-        return fValue;
+        return utility.decodeMicronTemperature(iTag35, strActData, strCalData);
     }
     public float decodeAsygnTemperature(String string) {
     	return utility.decodeAsygnTemperature(string);
@@ -104,10 +99,6 @@ public class CsLibrary4A {
     }
 
     //============ android bluetooth ============
-    int bConnectStatus = 0;
-    int iServiceUuidConnectedBefore = -1;
-    private boolean isCs108Connected() { return (bConnectStatus == 1); }
-    private boolean isCs710Connected() { return (bConnectStatus == 7); }
     public boolean isBleScanning() {
         if (DEBUG) Log.i("Hello2", "isBleScanning");
         boolean bValue = false, bValue1 = false, bValue7 = false;
@@ -128,19 +119,19 @@ public class CsLibrary4A {
         else Log.i("Hello2", "scanLeDevice: bValue1 = " + bValue1 + ", bValue7 = " + bValue7);
         return bValue;
     }
-    public BluetoothGattConnector.Cs108ScanData getNewDeviceScanned() {
+    public BluetoothGatt.Cs108ScanData getNewDeviceScanned() {
         if (DEBUG2) Log.i("Hello2", "getNewDeviceScanned");
-        BluetoothGattConnector.Cs108ScanData cs108ScanData1;
-        BluetoothGattConnector.Cs108ScanData cs108ScanData7 = cs710Library4A.getNewDeviceScanned();
-        BluetoothGattConnector.Cs108ScanData cs108ScanData = null;
+        BluetoothGatt.Cs108ScanData cs108ScanData1;
+        BluetoothGatt.Cs108ScanData cs108ScanData7 = cs710Library4A.getNewDeviceScanned();
+        BluetoothGatt.Cs108ScanData cs108ScanData = null;
         if (cs108ScanData7 == null) {
             cs108ScanData1 = cs108Library4A.getNewDeviceScanned();
             if (cs108ScanData1 != null) {
-                cs108ScanData = new BluetoothGattConnector.Cs108ScanData(cs108ScanData1.getDevice(), cs108ScanData1.rssi, cs108ScanData1.getScanRecord());
+                cs108ScanData = new BluetoothGatt.Cs108ScanData(cs108ScanData1.getDevice(), cs108ScanData1.rssi, cs108ScanData1.getScanRecord());
                 cs108ScanData.serviceUUID2p2 = cs108ScanData1.serviceUUID2p2;
             }
         } else {
-            cs108ScanData = new BluetoothGattConnector.Cs108ScanData(cs108ScanData7.getDevice(), cs108ScanData7.rssi, cs108ScanData7.getScanRecord());
+            cs108ScanData = new BluetoothGatt.Cs108ScanData(cs108ScanData7.getDevice(), cs108ScanData7.rssi, cs108ScanData7.getScanRecord());
             cs108ScanData.serviceUUID2p2 = cs108ScanData7.serviceUUID2p2;
         }
         return cs108ScanData;
@@ -228,8 +219,85 @@ public class CsLibrary4A {
         else Log.i("Hello2", "get98XX" + stringNOTCONNECT);
         return -1;
     }
+    public String getAuthMatchData() {
+        if (DEBUG) Log.i("Hello2", "getAuthMatchData");
+        if (isCs108Connected()) return cs108Library4A.getAuthMatchData();
+        else if (isCs710Connected()) return cs710Library4A.getAuthMatchData();
+        else Log.i("Hello2", "getAuthMatchData" + stringNOTCONNECT);
+        return null;
+    }
+    public boolean setAuthMatchData(String mask) {
+        if (DEBUG) Log.i("Hello2", "setAuthMatchData");
+        if (isCs108Connected()) return cs108Library4A.setAuthMatchData(mask);
+        else if (isCs710Connected()) return cs710Library4A.setAuthMatchData(mask);
+        else Log.i("Hello2", "setAuthMatchData" + stringNOTCONNECT);
+        return false;
+    }
+    public int getStartQValue() {
+        if (DEBUG) Log.i("Hello2", "getStartQValue");
+        if (isCs108Connected()) return cs108Library4A.getStartQValue();
+        else if (isCs710Connected()) return cs710Library4A.getStartQValue();
+        else Log.i("Hello2", "getStartQValue" + stringNOTCONNECT);
+        return -1;
+    }
+    public int getMaxQValue() {
+        if (DEBUG) Log.i("Hello2", "getMaxQValue");
+        if (isCs108Connected()) return cs108Library4A.getMaxQValue();
+        else if (isCs710Connected()) return cs710Library4A.getMaxQValue();
+        else Log.i("Hello2", "getMaxQValue" + stringNOTCONNECT);
+        return -1;
+    }
+    public int getMinQValue() {
+        if (DEBUG) Log.i("Hello2", "getMinQValue");
+        if (isCs108Connected()) return cs108Library4A.getMinQValue();
+        else if (isCs710Connected()) return cs710Library4A.getMinQValue();
+        else Log.i("Hello2", "getMinQValue" + stringNOTCONNECT);
+        return -1;
+    }
+    public boolean setDynamicQParms(int startQValue, int minQValue, int maxQValue, int retryCount) {
+        if (DEBUG) Log.i("Hello2", "setDynamicQParms");
+        if (isCs108Connected()) return cs108Library4A.setDynamicQParms(startQValue, minQValue, maxQValue, retryCount);
+        else if (isCs710Connected()) return cs710Library4A.setDynamicQParms(startQValue, minQValue, maxQValue, retryCount);
+        else Log.i("Hello2", "setDynamicQParms" + stringNOTCONNECT);
+        return false;
+    }
+    public int getFixedQValue() {
+        if (DEBUG) Log.i("Hello2", "getFixedQValue");
+        if (isCs108Connected()) return cs108Library4A.getFixedQValue();
+        else if (isCs710Connected()) return cs710Library4A.getFixedQValue();
+        else Log.i("Hello2", "getFixedQValue" + stringNOTCONNECT);
+        return -1;
+    }
+    public int getFixedRetryCount() {
+        if (DEBUG) Log.i("Hello2", "getFixedRetryCount");
+        if (isCs108Connected()) return cs108Library4A.getFixedRetryCount();
+        else if (isCs710Connected()) return cs710Library4A.getFixedRetryCount();
+        else Log.i("Hello2", "getFixedRetryCount" + stringNOTCONNECT);
+        return -1;
+    }
+    public boolean getRepeatUnitNoTags() {
+        if (DEBUG) Log.i("Hello2", "getRepeatUnitNoTags");
+        if (isCs108Connected()) return cs108Library4A.getRepeatUnitNoTags();
+        else if (isCs710Connected()) return cs710Library4A.getRepeatUnitNoTags();
+        else Log.i("Hello2", "getRepeatUnitNoTags" + stringNOTCONNECT);
+        return false;
+    }
+    public boolean setFixedQParms(int qValue, int retryCount, boolean repeatUnitNoTags) {
+        if (DEBUG) Log.i("Hello2", "setFixedQParms");
+        if (isCs108Connected()) return cs108Library4A.setFixedQParms(qValue, retryCount, repeatUnitNoTags);
+        else if (isCs710Connected()) return cs710Library4A.setFixedQParms(qValue, retryCount, repeatUnitNoTags);
+        else Log.i("Hello2", "setFixedQParms" + stringNOTCONNECT);
+        return false;
+    }
 
     //============ Rfid ============
+    public boolean getChannelHoppingDefault() {
+        if (DEBUG) Log.i("Hello2", "getChannelHoppingDefault");
+        if (isCs108Connected()) return cs108Library4A.getChannelHoppingDefault();
+        else if (isCs710Connected()) return cs710Library4A.getChannelHoppingDefault();
+        else Log.i("Hello2", "getChannelHoppingDefault" + stringNOTCONNECT);
+        return false;
+    }
     public boolean getRfidOnStatus() {
         if (DEBUG) Log.i("Hello2", "getRfidOnStatus");
         if (isCs108Connected()) return cs108Library4A.getRfidOnStatus();
@@ -486,6 +554,13 @@ public class CsLibrary4A {
         else Log.i("Hello2", "setRxGain" + stringNOTCONNECT);
         return false;
     }
+    public boolean setRxGain(int rxGain) {
+        if (DEBUG) Log.i("Hello2", "setRxGain");
+        if (isCs108Connected()) return cs108Library4A.setRxGain(rxGain);
+        else if (isCs710Connected()) return cs710Library4A.setRxGain(rxGain);
+        else Log.i("Hello2", "setRxGain" + stringNOTCONNECT);
+        return false;
+    }
     public int FreqChnCnt() {
         if (DEBUG) Log.i("Hello2", "FreqChnCnt");
         if (isCs108Connected()) return cs108Library4A.FreqChnCnt();
@@ -634,172 +709,174 @@ public class CsLibrary4A {
         else if (isCs710Connected()) return cs710Library4A.getSelectEnable();
         else Log.i("Hello2", "getSelectEnable" + stringNOTCONNECT);
         return false;
-    } //2289
+    }
     public int getSelectTarget() {
         if (DEBUG) Log.i("Hello2", "getSelectTarget");
         if (isCs108Connected()) return cs108Library4A.getSelectTarget();
         else if (isCs710Connected()) return cs710Library4A.getSelectTarget();
         else Log.i("Hello2", "getSelectTarget" + stringNOTCONNECT);
         return -1;
-    } //2294
+    }
     public int getSelectAction() {
         if (DEBUG) Log.i("Hello2", "getSelectAction");
         if (isCs108Connected()) return cs108Library4A.getSelectAction();
         else if (isCs710Connected()) return cs710Library4A.getSelectAction();
         else Log.i("Hello2", "getSelectAction" + stringNOTCONNECT);
         return -1;
-    } //2297
+    }
     public int getSelectMaskBank() {
         if (DEBUG) Log.i("Hello2", "getSelectMaskBank");
         if (isCs108Connected()) return cs108Library4A.getSelectMaskBank();
         else if (isCs710Connected()) return cs710Library4A.getSelectMaskBank();
         else Log.i("Hello2", "getSelectMaskBank" + stringNOTCONNECT);
         return -1;
-    } //2300
+    }
     public int getSelectMaskOffset() {
         if (DEBUG) Log.i("Hello2", "getSelectMaskOffset");
         if (isCs108Connected()) return cs108Library4A.getSelectMaskOffset();
         else if (isCs710Connected()) return cs710Library4A.getSelectMaskOffset();
         else Log.i("Hello2", "getSelectMaskOffset" + stringNOTCONNECT);
         return -1;
-    } //2303
+    }
     public String getSelectMaskData() {
         if (DEBUG) Log.i("Hello2", "getSelectMaskData");
         if (isCs108Connected()) return cs108Library4A.getSelectMaskData();
         else if (isCs710Connected()) return cs710Library4A.getSelectMaskData();
         else Log.i("Hello2", "getSelectMaskData" + stringNOTCONNECT);
         return null;
-    } //2306
+    }
     public boolean setInvSelectIndex(int invSelect) {
         if (DEBUG) Log.i("Hello2", "setInvSelectIndex");
         if (isCs108Connected()) return cs108Library4A.setInvSelectIndex(invSelect);
         else if (isCs710Connected()) return cs710Library4A.setInvSelectIndex(invSelect);
         else Log.i("Hello2", "setInvSelectIndex" + stringNOTCONNECT);
-        return false; } //2317
+        return false;
+    }
     public boolean setSelectCriteriaDisable(int index) {
         if (DEBUG || true) appendToLog("csLibrary4A: setSelectCriteria Disable with index = " + index);
         if (isCs108Connected()) return cs108Library4A.setSelectCriteriaDisable(index);
         else if (isCs710Connected()) return cs710Library4A.setSelectCriteriaDisable(index);
         else Log.i("Hello2", "setSelectCriteriaDisable" + stringNOTCONNECT);
         return false;
-    } //2351
+    }
     public boolean setSelectCriteria(int index, boolean enable, int target, int action, int bank, int offset, String mask, boolean maskbit) {
         appendToLog("csLibrary4A: setSelectCriteria 1 with index = " + index + ", enable = " + enable + ", target = " + target + ", action = " + action + ", bank = " + bank + ", offset = " + offset + ", mask = " + mask + ", maskbit = " + maskbit);
         if (isCs108Connected()) return cs108Library4A.setSelectCriteria(index, enable, target, action, bank, offset, mask, maskbit);
         else if (isCs710Connected()) return cs710Library4A.setSelectCriteria(index, enable, target, action, bank, offset, mask, maskbit);
         else Log.i("Hello2", "setSelectCriteria 1" + stringNOTCONNECT);
         return false;
-    } //2355
+    }
     public boolean setSelectCriteria(int index, boolean enable, int target, int action, int delay, int bank, int offset, String mask) {
         appendToLog("csLibrary4A: setSelectCriteria 2 with index = " + index + ", enable = " + enable + ", target = " + target + ", action = " + action + ", delay = " + delay + ", bank = " + bank + ", offset = " + offset + ", mask = " + mask);
         if (isCs108Connected()) return cs108Library4A.setSelectCriteria(index, enable, target, action, delay, bank, offset, mask);
         else if (isCs710Connected()) return cs710Library4A.setSelectCriteria(index, enable, target, action, delay, bank, offset, mask);
         else Log.i("Hello2", "setSelectCriteria" + stringNOTCONNECT);
         return false;
-    } //2378
+    }
     public boolean getRssiFilterEnable() {
         if (DEBUG) Log.i("Hello2", "getRssiFilterEnable");
         if (isCs108Connected()) return cs108Library4A.getRssiFilterEnable();
         else if (isCs710Connected()) return cs710Library4A.getRssiFilterEnable();
         else Log.i("Hello2", "getRssiFilterEnable" + stringNOTCONNECT);
         return false;
-    } //2452
+    }
     public int getRssiFilterType() {
         if (DEBUG) Log.i("Hello2", "getRssiFilterType");
         if (isCs108Connected()) return cs108Library4A.getRssiFilterType();
         else if (isCs710Connected()) return cs710Library4A.getRssiFilterType();
         else Log.i("Hello2", "getRssiFilterType" + stringNOTCONNECT);
         return -1;
-    } //2458
+    }
     public int getRssiFilterOption() {
         if (DEBUG) Log.i("Hello2", "getRssiFilterOption");
         if (isCs108Connected()) return cs108Library4A.getRssiFilterOption();
         else if (isCs710Connected()) return cs710Library4A.getRssiFilterOption();
         return -1;
-    } //2465
+    }
     public boolean setRssiFilterConfig(boolean enable, int rssiFilterType, int rssiFilterOption) {
         if (DEBUG) Log.i("Hello2", "setRssiFilterConfig");
         if (isCs108Connected()) return cs108Library4A.setRssiFilterConfig(enable, rssiFilterType, rssiFilterOption);
         else if (isCs710Connected()) return cs710Library4A.setRssiFilterConfig(enable, rssiFilterType, rssiFilterOption);
         else Log.i("Hello2", "setRssiFilterConfig" + stringNOTCONNECT);
         return false;
-    } //2471
+    }
     public double getRssiFilterThreshold1() {
         if (DEBUG) Log.i("Hello2", "getRssiFilterThreshold1");
         if (isCs108Connected()) return cs108Library4A.getRssiFilterThreshold1();
         else if (isCs710Connected()) return cs710Library4A.getRssiFilterThreshold1();
         else Log.i("Hello2", "getRssiFilterThreshold1" + stringNOTCONNECT);
         return -1;
-    } //2477
+    }
     public double getRssiFilterThreshold2() {
         if (DEBUG) Log.i("Hello2", "getRssiFilterThreshold2");
         if (isCs108Connected()) return cs108Library4A.getRssiFilterThreshold2();
         else if (isCs710Connected()) return cs710Library4A.getRssiFilterThreshold2();
         else Log.i("Hello2", "getRssiFilterThreshold2" + stringNOTCONNECT);
         return -1;
-    } //2488
+    }
     public boolean setRssiFilterThreshold(double rssiFilterThreshold1, double rssiFilterThreshold2) {
         if (DEBUG) Log.i("Hello2", "setRssiFilterThreshold");
         if (isCs108Connected()) return cs108Library4A.setRssiFilterThreshold(rssiFilterThreshold1, rssiFilterThreshold2);
         else if (isCs710Connected()) return cs710Library4A.setRssiFilterThreshold(rssiFilterThreshold1, rssiFilterThreshold2);
         else Log.i("Hello2", "setRssiFilterThreshold" + stringNOTCONNECT);
         return false;
-    } //2495
+    }
     public long getRssiFilterCount() {
         if (DEBUG) Log.i("Hello2", "getRssiFilterCount");
         if (isCs108Connected()) return cs108Library4A.getRssiFilterCount();
         else if (isCs710Connected()) return cs710Library4A.getRssiFilterCount();
         else Log.i("Hello2", "getRssiFilterCount" + stringNOTCONNECT);
         return -1;
-    } //2505
+    }
     public boolean setRssiFilterCount(long rssiFilterCount) {
         Log.i("Hello2", "setRssiFilterCount");
-        return false; } //2508
+        return false;
+    }
     public boolean getInvMatchEnable() {
         if (DEBUG) Log.i("Hello2", "getInvMatchEnable");
         if (isCs108Connected()) return cs108Library4A.getInvMatchEnable();
         else if (isCs710Connected()) return cs710Library4A.getInvMatchEnable();
         else Log.i("Hello2", "getInvMatchEnable" + stringNOTCONNECT);
         return false;
-    } //2513
+    }
     public boolean getInvMatchType() {
         if (DEBUG) Log.i("Hello2", "getInvMatchType");
         if (isCs108Connected()) return cs108Library4A.getInvMatchType();
         else if (isCs710Connected()) return cs710Library4A.getInvMatchType();
         else Log.i("Hello2", "getInvMatchType" + stringNOTCONNECT);
         return false;
-    } //2516
+    }
     public int getInvMatchOffset() {
         if (DEBUG) Log.i("Hello2", "getInvMatchOffset");
         if (isCs108Connected()) return cs108Library4A.getInvMatchOffset();
         else if (isCs710Connected()) return cs710Library4A.getInvMatchOffset();
         else Log.i("Hello2", "getInvMatchOffset" + stringNOTCONNECT);
         return -1;
-    } //2519
+    }
     public String getInvMatchData() {
         if (DEBUG) Log.i("Hello2", "getInvMatchData");
         if (isCs108Connected()) return cs108Library4A.getInvMatchData();
         else if (isCs710Connected()) return cs710Library4A.getInvMatchData();
         else Log.i("Hello2", "getInvMatchData" + stringNOTCONNECT);
         return null;
-    } //2522
+    }
     public boolean setPostMatchCriteria(boolean enable, boolean target, int offset, String mask) {
         if (DEBUG) Log.i("Hello2", "setPostMatchCriteria");
         if (isCs108Connected()) return cs108Library4A.setPostMatchCriteria(enable, target, offset, mask);
         else if (isCs710Connected()) return cs710Library4A.setPostMatchCriteria(enable, target, offset, mask);
         else Log.i("Hello2", "setPostMatchCriteria" + stringNOTCONNECT);
         return false;
-    } //2543
+    }
     public int mrfidToWriteSize() {
         if (DEBUG2) Log.i("Hello2", "mrfidToWriteSize");
         if (isCs108Connected()) return cs108Library4A.mrfidToWriteSize();
         else if (isCs710Connected()) return cs710Library4A.mrfidToWriteSize();
         else Log.i("Hello2", "mrfidToWriteSize" + stringNOTCONNECT);
         return -1;
-    } //2550
+    }
     public void mrfidToWritePrint() {
         Log.i("Hello2", "mrfidToWritePrint");
-    } //2553
+    }
     public long getTagRate() {
         if (DEBUG) Log.i("Hello2", "getTagRate");
         if (isCs108Connected()) return cs108Library4A.getTagRate();
@@ -846,106 +923,107 @@ public class CsLibrary4A {
         }
         else Log.i("Hello2", "startOperation" + stringNOTCONNECT);
         return false;
-    } //2563
+    }
     public boolean abortOperation() {
         if (DEBUG) Log.i("Hello2", "abortOperation");
         if (isCs108Connected()) return cs108Library4A.abortOperation();
         else if (isCs710Connected()) return cs710Library4A.abortOperation();
         else Log.i("Hello2", "abortOperation" + stringNOTCONNECT);
         return false;
-    } //2601
+    }
     public void restoreAfterTagSelect() {
         if (DEBUG | true) Log.i("Hello2", "restoreAfterTagSelect");
         if (isCs108Connected()) cs108Library4A.restoreAfterTagSelect();
         else if (isCs710Connected()) cs710Library4A.restoreAfterTagSelect();
         else Log.i("Hello2", "restoreAfterTagSelect" + stringNOTCONNECT);
-    } //2609
+    }
     public boolean setSelectedTagByTID(String strTagId, long pwrlevel) {
         appendToLog("csLibrary4A: setSelectCriteria setSelectedByTID strTagId = " + strTagId + ", pwrlevel = " + pwrlevel);
         if (isCs108Connected()) return cs108Library4A.setSelectedTagByTID(strTagId, pwrlevel);
         else if (isCs710Connected()) return cs710Library4A.setSelectedTagByTID(strTagId, pwrlevel);
         else Log.i("Hello2", "setSelectedTagByTID" + stringNOTCONNECT);
         return false;
-    } //2647
+    }
     public boolean setSelectedTag(String strTagId, int selectBank, long pwrlevel) {
         if (DEBUG) Log.i("Hello2", "setSelectedTag 1");
         if (isCs108Connected()) return cs108Library4A.setSelectedTag(strTagId, selectBank, pwrlevel);
         else if (isCs710Connected()) return cs710Library4A.setSelectedTag(strTagId, selectBank, pwrlevel);
         else Log.i("Hello2", "setSelectedTag 1" + stringNOTCONNECT);
         return false;
-    } //2651
+    }
     public boolean setSelectedTag(String selectMask, int selectBank, int selectOffset, long pwrlevel, int qValue, int matchRep) {
         appendToLog("csLibraryA: setSelectCriteria strTagId = " + selectMask + ", selectBank = " + selectBank + ", selectOffset = " + selectOffset + ", pwrlevel = " + pwrlevel + ", qValue = " + qValue + ", matchRep = " + matchRep);
         if (isCs108Connected()) return cs108Library4A.setSelectedTag(selectMask, selectBank, selectOffset, pwrlevel, qValue, matchRep);
         else if (isCs710Connected()) return cs710Library4A.setSelectedTag(selectMask, selectBank, selectOffset, pwrlevel, qValue, matchRep);
         else Log.i("Hello2", "setSelectedTag 2" + stringNOTCONNECT);
         return false;
-    } //2851
+    }
     public boolean setMatchRep(int matchRep) {
         if (DEBUG) Log.i("Hello2", "setMatchRep");
         if (isCs108Connected()) return cs108Library4A.setMatchRep(matchRep);
         else if (isCs710Connected()) return cs710Library4A.setMatchRep(matchRep);
         else Log.i("Hello2", "setMatchRep" + stringNOTCONNECT);
         return false;
-    } //2659
+    }
     public String[] getCountryList() {
         if (DEBUG) Log.i("Hello2", "getCountryList");
         if (isCs108Connected()) return cs108Library4A.getCountryList();
         else if (isCs710Connected()) return cs710Library4A.getCountryList();
         else Log.i("Hello2", "getCountryList" + stringNOTCONNECT);
         return null;
-    } //2950
+    }
     public int getCountryNumberInList() {
         if (DEBUG) Log.i("Hello2", "getCountryNumberInList");
         if (isCs108Connected()) return cs108Library4A.getCountryNumberInList();
         else if (isCs710Connected()) return cs710Library4A.getCountryNumberInList();
         else Log.i("Hello2", "getCountryNumberInList" + stringNOTCONNECT);
         return -1;
-    } //2949
+    }
     public boolean setCountryInList(int countryInList) {
         if (DEBUG || true) Log.i("Hello2", "setCountryInList");
         if (isCs108Connected()) return cs108Library4A.setCountryInList(countryInList);
         else if (isCs710Connected()) return cs710Library4A.setCountryInList(countryInList);
         else Log.i("Hello2", "setCountryInList" + stringNOTCONNECT);
         return false;
-    } //3005
+    }
     public boolean getChannelHoppingStatus() {
         if (DEBUG) Log.i("Hello2", "getChannelHoppingStatus");
         if (isCs108Connected()) return cs108Library4A.getChannelHoppingStatus();
         else if (isCs710Connected()) return cs710Library4A.getChannelHoppingStatus();
         else Log.i("Hello2", "getChannelHoppingStatus" + stringNOTCONNECT);
         return false;
-    } //3046
+    }
     public boolean setChannelHoppingStatus(boolean channelOrderHopping) {
         Log.i("Hello2", "setChannelHoppingStatus");
-        return false; } //3061
+        return false;
+    }
     public String[] getChannelFrequencyList() {
         if (isCs108Connected()) return cs108Library4A.getChannelFrequencyList();
         else if (isCs710Connected()) return cs710Library4A.getChannelFrequencyList();
         else Log.i("Hello2", "getChannelFrequencyList" + stringNOTCONNECT);
         return null;
-    } //2950
+    }
     public int getChannel() {
         if (DEBUG) Log.i("Hello2", "getChannel");
         if (isCs108Connected()) return cs108Library4A.getChannel();
         else if (isCs710Connected()) return cs710Library4A.getChannel();
         else Log.i("Hello2", "getChannel" + stringNOTCONNECT);
         return -1;
-    } //3083
+    }
     public boolean setChannel(int channelSelect) {
         if (DEBUG) Log.i("Hello2", "setChannel");
         if (isCs108Connected()) return cs108Library4A.setChannel(channelSelect);
         else if (isCs710Connected()) return cs710Library4A.setChannel(channelSelect);
         else Log.i("Hello2", "setChannel" + stringNOTCONNECT);
         return false;
-    } //3094
+    }
     public byte getPopulation2Q(int population) {
         if (DEBUG) Log.i("Hello2", "getPopulation2Q");
         if (isCs108Connected()) return cs108Library4A.getPopulation2Q(population);
         else if (isCs710Connected()) return cs710Library4A.getPopulation2Q(population);
         else Log.i("Hello2", "getPopulation2Q" + stringNOTCONNECT);
         return -1;
-    } //3339
+    }
     public int getPopulation() {
         if (DEBUG) Log.i("Hello2", "getPopulation");
         if (isCs108Connected()) return cs108Library4A.getPopulation();
@@ -959,14 +1037,14 @@ public class CsLibrary4A {
         else if (isCs710Connected()) return cs710Library4A.setPopulation(population);
         else Log.i("Hello2", "setPopulation" + stringNOTCONNECT);
         return false;
-    } //3349
+    }
     public byte getQValue() {
         if (DEBUG) Log.i("Hello2", "getQValue");
         if (isCs108Connected()) return cs108Library4A.getQValue();
         else if (isCs710Connected()) return cs710Library4A.getQValue();
         else Log.i("Hello2", "getQValue" + stringNOTCONNECT);
         return -1;
-    } //3359
+    }
     public boolean setQValue(byte byteValue) {
         if (DEBUG) Log.i("Hello2", "setQValue");
         if (isCs108Connected()) return cs108Library4A.setQValue(byteValue);
@@ -1068,14 +1146,14 @@ public class CsLibrary4A {
         else if (isCs710Connected()) return cs710Library4A.getModelNumber();
         else Log.i("Hello2", "getModelNumber" + stringNOTCONNECT);
         return null;
-    } //4188
+    }
     public boolean setRx000KillPassword(String password) {
         if (DEBUG) Log.i("Hello2", "setRx000KillPassword");
         if (isCs108Connected()) return cs108Library4A.setRx000KillPassword(password);
         else if (isCs710Connected()) return cs710Library4A.setRx000KillPassword(password);
         else Log.i("Hello2", "setRx000KillPassword" + stringNOTCONNECT);
         return false;
-    } //4223
+    }
     public boolean setRx000AccessPassword(String password) {
         if (DEBUG) Log.i("Hello2", "setRx000AccessPassword");
         if (isCs108Connected()) return cs108Library4A.setRx000AccessPassword(password);
@@ -1159,14 +1237,14 @@ public class CsLibrary4A {
         else if (isCs710Connected()) return cs710Library4A.setTagRead(tagRead);
         else Log.i("Hello2", "setTagRead" + stringNOTCONNECT);
         return false;
-    } //4235
+    }
     public boolean setInvBrandId(boolean invBrandId) {
         if (DEBUG) Log.i("Hello2", "setInvBrandId");
         if (isCs108Connected()) return cs108Library4A.setInvBrandId(invBrandId);
         else if (isCs710Connected()) return cs710Library4A.setInvBrandId(invBrandId);
         else Log.i("Hello2", "setInvBrandId" + stringNOTCONNECT);
         return false;
-    } //4243
+    }
     public boolean sendHostRegRequestHST_CMD(RfidReaderChipData.HostCommands hostCommand) {
         if (DEBUG | true) Log.i("Hello2", "sendHostRegRequestHST_CMD with hostCommand = " + hostCommand.toString());
         if (isCs108Connected()) {
@@ -1267,61 +1345,73 @@ public class CsLibrary4A {
         }
         else Log.i("Hello2", "sendHostRegRequestHST_CMD" + stringNOTCONNECT);
         return false;
-    } //4237
-    public boolean setPwrManagementMode(boolean bLowPowerStandby) { //called before connection
+    }
+    public boolean setPwrManagementMode(boolean bLowPowerStandby) {
         if (DEBUG) Log.i("Hello2", "setPwrManagementMode");
         if (isCs108Connected()) return cs108Library4A.setPwrManagementMode(bLowPowerStandby);
         else if (isCs710Connected()) return cs710Library4A.setPwrManagementMode(bLowPowerStandby);
         return false;
-    } //4241
+    }
     public void macWrite(int address, long value) {
         if (DEBUG) Log.i("Hello2", "macWrite");
         if (isCs108Connected()) cs108Library4A.macWrite(address, value);
         else if (isCs710Connected()) { }
-    } //4248
+    }
     public void set_fdCmdCfg(int value) {
         if (DEBUG) Log.i("Hello2", "set_fdCmdCfg");
         if (isCs108Connected()) cs108Library4A.set_fdCmdCfg(value);
         else if (isCs710Connected()) { }
-    } //4250
+    }
     public void set_fdRegAddr(int addr) {
         if (DEBUG) Log.i("Hello2", "set_fdRegAddr");
         if (isCs108Connected()) cs108Library4A.set_fdRegAddr(addr);
         else if (isCs710Connected()) { }
-    } //4253
+    }
     public void set_fdWrite(int addr, long value) {
         if (DEBUG) Log.i("Hello2", "set_fdWrite");
         if (isCs108Connected()) cs108Library4A.set_fdWrite(addr, value);
         else if (isCs710Connected()) { }
-    } //4254
+    }
     public void set_fdPwd(int value) {
         if (DEBUG) Log.i("Hello2", "set_fdPwd");
         if (isCs108Connected()) cs108Library4A.set_fdPwd(value);
         else if (isCs710Connected()) { }
-    } //4258
+    }
     public void set_fdBlockAddr4GetTemperature(int addr) {
         if (DEBUG) Log.i("Hello2", "set_fdBlockAddr4GetTemperature");
         if (isCs108Connected()) cs108Library4A.set_fdBlockAddr4GetTemperature(addr);
         else if (isCs710Connected()) { }
-    } //4259
+    }
     public void set_fdReadMem(int addr, long len) {
         if (DEBUG) Log.i("Hello2", "set_fdReadMem");
         if (isCs108Connected()) cs108Library4A.set_fdReadMem(addr, len);
         else if (isCs710Connected()) { }
-    } //4262
+    }
     public void set_fdWriteMem(int addr, int len, long value) {
         if (DEBUG) Log.i("Hello2", "set_fdWriteMem");
         if (isCs108Connected()) cs108Library4A.set_fdWriteMem(addr, len, value);
         else if (isCs710Connected()) { }
-    } //4266
+    }
     public void setImpinJExtension(boolean tagFocus, boolean fastId) {
         if (DEBUG) Log.i("Hello2", "setImpinJExtension with tagFocus = " + tagFocus + ", fastId = " + fastId);
         if (isCs108Connected()) cs108Library4A.setImpinJExtension(tagFocus, fastId);
         else if (isCs710Connected()) cs710Library4A.setImpinJExtension(tagFocus, fastId);
         else Log.i("Hello2", "setImpinJExtension" + stringNOTCONNECT);
-    } //4271
+    }
 
     //============ Barcode ============
+    public void getBarcodePreSuffix() {
+        if (DEBUG) Log.i("Hello2", "getBarcodePreSuffix");
+        if (isCs108Connected()) cs108Library4A.getBarcodePreSuffix();
+        else if (isCs710Connected()) cs710Library4A.getBarcodePreSuffix();
+        else Log.i("Hello2", "getBarcodePreSuffix" + stringNOTCONNECT);
+    }
+    public void getBarcodeReadingMode() {
+        if (DEBUG) Log.i("Hello2", "getBarcodeReadingMode");
+        if (isCs108Connected()) cs108Library4A.getBarcodeReadingMode();
+        else if (isCs710Connected()) cs710Library4A.getBarcodeReadingMode();
+        else Log.i("Hello2", "getBarcodeReadingMode" + stringNOTCONNECT);
+    }
     public boolean isBarcodeFailure() {
         if (DEBUG) Log.i("Hello2", "isBarcodeFailure");
         if (isCs108Connected()) return cs108Library4A.isBarcodeFailure();
@@ -1363,42 +1453,42 @@ public class CsLibrary4A {
         else if (isCs710Connected()) return cs710Library4A.getInventoryVibrate();
         else Log.i("Hello2", "getInventoryVibrate" + stringNOTCONNECT);
         return false;
-    } //2151
+    }
     public boolean setInventoryVibrate(boolean inventoryVibrate) {
         if (DEBUG) Log.i("Hello2", "setInventoryVibrate");
         if (isCs108Connected()) return cs108Library4A.setInventoryVibrate(inventoryVibrate);
         else if (isCs710Connected()) return cs710Library4A.setInventoryVibrate(inventoryVibrate);
         else Log.i("Hello2", "setInventoryVibrate" + stringNOTCONNECT);
         return false;
-    } //2152
+    }
     public int getVibrateTime() {
         if (DEBUG) Log.i("Hello2", "getVibrateTime");
         if (isCs108Connected()) return cs108Library4A.getVibrateTime();
         else if (isCs710Connected()) return cs710Library4A.getVibrateTime();
         else Log.i("Hello2", "getVibrateTime" + stringNOTCONNECT);
         return -1;
-    } //2158
+    }
     public boolean setVibrateTime(int vibrateTime) {
         if (DEBUG) Log.i("Hello2", "setVibrateTime");
         if (isCs108Connected()) return cs108Library4A.setVibrateTime(vibrateTime);
         else if (isCs710Connected()) return cs710Library4A.setVibrateTime(vibrateTime);
         else Log.i("Hello2", "setVibrateTime" + stringNOTCONNECT);
         return false;
-    } //2161
+    }
     public int getVibrateWindow() {
         if (DEBUG) Log.i("Hello2", "getVibrateWindow");
         if (isCs108Connected()) return cs108Library4A.getVibrateWindow();
         else if (isCs710Connected()) return cs710Library4A.getVibrateWindow();
         else Log.i("Hello2", "getVibrateWindow" + stringNOTCONNECT);
         return -1;
-    } //2167
+    }
     public boolean setVibrateWindow(int vibrateWindow) {
         if (DEBUG) Log.i("Hello2", "setVibrateWindow");
         if (isCs108Connected()) return cs108Library4A.setVibrateWindow(vibrateWindow);
         else if (isCs710Connected()) return cs710Library4A.setVibrateWindow(vibrateWindow);
         else Log.i("Hello2", "setVibrateWindow" + stringNOTCONNECT);
         return false;
-    } //2170
+    }
     public boolean barcodeSendCommandTrigger() {
         if (DEBUG) Log.i("Hello2", "barcodeSendCommandTrigger");
         if (isCs108Connected()) return cs108Library4A.barcodeSendCommandTrigger();
@@ -1454,7 +1544,7 @@ public class CsLibrary4A {
         else if (isCs710Connected()) return cs710Library4A.onBarcodeEvent();
         else Log.i("Hello2", "onBarcodeEvent" + stringNOTCONNECT);
         return null;
-    } //4073
+    }
 
     //============ Android General ============
     public void setSameCheck(boolean sameCheck1) {
@@ -1475,84 +1565,86 @@ public class CsLibrary4A {
         else if (isCs710Connected()) return cs710Library4A.getBeepCount();
         else Log.i("Hello2", "getBeepCount" + stringNOTCONNECT);
         return -1;
-    } //2135
+    }
     public boolean setBeepCount(int beepCount) {
         if (DEBUG) Log.i("Hello2", "setBeepCount");
         if (isCs108Connected()) return cs108Library4A.setBeepCount(beepCount);
         else if (isCs710Connected()) return cs710Library4A.setBeepCount(beepCount);
         else Log.i("Hello2", "setBeepCount" + stringNOTCONNECT);
         return false;
-    } //2138
+    }
     public boolean getInventoryBeep() {
         if (DEBUG) Log.i("Hello2", "getInventoryBeep");
         if (isCs108Connected()) return cs108Library4A.getInventoryBeep();
         else if (isCs710Connected()) return cs710Library4A.getInventoryBeep();
         else Log.i("Hello2", "getInventoryBeep" + stringNOTCONNECT);
         return false;
-    } //2144
+    }
     public boolean setInventoryBeep(boolean inventoryBeep) {
         if (DEBUG) Log.i("Hello2", "setInventoryBeep");
         if (isCs108Connected()) return cs108Library4A.setInventoryBeep(inventoryBeep);
         else if (isCs710Connected()) return cs710Library4A.setInventoryBeep(inventoryBeep);
         else Log.i("Hello2", "setInventoryBeep" + stringNOTCONNECT);
         return false;
-    } //2145
+    }
     public boolean getSaveFileEnable() {
         if (DEBUG) Log.i("Hello2", "getSaveFileEnable");
         if (isCs108Connected()) return cs108Library4A.getSaveFileEnable();
         else if (isCs710Connected()) return cs710Library4A.getSaveFileEnable();
         else Log.i("Hello2", "getSaveFileEnable" + stringNOTCONNECT);
         return false;
-    } //2176
+    }
     public boolean setSaveFileEnable(boolean saveFileEnable) {
         if (DEBUG) Log.i("Hello2", "setSaveFileEnable");
         if (isCs108Connected()) return cs108Library4A.setSaveFileEnable(saveFileEnable);
         else if (isCs710Connected()) return cs710Library4A.setSaveFileEnable(saveFileEnable);
         else Log.i("Hello2", "setSaveFileEnable" + stringNOTCONNECT);
         return false;
-    } //2177
+    }
     public boolean getSaveCloudEnable() {
         if (DEBUG) Log.i("Hello2", "getSaveCloudEnable");
         if (isCs108Connected()) return cs108Library4A.getSaveCloudEnable();
         else if (isCs710Connected()) return cs710Library4A.getSaveCloudEnable();
         else Log.i("Hello2", "getSaveCloudEnable" + stringNOTCONNECT);
         return false;
-    } //2185
+    }
     public boolean setSaveCloudEnable(boolean saveCloudEnable) {
         if (DEBUG) Log.i("Hello2", "setSaveCloudEnable");
         if (isCs108Connected()) return cs108Library4A.setSaveCloudEnable(saveCloudEnable);
         else if (isCs710Connected()) return cs710Library4A.setSaveCloudEnable(saveCloudEnable);
         else Log.i("Hello2", "setSaveCloudEnable" + stringNOTCONNECT);
         return false;
-    } //2186
+    }
     public boolean getSaveNewCloudEnable() {
         if (DEBUG) Log.i("Hello2", "getSaveNewCloudEnable");
         if (isCs108Connected()) return cs108Library4A.getSaveNewCloudEnable();
         else if (isCs710Connected()) return cs710Library4A.getSaveNewCloudEnable();
         else Log.i("Hello2", "getSaveNewCloudEnable" + stringNOTCONNECT);
         return false;
-    } //2192
+    }
     public boolean setSaveNewCloudEnable(boolean saveNewCloudEnable) {
         Log.i("Hello2", "setSaveNewCloudEnable");
-        return false; } //2193
+        return false;
+    }
     public boolean getSaveAllCloudEnable() {
         if (DEBUG) Log.i("Hello2", "getSaveAllCloudEnable");
         if (isCs108Connected()) return cs108Library4A.getSaveAllCloudEnable();
         else if (isCs710Connected()) return cs710Library4A.getSaveAllCloudEnable();
         else Log.i("Hello2", "getSaveAllCloudEnable" + stringNOTCONNECT);
         return false;
-    } //2198
+    }
     public boolean setSaveAllCloudEnable(boolean saveAllCloudEnable) {
         Log.i("Hello2", "setSaveAllCloudEnable");
-        return false; } //2199
-    @Keep public boolean getUserDebugEnable() {
+        return false;
+    }
+    public boolean getUserDebugEnable() {
         if (DEBUG) Log.i("Hello2", "getUserDebugEnable");
         if (isCs108Connected()) return cs108Library4A.getUserDebugEnable();
         else if (isCs710Connected()) return cs710Library4A.getUserDebugEnable();
         else Log.i("Hello2", "getUserDebugEnable" + stringNOTCONNECT);
         return false;
     }
-    @Keep public boolean setUserDebugEnable(boolean userDebugEnable) {
+    public boolean setUserDebugEnable(boolean userDebugEnable) {
         if (DEBUG) Log.i("Hello2", "setUserDebugEnable");
         if (isCs108Connected()) return cs108Library4A.setUserDebugEnable(userDebugEnable);
         else if (isCs710Connected()) return cs710Library4A.setUserDebugEnable(userDebugEnable);
@@ -1565,254 +1657,98 @@ public class CsLibrary4A {
         else if (isCs710Connected()) return cs710Library4A.getServerLocation();
         else Log.i("Hello2", "getServerLocation" + stringNOTCONNECT);
         return null;
-    } //2207
+    }
     public boolean setServerLocation(String serverLocation) {
         if (DEBUG) Log.i("Hello2", "setServerLocation");
         if (isCs108Connected()) return cs108Library4A.setServerLocation(serverLocation);
         else if (isCs710Connected()) return cs710Library4A.setServerLocation(serverLocation);
         else Log.i("Hello2", "setServerLocation" + stringNOTCONNECT);
         return false;
-    } //2210
+    }
     public int getServerTimeout() {
         if (DEBUG) Log.i("Hello2", "getServerTimeout");
         if (isCs108Connected()) return cs108Library4A.getServerTimeout();
         else if (isCs710Connected()) return cs710Library4A.getServerTimeout();
         else Log.i("Hello2", "getServerTimeout" + stringNOTCONNECT);
         return -1;
-    } //2216
+    }
     public boolean setServerTimeout(int serverTimeout) {
         if (DEBUG) Log.i("Hello2", "setServerTimeout");
         if (isCs108Connected()) return cs108Library4A.setServerTimeout(serverTimeout);
         else if (isCs710Connected()) return cs710Library4A.setServerTimeout(serverTimeout);
         else Log.i("Hello2", "setServerTimeout" + stringNOTCONNECT);
         return false;
-    } //2217
+    }
     public int getBatteryDisplaySetting() {
         if (DEBUG) Log.i("Hello2", "getBatteryDisplaySetting");
         if (isCs108Connected()) return cs108Library4A.getBatteryDisplaySetting();
         else if (isCs710Connected()) return cs710Library4A.getBatteryDisplaySetting();
         else Log.i("Hello2", "getBatteryDisplaySetting" + stringNOTCONNECT);
         return -1;
-    } //3976
+    }
     public boolean setBatteryDisplaySetting(int batteryDisplaySelect) {
         if (DEBUG) Log.i("Hello2", "setBatteryDisplaySetting");
         if (isCs108Connected()) return cs108Library4A.setBatteryDisplaySetting(batteryDisplaySelect);
         else if (isCs710Connected()) return cs710Library4A.setBatteryDisplaySetting(batteryDisplaySelect);
         else Log.i("Hello2", "setBatteryDisplaySetting" + stringNOTCONNECT);
         return false;
-    } //3977
+    }
     public double dBuV_dBm_constant = -1;
-    public int getRssiDisplaySetting() { //called before connection
+    public int getRssiDisplaySetting() {
         if (DEBUG) Log.i("Hello2", "getRssiDisplaySetting");
         if (isCs108Connected()) return cs108Library4A.getRssiDisplaySetting();
         else if (isCs710Connected()) return cs710Library4A.getRssiDisplaySetting();
         return 0;
-    } //3985
+    }
     public boolean setRssiDisplaySetting(int rssiDisplaySelect) {
         if (DEBUG) Log.i("Hello2", "setRssiDisplaySetting");
         if (isCs108Connected()) return cs108Library4A.setRssiDisplaySetting(rssiDisplaySelect);
         else if (isCs710Connected()) return cs710Library4A.setRssiDisplaySetting(rssiDisplaySelect);
         else Log.i("Hello2", "setRssiDisplaySetting" + stringNOTCONNECT);
         return false;
-    } //3986
+    }
     public int getVibrateModeSetting() {
         if (DEBUG) Log.i("Hello2", "getVibrateModeSetting");
         if (isCs108Connected()) return cs108Library4A.getVibrateModeSetting();
         else if (isCs710Connected()) return cs710Library4A.getVibrateModeSetting();
         else Log.i("Hello2", "getVibrateModeSetting" + stringNOTCONNECT);
         return -1;
-    } //3993
+    }
     public boolean setVibrateModeSetting(int vibrateModeSelect) {
         if (DEBUG) Log.i("Hello2", "setVibrateModeSetting");
         if (isCs108Connected()) return cs108Library4A.setVibrateModeSetting(vibrateModeSelect);
         else if (isCs710Connected()) return cs710Library4A.setVibrateModeSetting(vibrateModeSelect);
         else Log.i("Hello2", "setVibrateModeSetting" + stringNOTCONNECT);
         return false;
-    } //3994
+    }
     public int getSavingFormatSetting() {
         if (DEBUG) Log.i("Hello2", "getSavingFormatSetting");
         if (isCs108Connected()) return cs108Library4A.getSavingFormatSetting();
         else if (isCs710Connected()) return cs710Library4A.getSavingFormatSetting();
         else Log.i("Hello2", "getSavingFormatSetting" + stringNOTCONNECT);
         return -1;
-    } //4001
+    }
     public boolean setSavingFormatSetting(int savingFormatSelect) {
         if (DEBUG) Log.i("Hello2", "setSavingFormatSetting");
         if (isCs108Connected()) return cs108Library4A.setSavingFormatSetting(savingFormatSelect);
         else if (isCs710Connected()) return cs710Library4A.setSavingFormatSetting(savingFormatSelect);
         else Log.i("Hello2", "setSavingFormatSetting" + stringNOTCONNECT);
         return false;
-    } //4002
+    }
     public int getCsvColumnSelectSetting() {
         if (DEBUG) Log.i("Hello2", "getCsvColumnSelectSetting");
         if (isCs108Connected()) return cs108Library4A.getCsvColumnSelectSetting();
         else if (isCs710Connected()) return cs710Library4A.getCsvColumnSelectSetting();
         else Log.i("Hello2", "getCsvColumnSelectSetting" + stringNOTCONNECT);
         return -1;
-    } //4020
+    }
     public boolean setCsvColumnSelectSetting(int csvColumnSelect) {
         if (DEBUG) Log.i("Hello2", "setCsvColumnSelectSetting");
         if (isCs108Connected()) return cs108Library4A.setCsvColumnSelectSetting(csvColumnSelect);
         else if (isCs710Connected()) return cs710Library4A.setCsvColumnSelectSetting(csvColumnSelect);
         else Log.i("Hello2", "setCsvColumnSelectSetting" + stringNOTCONNECT);
         return false;
-    } //4021
-
-    //============ Bluetooth ============
-    public String getBluetoothICFirmwareVersion() {
-        if (DEBUG) Log.i("Hello2", "getBluetoothICFirmwareVersion");
-        if (isCs108Connected()) return cs108Library4A.getBluetoothICFirmwareVersion();
-        else if (isCs710Connected()) return cs710Library4A.getBluetoothICFirmwareVersion();
-        else Log.i("Hello2", "getBluetoothICFirmwareVersion" + stringNOTCONNECT);
-        return null;
-    } //3683
-    public String getBluetoothICFirmwareName() {
-        if (DEBUG) Log.i("Hello2", "getBluetoothICFirmwareName");
-        if (isCs108Connected()) return cs108Library4A.getBluetoothICFirmwareName();
-        else if (isCs710Connected()) return cs710Library4A.getBluetoothICFirmwareName();
-        else Log.i("Hello2", "getBluetoothICFirmwareName" + stringNOTCONNECT);
-        return null;
-    } //3686
-    public boolean setBluetoothICFirmwareName(String name) {
-        if (DEBUG) Log.i("Hello2", "setBluetoothICFirmwareName");
-        if (isCs108Connected()) return cs108Library4A.setBluetoothICFirmwareName(name);
-        else if (isCs710Connected()) return cs710Library4A.setBluetoothICFirmwareName(name);
-        else Log.i("Hello2", "setBluetoothICFirmwareName" + stringNOTCONNECT);
-        return false;
-    } //3693
-
-    //============ Controller ============
-    public String hostProcessorICGetFirmwareVersion() {
-        if (DEBUG) Log.i("Hello2", "hostProcessorICGetFirmwareVersion");
-        if (isCs108Connected()) return cs108Library4A.hostProcessorICGetFirmwareVersion();
-        else if (isCs710Connected()) return cs710Library4A.hostProcessorICGetFirmwareVersion();
-        else Log.i("Hello2", "hostProcessorICGetFirmwareVersion" + stringNOTCONNECT);
-        return null;
-    } //3699
-    public String getHostProcessorICSerialNumber() {
-        if (DEBUG) Log.i("Hello2", "getHostProcessorICSerialNumber");
-        if (isCs108Connected()) return cs108Library4A.getHostProcessorICSerialNumber();
-        else if (isCs710Connected()) return cs710Library4A.getHostProcessorICSerialNumber();
-        else Log.i("Hello2", "getHostProcessorICSerialNumber" + stringNOTCONNECT);
-        return null;
-    } //3702
-    public String getHostProcessorICBoardVersion() {
-        if (DEBUG) Log.i("Hello2", "getHostProcessorICBoardVersion");
-        if (isCs108Connected()) return cs108Library4A.getHostProcessorICBoardVersion();
-        else if (isCs710Connected()) return cs710Library4A.getHostProcessorICBoardVersion();
-        else Log.i("Hello2", "getHostProcessorICBoardVersion" + stringNOTCONNECT);
-        return null;
-    } //3709
-
-    //============ Controller notification ============
-    public boolean batteryLevelRequest() {
-        if (DEBUG) Log.i("Hello2", "batteryLevelRequest");
-        if (isCs108Connected()) return cs108Library4A.batteryLevelRequest();
-        else if (isCs710Connected()) return cs710Library4A.batteryLevelRequest();
-        else Log.i("Hello2", "batteryLevelRequest" + stringNOTCONNECT);
-        return false;
-    } //3729
-    public boolean setAutoBarStartSTop(boolean enable) {
-        if (DEBUG) Log.i("Hello2", "setAutoBarStartSTop");
-        if (isCs108Connected()) return cs108Library4A.setAutoBarStartSTop(enable);
-        else if (isCs710Connected()) return cs710Library4A.setAutoBarStartSTop(enable);
-        else Log.i("Hello2", "setAutoBarStartSTop" + stringNOTCONNECT);
-        return false;
-    } //3763
-    public boolean getTriggerReporting() {
-        if (DEBUG) Log.i("Hello2", "getTriggerReporting");
-        if (isCs108Connected()) cs108Library4A.getTriggerReporting();
-        else if (isCs710Connected()) cs710Library4A.getTriggerReporting();
-        else Log.i("Hello2", "getTriggerReporting" + stringNOTCONNECT);
-        return false;
-    } //3780
-    public boolean setTriggerReporting(boolean triggerReporting) {
-        if (DEBUG) Log.i("Hello2", "setTriggerReporting");
-        if (isCs108Connected()) return cs108Library4A.setTriggerReporting(triggerReporting);
-        else if (isCs710Connected()) return cs710Library4A.setTriggerReporting(triggerReporting);
-        else Log.i("Hello2", "setTriggerReporting" + stringNOTCONNECT);
-        return false;
-    } //3781
-    public int iNO_SUCH_SETTING; //3791
-    public short getTriggerReportingCount() { //called before connection
-        if (DEBUG) Log.i("Hello2", "getTriggerReportingCount");
-        if (isCs108Connected()) return cs108Library4A.getTriggerReportingCount();
-        else if (isCs710Connected()) return cs710Library4A.getTriggerReportingCount();
-        else Log.i("Hello2", "getTriggerReportingCount" + stringNOTCONNECT);
-        return 5;
-    } //3793
-    public boolean setTriggerReportingCount(short triggerReportingCount) {
-        if (DEBUG) Log.i("Hello2", "setTriggerReportingCount");
-        if (isCs108Connected()) return cs108Library4A.setTriggerReportingCount(triggerReportingCount);
-        else if (isCs710Connected()) return cs710Library4A.setTriggerReportingCount(triggerReportingCount);
-        else Log.i("Hello2", "setTriggerReportingCount" + stringNOTCONNECT);
-        return false;
-    } //3801
-    public String getBatteryDisplay(boolean voltageDisplay) {
-        if (DEBUG) Log.i("Hello2", "getBatteryDisplay");
-        if (isCs108Connected()) return cs108Library4A.getBatteryDisplay(voltageDisplay);
-        else if (isCs710Connected()) return cs710Library4A.getBatteryDisplay(voltageDisplay);
-        else Log.i("Hello2", "getBatteryDisplay is called befoe connection !!!");
-        return null;
-    } //3829
-    String stringNOTCONNECT;
-    public String isBatteryLow() {
-        if (DEBUG) Log.i("Hello2", "isBatteryLow");
-        if (isCs108Connected()) return cs108Library4A.isBatteryLow();
-        else if (isCs710Connected()) return cs710Library4A.isBatteryLow();
-        else Log.i("Hello2", "isBatteryLow" + stringNOTCONNECT);
-        return null;
-    } //3841
-    public int getBatteryCount() {
-        if (DEBUG2) Log.i("Hello2", "getBatteryCount");
-        if (isCs108Connected()) return cs108Library4A.getBatteryCount();
-        else if (isCs710Connected()) return cs710Library4A.getBatteryCount();
-        else Log.i("Hello2", "getBatteryCount" + stringNOTCONNECT);
-        return -1; } //3970
-    public boolean getTriggerButtonStatus() {
-        if (DEBUG2) Log.i("Hello2", "getTriggerButtonStatus");
-        if (isCs108Connected()) return cs108Library4A.getTriggerButtonStatus();
-        else if (isCs710Connected()) return cs710Library4A.getTriggerButtonStatus();
-        else Log.i("Hello2", "getTriggerButtonStatus" + stringNOTCONNECT);
-        return false;
-    } //3971
-    public int getTriggerCount() {
-        if (DEBUG2) Log.i("Hello2", "getTriggerCount");
-        if (isCs108Connected()) return cs108Library4A.getTriggerCount();
-        else if (isCs710Connected()) return cs710Library4A.getTriggerCount();
-        else Log.i("Hello2", "getTriggerCount" + stringNOTCONNECT);
-        return -1; } //3972
-    public interface NotificationListener { void onChange(); }
-    public void setNotificationListener(NotificationListener listener) {
-        if (DEBUG) Log.i("Hello2", "setNotificationListener");
-        if (isCs108Connected()) {
-            cs108Library4A.setNotificationListener(new NotificationController.NotificationListener() {
-                @Override
-                public void onChange() {
-                    listener.onChange();
-                }
-            });
-        } else if (isCs710Connected()) {
-            cs710Library4A.setNotificationListener(new NotificationController.NotificationListener() {
-                @Override
-                public void onChange() {
-                    listener.onChange();
-                }
-            });
-        }
-        else Log.i("Hello2", "setNotificationListener" + stringNOTCONNECT);
-    } //3973
-    public byte[] onNotificationEvent() {
-        if (DEBUG2) Log.i("Hello2", "onNotificationEvent");
-        if (isCs108Connected()) return cs108Library4A.onNotificationEvent();
-        else if (isCs710Connected()) return cs710Library4A.onNotificationEvent();
-        else Log.i("Hello2", "onNotificationEvent" + stringNOTCONNECT);
-        return null;
-    } //4062
-
-    //============ to be modified ============
-    public int invalidata, invalidUpdata, validata; //123
-/*
+    }
     public String getWedgePrefix() {
         if (isCs108Connected()) return cs108Library4A.getWedgePrefix();
         else return cs710Library4A.getWedgePrefix();
@@ -1837,5 +1773,230 @@ public class CsLibrary4A {
         if (isCs108Connected()) cs108Library4A.setWedgeDelimiter(iValue);
         else cs710Library4A.setWedgeDelimiter(iValue);
     }
-*/
+
+    //============ Bluetooth ============
+    public String getBluetoothICFirmwareVersion() {
+        if (DEBUG) Log.i("Hello2", "getBluetoothICFirmwareVersion");
+        if (isCs108Connected()) return cs108Library4A.getBluetoothICFirmwareVersion();
+        else if (isCs710Connected()) return cs710Library4A.getBluetoothICFirmwareVersion();
+        else Log.i("Hello2", "getBluetoothICFirmwareVersion" + stringNOTCONNECT);
+        return null;
+    }
+    public String getBluetoothICFirmwareName() {
+        if (DEBUG) Log.i("Hello2", "getBluetoothICFirmwareName");
+        if (isCs108Connected()) return cs108Library4A.getBluetoothICFirmwareName();
+        else if (isCs710Connected()) return cs710Library4A.getBluetoothICFirmwareName();
+        else Log.i("Hello2", "getBluetoothICFirmwareName" + stringNOTCONNECT);
+        return null;
+    }
+    public boolean setBluetoothICFirmwareName(String name) {
+        if (DEBUG) Log.i("Hello2", "setBluetoothICFirmwareName");
+        if (isCs108Connected()) return cs108Library4A.setBluetoothICFirmwareName(name);
+        else if (isCs710Connected()) return cs710Library4A.setBluetoothICFirmwareName(name);
+        else Log.i("Hello2", "setBluetoothICFirmwareName" + stringNOTCONNECT);
+        return false;
+    }
+
+    //============ Controller ============
+    public String hostProcessorICGetFirmwareVersion() {
+        if (DEBUG) Log.i("Hello2", "hostProcessorICGetFirmwareVersion");
+        if (isCs108Connected()) return cs108Library4A.hostProcessorICGetFirmwareVersion();
+        else if (isCs710Connected()) return cs710Library4A.hostProcessorICGetFirmwareVersion();
+        else Log.i("Hello2", "hostProcessorICGetFirmwareVersion" + stringNOTCONNECT);
+        return null;
+    }
+    public String getHostProcessorICSerialNumber() {
+        if (DEBUG) Log.i("Hello2", "getHostProcessorICSerialNumber");
+        if (isCs108Connected()) return cs108Library4A.getHostProcessorICSerialNumber();
+        else if (isCs710Connected()) return cs710Library4A.getHostProcessorICSerialNumber();
+        else Log.i("Hello2", "getHostProcessorICSerialNumber" + stringNOTCONNECT);
+        return null;
+    }
+    public String getHostProcessorICBoardVersion() {
+        if (DEBUG) Log.i("Hello2", "getHostProcessorICBoardVersion");
+        if (isCs108Connected()) return cs108Library4A.getHostProcessorICBoardVersion();
+        else if (isCs710Connected()) return cs710Library4A.getHostProcessorICBoardVersion();
+        else Log.i("Hello2", "getHostProcessorICBoardVersion" + stringNOTCONNECT);
+        return null;
+    }
+
+    //============ Controller notification ============
+    public int getBatteryLevel() {
+        if (DEBUG) Log.i("Hello2", "getBatteryLevel");
+        if (isCs108Connected()) return cs108Library4A.getBatteryLevel();
+        else if (isCs710Connected()) return cs710Library4A.getBatteryLevel();
+        else Log.i("Hello2", "getBatteryLevel" + stringNOTCONNECT);
+        return -1;
+    }
+    public boolean setAutoTriggerReporting(byte timeSecond) {
+        if (DEBUG) Log.i("Hello2", "setAutoTriggerReporting");
+        if (isCs108Connected()) return cs108Library4A.setAutoTriggerReporting(timeSecond);
+        else if (isCs710Connected()) return cs710Library4A.setAutoTriggerReporting(timeSecond);
+        else Log.i("Hello2", "setAutoTriggerReporting" + stringNOTCONNECT);
+        return false;
+    }
+    public boolean getAutoBarStartSTop() {
+        if (DEBUG) Log.i("Hello2", "getAutoBarStartSTop");
+        if (isCs108Connected()) return cs108Library4A.getAutoBarStartSTop();
+        else if (isCs710Connected()) return cs710Library4A.getAutoBarStartSTop();
+        else Log.i("Hello2", "getAutoBarStartSTop" + stringNOTCONNECT);
+        return false;
+    }
+    public boolean batteryLevelRequest() {
+        if (DEBUG) Log.i("Hello2", "batteryLevelRequest");
+        if (isCs108Connected()) return cs108Library4A.batteryLevelRequest();
+        else if (isCs710Connected()) return cs710Library4A.batteryLevelRequest();
+        else Log.i("Hello2", "batteryLevelRequest" + stringNOTCONNECT);
+        return false;
+    }
+    public boolean setAutoBarStartSTop(boolean enable) {
+        if (DEBUG) Log.i("Hello2", "setAutoBarStartSTop");
+        if (isCs108Connected()) return cs108Library4A.setAutoBarStartSTop(enable);
+        else if (isCs710Connected()) return cs710Library4A.setAutoBarStartSTop(enable);
+        else Log.i("Hello2", "setAutoBarStartSTop" + stringNOTCONNECT);
+        return false;
+    }
+    public boolean getTriggerReporting() {
+        if (DEBUG) Log.i("Hello2", "getTriggerReporting");
+        if (isCs108Connected()) cs108Library4A.getTriggerReporting();
+        else if (isCs710Connected()) cs710Library4A.getTriggerReporting();
+        else Log.i("Hello2", "getTriggerReporting" + stringNOTCONNECT);
+        return false;
+    }
+    public boolean setTriggerReporting(boolean triggerReporting) {
+        if (DEBUG) Log.i("Hello2", "setTriggerReporting");
+        if (isCs108Connected()) return cs108Library4A.setTriggerReporting(triggerReporting);
+        else if (isCs710Connected()) return cs710Library4A.setTriggerReporting(triggerReporting);
+        else Log.i("Hello2", "setTriggerReporting" + stringNOTCONNECT);
+        return false;
+    }
+    public int iNO_SUCH_SETTING = -1;
+    public short getTriggerReportingCount() {
+        if (DEBUG) Log.i("Hello2", "getTriggerReportingCount");
+        if (isCs108Connected()) return cs108Library4A.getTriggerReportingCount();
+        else if (isCs710Connected()) return cs710Library4A.getTriggerReportingCount();
+        else Log.i("Hello2", "getTriggerReportingCount" + stringNOTCONNECT);
+        return 5;
+    }
+    public boolean setTriggerReportingCount(short triggerReportingCount) {
+        if (DEBUG) Log.i("Hello2", "setTriggerReportingCount");
+        if (isCs108Connected()) return cs108Library4A.setTriggerReportingCount(triggerReportingCount);
+        else if (isCs710Connected()) return cs710Library4A.setTriggerReportingCount(triggerReportingCount);
+        else Log.i("Hello2", "setTriggerReportingCount" + stringNOTCONNECT);
+        return false;
+    }
+    public String getBatteryDisplay(boolean voltageDisplay) {
+        if (DEBUG) Log.i("Hello2", "getBatteryDisplay");
+        if (isCs108Connected()) return cs108Library4A.getBatteryDisplay(voltageDisplay);
+        else if (isCs710Connected()) return cs710Library4A.getBatteryDisplay(voltageDisplay);
+        else Log.i("Hello2", "getBatteryDisplay is called befoe connection !!!");
+        return null;
+    }
+    String stringNOTCONNECT;
+    public String isBatteryLow() {
+        if (DEBUG) Log.i("Hello2", "isBatteryLow");
+        if (isCs108Connected()) return cs108Library4A.isBatteryLow();
+        else if (isCs710Connected()) return cs710Library4A.isBatteryLow();
+        else Log.i("Hello2", "isBatteryLow" + stringNOTCONNECT);
+        return null;
+    }
+    public int getBatteryCount() {
+        if (DEBUG2) Log.i("Hello2", "getBatteryCount");
+        if (isCs108Connected()) return cs108Library4A.getBatteryCount();
+        else if (isCs710Connected()) return cs710Library4A.getBatteryCount();
+        else Log.i("Hello2", "getBatteryCount" + stringNOTCONNECT);
+        return -1;
+    }
+    public boolean getTriggerButtonStatus() {
+        if (DEBUG2) Log.i("Hello2", "getTriggerButtonStatus");
+        if (isCs108Connected()) return cs108Library4A.getTriggerButtonStatus();
+        else if (isCs710Connected()) return cs710Library4A.getTriggerButtonStatus();
+        else Log.i("Hello2", "getTriggerButtonStatus" + stringNOTCONNECT);
+        return false;
+    }
+    public int getTriggerCount() {
+        if (DEBUG2) Log.i("Hello2", "getTriggerCount");
+        if (isCs108Connected()) return cs108Library4A.getTriggerCount();
+        else if (isCs710Connected()) return cs710Library4A.getTriggerCount();
+        else Log.i("Hello2", "getTriggerCount" + stringNOTCONNECT);
+        return -1;
+    }
+    //public interface NotificationListener { void onChange(); }
+    public void setNotificationListener(NotificationConnector.NotificationListener listener) {
+        if (DEBUG) Log.i("Hello2", "setNotificationListener");
+        if (isCs108Connected()) {
+            cs108Library4A.setNotificationListener(new NotificationConnector.NotificationListener() {
+                @Override
+                public void onChange() {
+                    listener.onChange();
+                }
+            });
+        } else if (isCs710Connected()) {
+            cs710Library4A.setNotificationListener(new NotificationConnector.NotificationListener() {
+                @Override
+                public void onChange() {
+                    listener.onChange();
+                }
+            });
+        }
+        else Log.i("Hello2", "setNotificationListener" + stringNOTCONNECT);
+    }
+    public byte[] onNotificationEvent() {
+        if (DEBUG2) Log.i("Hello2", "onNotificationEvent");
+        if (isCs108Connected()) return cs108Library4A.onNotificationEvent();
+        else if (isCs710Connected()) return cs710Library4A.onNotificationEvent();
+        else Log.i("Hello2", "onNotificationEvent" + stringNOTCONNECT);
+        return null;
+    }
+
+    //============ to be modified ============
+    public String getSerialNumber() {
+        if (DEBUG2) Log.i("Hello2", "getSerialNumber");
+        if (isCs108Connected()) return cs108Library4A.getSerialNumber();
+        else if (isCs710Connected()) return cs710Library4A.getSerialNumber();
+        else Log.i("Hello2", "getSerialNumber" + stringNOTCONNECT);
+        return null;
+    }
+    public boolean setRfidOn(boolean onStatus) {
+        if (DEBUG2) Log.i("Hello2", "setRfidOn");
+        if (isCs108Connected()) return cs108Library4A.setRfidOn(onStatus);
+        else if (isCs710Connected()) return cs710Library4A.setRfidOn(onStatus);
+        else Log.i("Hello2", "setRfidOn" + stringNOTCONNECT);
+        return false;
+    }
+    public int getcsModel() {
+        if (DEBUG2) Log.i("Hello2", "getcsModel");
+        if (isCs108Connected()) return cs108Library4A.getcsModel();
+        else if (isCs710Connected()) return cs710Library4A.getcsModel();
+        else Log.i("Hello2", "getcsModel" + stringNOTCONNECT);
+        return -1;
+    }
+    public int getAntennaCycle() {
+        if (DEBUG2) Log.i("Hello2", "getAntennaCycle");
+        if (isCs108Connected()) return cs108Library4A.getAntennaCycle();
+        else if (isCs710Connected()) return cs710Library4A.getAntennaCycle();
+        else Log.i("Hello2", "getAntennaCycle" + stringNOTCONNECT);
+        return -1;
+    }
+    public boolean setAntennaCycle(int antennaCycle) {
+        if (DEBUG2) Log.i("Hello2", "setAntennaCycle");
+        if (isCs108Connected()) return cs108Library4A.setAntennaCycle(antennaCycle);
+        else if (isCs710Connected()) return cs710Library4A.setAntennaCycle(antennaCycle);
+        else Log.i("Hello2", "setAntennaCycle" + stringNOTCONNECT);
+        return false;
+    }
+    public boolean setAntennaInvCount(long antennaInvCount) {
+        if (DEBUG2) Log.i("Hello2", "setAntennaInvCount");
+        if (isCs108Connected()) return cs108Library4A.setAntennaInvCount(antennaInvCount);
+        else if (isCs710Connected()) return cs710Library4A.setAntennaInvCount(antennaInvCount);
+        else Log.i("Hello2", "setAntennaInvCount" + stringNOTCONNECT);
+        return false;
+    }
+
+    public int invalidata, invalidUpdata, validata; //123
+    //============ not public ============
+    int bConnectStatus = 0;
+    int iServiceUuidConnectedBefore = -1;
+    private boolean isCs108Connected() { return (bConnectStatus == 1); }
+    private boolean isCs710Connected() { return (bConnectStatus == 7); }
 }

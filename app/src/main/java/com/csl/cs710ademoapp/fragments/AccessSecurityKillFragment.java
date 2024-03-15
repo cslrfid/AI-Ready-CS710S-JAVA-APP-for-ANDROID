@@ -13,7 +13,7 @@ import com.csl.cs710ademoapp.AccessTask;
 import com.csl.cs710ademoapp.GenericTextWatcher;
 import com.csl.cs710ademoapp.MainActivity;
 import com.csl.cs710ademoapp.R;
-import com.csl.cs710library4a.CsLibrary4A;
+import com.csl.cslibrary4a.NotificationConnector;
 import com.csl.cslibrary4a.ReaderDevice;
 import com.csl.cslibrary4a.RfidReaderChipData;
 
@@ -107,7 +107,7 @@ public class AccessSecurityKillFragment extends CommonFragment {
     }
 
     void setNotificationListener() {
-        MainActivity.csLibrary4A.setNotificationListener(new CsLibrary4A.NotificationListener() {
+        MainActivity.csLibrary4A.setNotificationListener(new NotificationConnector.NotificationListener() {
             @Override
             public void onChange() {
                 MainActivity.csLibrary4A.appendToLog("TRIGGER key is pressed.");

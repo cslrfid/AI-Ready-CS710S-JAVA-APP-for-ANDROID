@@ -6,7 +6,6 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.csl.cs710library4a.CsLibrary4A;
 import com.csl.cslibrary4a.RfidReaderChipData;
 
 import java.util.ArrayList;

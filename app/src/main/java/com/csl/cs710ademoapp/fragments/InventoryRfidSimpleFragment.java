@@ -22,7 +22,7 @@ import com.csl.cs710ademoapp.R;
 import com.csl.cs710ademoapp.SaveList2ExternalTask;
 import com.csl.cs710ademoapp.SharedObjects;
 import com.csl.cs710ademoapp.adapters.ReaderListAdapter;
-import com.csl.cs710library4a.CsLibrary4A;
+import com.csl.cslibrary4a.NotificationConnector;
 import com.csl.cslibrary4a.ReaderDevice;
 import com.csl.cslibrary4a.RfidReaderChipData;
 
@@ -227,7 +227,7 @@ public class InventoryRfidSimpleFragment extends CommonFragment {
     }
 
     void setNotificationListener() {
-        MainActivity.csLibrary4A.setNotificationListener(new CsLibrary4A.NotificationListener() {
+        MainActivity.csLibrary4A.setNotificationListener(new NotificationConnector.NotificationListener() {
             @Override
             public void onChange() {
                 MainActivity.csLibrary4A.appendToLog("TRIGGER key is pressed.");

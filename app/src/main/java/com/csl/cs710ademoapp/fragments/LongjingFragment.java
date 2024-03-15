@@ -12,7 +12,6 @@ import androidx.viewpager.widget.ViewPager;
 
 import com.csl.cs710ademoapp.MainActivity;
 import com.csl.cs710ademoapp.R;
-import com.csl.cs710ademoapp.adapters.KilowayAdapter;
 import com.csl.cs710ademoapp.adapters.LongjingAdapter;
 import com.google.android.material.tabs.TabLayout;
 
@@ -21,7 +20,7 @@ public class LongjingFragment extends CommonFragment {
     private ViewPager viewPager;
     LongjingAdapter mAdapter;
 
-    private String[] tabs = {"Scan", "Configuration"};
+    private String[] tabs = {"Scan", "Geiger"}; //"Access",
     int iTargetOld, iSessionOld;
 
     @Override
@@ -87,6 +86,7 @@ public class LongjingFragment extends CommonFragment {
 
         iTargetOld = MainActivity.csLibrary4A.getQueryTarget();
         iSessionOld = MainActivity.csLibrary4A.getQuerySession();
+        MainActivity.csLibrary4A.setBasicCurrentLinkProfile();
     }
 
     @Override

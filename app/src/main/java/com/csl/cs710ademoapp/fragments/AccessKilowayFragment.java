@@ -13,6 +13,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.csl.cs710ademoapp.AccessTask;
+import com.csl.cs710ademoapp.InventoryRfidTask;
 import com.csl.cs710ademoapp.MainActivity;
 import com.csl.cs710ademoapp.R;
 import com.csl.cslibrary4a.ReaderDevice;
@@ -23,7 +24,7 @@ public class AccessKilowayFragment extends CommonFragment {
     EditText editTextRWTagID, editTextaccessRWAntennaPower;
 
     TextView textViewOk;
-    CheckBox checkBox;
+    CheckBox checkBoxRepeat, checkBox;
     TextView textView;
 
     private Button buttonRead;
@@ -47,6 +48,7 @@ public class AccessKilowayFragment extends CommonFragment {
         editTextRWTagID = (EditText) getActivity().findViewById(R.id.accessKilowayID);
         editTextaccessRWAntennaPower = (EditText) getActivity().findViewById(R.id.accessLEDAntennaPower);
 
+        checkBoxRepeat = (CheckBox) getActivity().findViewById(R.id.accessKilowayRepeat);
         textViewOk = (TextView) getActivity().findViewById(R.id.accessKilowayResultOK);
         checkBox = (CheckBox) getActivity().findViewById(R.id.accessKilowayResultTitle);
         textView = (TextView) getActivity().findViewById(R.id.accessKilowayResult);
@@ -88,7 +90,7 @@ public class AccessKilowayFragment extends CommonFragment {
         if (getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.RESUMED) == false) return;
         if(getUserVisibleHint()) {
             setupTagID();
-        }
+        } else checkBoxRepeat.setChecked(false);
     }
 
     boolean isLongjing = false;
@@ -138,9 +140,8 @@ public class AccessKilowayFragment extends CommonFragment {
                     boolean invalid = processTickItems();
                     MainActivity.csLibrary4A.appendToLog("AccessLedTagFragment(): processTickItems with invalid = " + invalid + ", bankProcessing = " + bankProcessing + ", checkProcessing = " + checkProcessing); ///
                     if (bankProcessing++ != 0 && invalid == true)   {
-                        CheckBox checkBox = (CheckBox) getActivity().findViewById(R.id.accessKilowayRepeat);
                         rerunRequest = true;
-                        if (checkBox != null && checkBox.isChecked()) { bankProcessing = 0; checkProcessing = 0; }
+                        if (checkBoxRepeat != null && checkBoxRepeat.isChecked()) { bankProcessing = 0; checkProcessing = 0; }
                         else rerunRequest = false;
                     } else {
                         accessTask = new AccessTask(

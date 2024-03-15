@@ -4,7 +4,6 @@ import static java.lang.Math.log10;
 import static java.lang.Math.pow;
 
 import android.content.Context;
-import android.widget.TextView;
 
 import com.csl.cslibrary4a.RfidConnector;
 import com.csl.cslibrary4a.RfidReaderChipData;
@@ -17,25 +16,22 @@ import java.util.Date;
 public class RfidReaderChipR2000 {
     boolean DEBUG_PKDATA, DEBUG;
     boolean sameCheck = true;
-    Context context; TextView mLogView;
-    RfidReaderChip mRfidReaderChip;
-    CsReaderConnector csReaderConnector;
+    //RfidReaderChip mRfidReaderChip;
     boolean DEBUGTHREAD = false;
     int intervalRx000UplinkHandler;
     public int invalidUpdata; //invalidata, invalidUpdata, validata;
     boolean aborting = false;
-    public RfidReaderChipR2000(Context context, TextView mLogView, CsReaderConnector csReaderConnector, Utility utility) {
+    Context context; Utility utility; CsReaderConnector csReaderConnector;
+    public RfidReaderChipR2000(Context context, Utility utility, CsReaderConnector csReaderConnector) {
         this.context = context;
-        this.mLogView = mLogView;
         this.utility = utility; DEBUG_PKDATA = utility.DEBUG_PKDATA;
         appendToLog("csReaderConnector 1 is " + (csReaderConnector == null ? "null" : "valid"));
         appendToLog("csReaderConnector.rfidReaderChip 1 is " + (csReaderConnector.rfidReaderChip == null ? "null" : "valid"));
-        mRfidReaderChip = new RfidReaderChip();
+        //mRfidReaderChip = new RfidReaderChip();
         this.csReaderConnector = csReaderConnector;
         this.DEBUGTHREAD = csReaderConnector.DEBUGTHREAD;
         this.intervalRx000UplinkHandler = csReaderConnector.intervalRx000UplinkHandler;
     }
-    Utility utility;
     private String byteArrayToString(byte[] packet) { return utility.byteArrayToString(packet); }
     private boolean compareArray(byte[] array1, byte[] array2, int length) { return utility.compareByteArray(array1, array2, length); }
     private void appendToLog(String s) { utility.appendToLog(s); }
@@ -45,7 +41,6 @@ public class RfidReaderChipR2000 {
         NULL,
         CANCEL, SOFTRESET, ABORT, PAUSE, RESUME, GETSERIALNUMBER, RESETTOBOOTLOADER
     }
-
     enum HostRegRequests {
         MAC_OPERATION,
         //MAC_VER, MAC_LAST_COMMAND_DURATION,
@@ -61,7 +56,6 @@ public class RfidReaderChipR2000 {
         HST_AUTHENTICATE_CFG, HST_AUTHENTICATE_MSG, HST_READBUFFER_LEN, HST_UNTRACEABLE_CFG,
         HST_CMD
     }
-
     class Rx000Setting {
         Rx000Setting(boolean set_default_setting) {
             if (set_default_setting) {
@@ -220,7 +214,7 @@ public class RfidReaderChipR2000 {
             msgBuffer[2] = (byte) (address % 256);
             msgBuffer[3] = (byte) ((address >> 8) % 256);
             if (false) appendToLog("readMac buffer = " + byteArrayToString(msgBuffer));
-            return mRfidReaderChip.sendHostRegRequest(HostRegRequests.MAC_OPERATION, false, msgBuffer);
+            return sendHostRegRequest(HostRegRequests.MAC_OPERATION, false, msgBuffer);
         }
         boolean writeMAC(int address, long value) {
             byte[] msgBuffer = new byte[]{(byte) 0x70, 1, 0, 0, 0, 0, 0, 0};
@@ -231,7 +225,7 @@ public class RfidReaderChipR2000 {
             msgBuffer[6] = (byte) ((value >> 16) % 256);
             msgBuffer[7] = (byte) ((value >> 24) % 256);
             if (false) appendToLog("writeMac buffer = " + byteArrayToString(msgBuffer));
-            return mRfidReaderChip.sendHostRegRequest(HostRegRequests.MAC_OPERATION, true, msgBuffer);
+            return sendHostRegRequest(HostRegRequests.MAC_OPERATION, true, msgBuffer);
         }
 
         String macVer = null; int macVerBuild = 0;
@@ -371,7 +365,7 @@ public class RfidReaderChipR2000 {
             }
             this.antennaCycle = antennaCycle;
             this.antennaFreqAgile = antennaFreqAgile;
-            return mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_ANT_CYCLES, true, msgBuffer);
+            return sendHostRegRequest(HostRegRequests.HST_ANT_CYCLES, true, msgBuffer);
         }
 
         final int FREQAGILE_INVALID = -1; final int FREQAGILE_MIN = 0; final int FREQAGILE_MAX = 1;
@@ -387,7 +381,7 @@ public class RfidReaderChipR2000 {
 
         private boolean getHST_ANT_CYCLES() {
             byte[] msgBuffer = new byte[]{(byte) 0x70, 0, 0, 7, 0, 0, 0, 0};
-            return mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_ANT_CYCLES, false, msgBuffer);
+            return sendHostRegRequest(HostRegRequests.HST_ANT_CYCLES, false, msgBuffer);
         }
 
         final int ANTSELECT_INVALID = -1; final int ANTSLECT_MIN = 0; final int ANTSELECT_MAX = 15;
@@ -396,7 +390,7 @@ public class RfidReaderChipR2000 {
             appendToLog("AntennaSelect = " + antennaSelect);
             if (antennaSelect < ANTSLECT_MIN || antennaSelect > ANTSELECT_MAX) {
                 byte[] msgBuffer = new byte[]{(byte) 0x70, 0, 1, 7, 0, 0, 0, 0};
-                mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_ANT_DESC_SEL, false, msgBuffer);
+                sendHostRegRequest(HostRegRequests.HST_ANT_DESC_SEL, false, msgBuffer);
             }
             return antennaSelect;
         }
@@ -406,7 +400,7 @@ public class RfidReaderChipR2000 {
             if (this.antennaSelect == antennaSelect && sameCheck) return true;
             this.antennaSelect = antennaSelect; appendToLog("antennaSelect is set to " + antennaSelect);
             msgBuffer[4] = (byte) (antennaSelect);
-            return mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_ANT_DESC_SEL, true, msgBuffer);
+            return sendHostRegRequest(HostRegRequests.HST_ANT_DESC_SEL, true, msgBuffer);
         }
 
         AntennaSelectedData[] antennaSelectedData;
@@ -574,7 +568,7 @@ public class RfidReaderChipR2000 {
             if (invSelectIndex < INVSELECT_MIN || invSelectIndex > INVSELECT_MAX) {
                 {
                     byte[] msgBuffer = new byte[]{(byte) 0x70, 0, 0, 8, 0, 0, 0, 0};
-                    mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_TAGMSK_DESC_SEL, false, msgBuffer);
+                    sendHostRegRequest(HostRegRequests.HST_TAGMSK_DESC_SEL, false, msgBuffer);
                 }
             }
             return invSelectIndex;
@@ -585,7 +579,7 @@ public class RfidReaderChipR2000 {
             if (this.invSelectIndex == invSelect && sameCheck) return true;
             msgBuffer[4] = (byte) (invSelect & 0x07);
             this.invSelectIndex = invSelect;
-            return mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_TAGMSK_DESC_SEL, true, msgBuffer);
+            return sendHostRegRequest(HostRegRequests.HST_TAGMSK_DESC_SEL, true, msgBuffer);
         }
 
         InvSelectData[] invSelectData;
@@ -674,8 +668,8 @@ public class RfidReaderChipR2000 {
             return setQueryTarget(queryTarget, querySession, querySelect);
         }
         boolean setQueryTarget(int queryTarget, int querySession, int querySelect) {
-            if (queryTarget >= 2) { mRfidReaderChip.mRx000Setting.setAlgoAbFlip(1); }
-            else if (queryTarget >= 0) { mRfidReaderChip.mRx000Setting.setAlgoAbFlip(0); }
+            if (queryTarget >= 2) { rx000Setting.setAlgoAbFlip(1); }
+            else if (queryTarget >= 0) { rx000Setting.setAlgoAbFlip(0); }
 
             byte[] msgBuffer = new byte[]{(byte) 0x70, 1, 0, 9, 0, 0, 0, 0};
             if (queryTarget != 2 && (queryTarget < QUERYTARGET_MIN || queryTarget > QUERYTARGET_MAX))
@@ -696,7 +690,7 @@ public class RfidReaderChipR2000 {
             this.queryTarget = queryTarget;
             this.querySession = querySession;
             this.querySelect = querySelect;
-            return mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_QUERY_CFG, true, msgBuffer);
+            return sendHostRegRequest(HostRegRequests.HST_QUERY_CFG, true, msgBuffer);
         }
 
         final int QUERYSESSION_INVALID = -1; final int QUERYSESSION_MIN = 0; final int QUERYSESSION_MAX = 3;
@@ -730,7 +724,7 @@ public class RfidReaderChipR2000 {
 
         private boolean getHST_QUERY_CFG() {
             byte[] msgBuffer = new byte[]{(byte) 0x70, 0, 0, 9, 0, 0, 0, 0};
-            return mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_QUERY_CFG, false, msgBuffer);
+            return sendHostRegRequest(HostRegRequests.HST_QUERY_CFG, false, msgBuffer);
         }
 
         final int INVALGO_INVALID = -1; final int INVALGO_MIN = 0; final int INVALGO_MAX = 3;
@@ -842,7 +836,7 @@ public class RfidReaderChipR2000 {
             msgBuffer[6] |= (byte) ((cycleDelay & 0xFF0000) >> 16);
             msgBuffer[7] |= (byte) ((cycleDelay & 0xFF000000) >> 24);
             this.cycleDelay = cycleDelay;
-            boolean bResult = mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_INV_CFG, true, msgBuffer);
+            boolean bResult = sendHostRegRequest(HostRegRequests.HST_INV_CFG, true, msgBuffer);
             //msgBuffer = new byte[]{(byte) 0x70, 0, (byte)0x0F, (byte)0x0F, 0, 0, 0, 0};
             //sendHostRegRequest(HostRegRequests.HST_INV_CFG, false, msgBuffer);
             return bResult;
@@ -858,7 +852,7 @@ public class RfidReaderChipR2000 {
         }
         private boolean getHST_AUTHENTICATE_CFG() {
             byte[] msgBuffer = new byte[]{(byte) 0x70, 0, 0, (byte) 0x0F, 0, 0, 0, 0};
-            return mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_AUTHENTICATE_CFG, false, msgBuffer);
+            return sendHostRegRequest(HostRegRequests.HST_AUTHENTICATE_CFG, false, msgBuffer);
         }
         boolean setHST_AUTHENTICATE_CFG(boolean sendReply, boolean incReplyLenth, int csi, int length) {
             appendToLog("sendReply = " + sendReply + ", incReplyLenth = " + incReplyLenth + ", length = " + length);
@@ -871,7 +865,7 @@ public class RfidReaderChipR2000 {
             msgBuffer[5] |= ((csi >> 6) & 0x03);
             msgBuffer[5] |= ((length & 0x3F) << 2);
             msgBuffer[6] |= ((length & 0xFC0) >> 6); authenticateLength = length;
-            return mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_AUTHENTICATE_CFG, true, msgBuffer);
+            return sendHostRegRequest(HostRegRequests.HST_AUTHENTICATE_CFG, true, msgBuffer);
         }
 
         byte[] authMatchData0_63; int authMatchDataReady = 0;
@@ -884,7 +878,7 @@ public class RfidReaderChipR2000 {
                     if ((authMatchDataReady & (0x01 << i)) == 0) {
                         byte[] msgBuffer = new byte[]{(byte) 0x70, 0, 1, (byte)0x0F, 0, 0, 0, 0};
                         msgBuffer[2] += i;
-                        mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_AUTHENTICATE_MSG, false, msgBuffer);
+                        sendHostRegRequest(HostRegRequests.HST_AUTHENTICATE_MSG, false, msgBuffer);
                     } else {
                         for (int j = 0; j < 4; j++) {
                             strValue += String.format("%02X", authMatchData0_63[i * 4 + j]);
@@ -923,7 +917,7 @@ public class RfidReaderChipR2000 {
                         }
                     }
                     msgBuffer[2] = (byte) ((msgBuffer[2] & 0xFF) + i);
-                    if (mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_AUTHENTICATE_MSG, true, msgBuffer) == false)
+                    if (sendHostRegRequest(HostRegRequests.HST_AUTHENTICATE_MSG, true, msgBuffer) == false)
                         return false;
                     else {
                         //authMatchDataReady |= (0x01 << i);
@@ -948,7 +942,7 @@ public class RfidReaderChipR2000 {
         }
         private boolean getHST_UNTRACEABLE_CFG() {
             byte[] msgBuffer = new byte[]{(byte) 0x70, 0, 5, (byte) 0x0F, 0, 0, 0, 0};
-            return mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_UNTRACEABLE_CFG, false, msgBuffer);
+            return sendHostRegRequest(HostRegRequests.HST_UNTRACEABLE_CFG, false, msgBuffer);
         }
         boolean setHST_UNTRACEABLE_CFG(int range, boolean user, int tid, int epcLength, boolean epc, boolean uxpc) {
             appendToLog("range1 = " + range + ", user = " + user + ", tid = " + tid + ", epc = " + epc + ", epcLength = " + epcLength + ", xcpc = " + uxpc);
@@ -965,7 +959,7 @@ public class RfidReaderChipR2000 {
             if (epc) msgBuffer[5] |= 0x04; untraceableEpc = epc;
             if (uxpc) msgBuffer[5] |= 0x08; untraceableUXpc = uxpc;
             appendToLog("msgbuffer = " + byteArrayToString(msgBuffer));
-            return mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_UNTRACEABLE_CFG, true, msgBuffer);
+            return sendHostRegRequest(HostRegRequests.HST_UNTRACEABLE_CFG, true, msgBuffer);
         }
 
         final int TAGJOIN_INVALID = -1; final int TAGJOIN_MIN = 0; final int TAGJOIN_MAX = 1;
@@ -991,7 +985,7 @@ public class RfidReaderChipR2000 {
 
         private boolean getHST_INV_CFG() {
             byte[] msgBuffer = new byte[]{(byte) 0x70, 0, 1, 9, 0, 0, 0, 0};
-            return mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_INV_CFG, false, msgBuffer);
+            return sendHostRegRequest(HostRegRequests.HST_INV_CFG, false, msgBuffer);
         }
         boolean setInvAlgo(int invAlgo, int matchRep, int tagSelect, int noInventory, int tagRead, int tagDelay, int invModeCompact, int invBrandId) {
             boolean DEBUG = false;
@@ -1041,7 +1035,7 @@ public class RfidReaderChipR2000 {
             this.invModeCompact = invModeCompact;
             this.invBrandId = invBrandId;
             if (DEBUG) appendToLog("Stored tagDelay = " + this.tagDelay);
-            return mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_INV_CFG, true, msgBuffer);
+            return sendHostRegRequest(HostRegRequests.HST_INV_CFG, true, msgBuffer);
         }
 
         final int ALGOSELECT_INVALID = -1; final int ALGOSELECT_MIN = 0; final int ALGOSELECT_MAX = 3;   //DataSheet says Max=1
@@ -1049,7 +1043,7 @@ public class RfidReaderChipR2000 {
         int getAlgoSelect() {
             if (algoSelect < ALGOSELECT_MIN || algoSelect > ALGOSELECT_MAX) {
                 byte[] msgBuffer = new byte[]{(byte) 0x70, 0, 2, 9, 0, 0, 0, 0};
-                mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_INV_SEL, false, msgBuffer);
+                sendHostRegRequest(HostRegRequests.HST_INV_SEL, false, msgBuffer);
             }
             return algoSelect;
         }
@@ -1065,7 +1059,7 @@ public class RfidReaderChipR2000 {
             msgBuffer[6] = (byte) ((algoSelect & 0xFF0000) >> 16);
             msgBuffer[7] = (byte) ((algoSelect & 0xFF000000) >> 24);
             this.algoSelect = algoSelect;
-            return mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_INV_SEL, true, msgBuffer);
+            return sendHostRegRequest(HostRegRequests.HST_INV_SEL, true, msgBuffer);
         }
 
         AlgoSelectedData[] algoSelectedData;
@@ -1236,7 +1230,7 @@ public class RfidReaderChipR2000 {
         }
         private boolean getHST_INV_RSSI_FILTERING_CONFIG() {
             byte[] msgBuffer = new byte[]{(byte) 0x70, 0, 7, 9, 0, 0, 0, 0};
-            return mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_INV_RSSI_FILTERING_CONFIG, false, msgBuffer);
+            return sendHostRegRequest(HostRegRequests.HST_INV_RSSI_FILTERING_CONFIG, false, msgBuffer);
         }
         boolean setHST_INV_RSSI_FILTERING_CONFIG(int rssiFilterType, int rssiFilterOption) {
             byte[] msgBuffer = new byte[]{(byte) 0x70, 1, 7, 9, 0, 0, 0, 0};
@@ -1249,7 +1243,7 @@ public class RfidReaderChipR2000 {
             msgBuffer[4] |= (byte) ((rssiFilterOption & 0xF) << 4);
             this.rssiFilterType = rssiFilterType;
             this.rssiFilterOption = rssiFilterOption;
-            boolean bValue = mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_INV_RSSI_FILTERING_CONFIG, true, msgBuffer);
+            boolean bValue = sendHostRegRequest(HostRegRequests.HST_INV_RSSI_FILTERING_CONFIG, true, msgBuffer);
             if (false) getHST_INV_RSSI_FILTERING_CONFIG();
             return bValue;
         }
@@ -1267,7 +1261,7 @@ public class RfidReaderChipR2000 {
         }
         private boolean getHST_INV_RSSI_FILTERING_THRESHOLD() {
             byte[] msgBuffer = new byte[]{(byte) 0x70, 0, 8, 9, 0, 0, 0, 0};
-            return mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_INV_RSSI_FILTERING_THRESHOLD, false, msgBuffer);
+            return sendHostRegRequest(HostRegRequests.HST_INV_RSSI_FILTERING_THRESHOLD, false, msgBuffer);
         }
         boolean setHST_INV_RSSI_FILTERING_THRESHOLD(int rssiFilterThreshold1, int rssiFilterThreshold2) {
             byte[] msgBuffer = new byte[]{(byte) 0x70, 1, 8, 9, 0, 0, 0, 0};
@@ -1282,7 +1276,7 @@ public class RfidReaderChipR2000 {
             msgBuffer[7] |= (byte) ((rssiFilterThreshold2 >> 8) & 0xFF);
             this.rssiFilterThreshold1 = rssiFilterThreshold1;
             this.rssiFilterThreshold2 = rssiFilterThreshold2;
-            boolean bValue = mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_INV_RSSI_FILTERING_THRESHOLD, true, msgBuffer);
+            boolean bValue = sendHostRegRequest(HostRegRequests.HST_INV_RSSI_FILTERING_THRESHOLD, true, msgBuffer);
             if (false) getHST_INV_RSSI_FILTERING_THRESHOLD();
             return bValue;
         }
@@ -1295,7 +1289,7 @@ public class RfidReaderChipR2000 {
         }
         private boolean getHST_INV_RSSI_FILTERING_COUNT() {
             byte[] msgBuffer = new byte[]{(byte) 0x70, 0, 9, 9, 0, 0, 0, 0};
-            return mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_INV_RSSI_FILTERING_THRESHOLD, false, msgBuffer);
+            return sendHostRegRequest(HostRegRequests.HST_INV_RSSI_FILTERING_THRESHOLD, false, msgBuffer);
         }
         boolean setHST_INV_RSSI_FILTERING_COUNT(long rssiFilterCount) {
             appendToLog("entry: rssiFilterCount = " + rssiFilterCount + ", this.rssiFilterCount = " + this.rssiFilterCount);
@@ -1311,7 +1305,7 @@ public class RfidReaderChipR2000 {
             msgBuffer[7] |= (byte) ((rssiFilterCount >> 24) & 0xFF);
             this.rssiFilterCount = rssiFilterCount;
             appendToLog("entering to sendHostRegRequest: rssiFilterCount = " + rssiFilterCount);
-            boolean bValue = mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_INV_RSSI_FILTERING_COUNT, true, msgBuffer);
+            boolean bValue = sendHostRegRequest(HostRegRequests.HST_INV_RSSI_FILTERING_COUNT, true, msgBuffer);
             appendToLog("after sendHostRegRequest: rssiFilterCount = " + rssiFilterCount);
             return bValue;
         }
@@ -1357,7 +1351,7 @@ public class RfidReaderChipR2000 {
                     || matchOffset < MATCHOFFSET_MIN || matchOffset > MATCHOFFSET_MAX
             ) {
                 byte[] msgBuffer = new byte[]{(byte) 0x70, 0, 0x11, 9, 0, 0, 0, 0};
-                return mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_INV_EPC_MATCH_CFG, false, msgBuffer);
+                return sendHostRegRequest(HostRegRequests.HST_INV_EPC_MATCH_CFG, false, msgBuffer);
             } else {
                 return false;
             }
@@ -1387,7 +1381,7 @@ public class RfidReaderChipR2000 {
             this.matchType = matchType;
             this.matchLength = matchLength;
             this.matchOffset = matchOffset;
-            return mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_INV_EPC_MATCH_CFG, true, msgBuffer);
+            return sendHostRegRequest(HostRegRequests.HST_INV_EPC_MATCH_CFG, true, msgBuffer);
         }
 
         byte[] invMatchData0_63; int invMatchDataReady = 0;
@@ -1399,7 +1393,7 @@ public class RfidReaderChipR2000 {
                     if ((invMatchDataReady & (0x01 << i)) == 0) {
                         byte[] msgBuffer = new byte[]{(byte) 0x70, 0, 0x12, 9, 0, 0, 0, 0};
                         msgBuffer[2] += i;
-                        mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_INV_EPCDAT_0_3, false, msgBuffer);
+                        sendHostRegRequest(HostRegRequests.HST_INV_EPCDAT_0_3, false, msgBuffer);
 
                         strValue = null;
                         break;
@@ -1439,7 +1433,7 @@ public class RfidReaderChipR2000 {
                         }
                     }
                     msgBuffer[2] = (byte) ((msgBuffer[2] & 0xFF) + i);
-                    if (mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_INV_EPCDAT_0_3, true, msgBuffer) == false)
+                    if (sendHostRegRequest(HostRegRequests.HST_INV_EPCDAT_0_3, true, msgBuffer) == false)
                         return false;
                     else {
                         invMatchDataReady |= (0x01 << i);
@@ -1458,7 +1452,7 @@ public class RfidReaderChipR2000 {
         int getAccessRetry() {
             if (accessRetry < ACCRETRY_MIN || accessRetry > ACCRETRY_MAX) {
                 byte[] msgBuffer = new byte[]{(byte) 0x70, 0, 1, (byte) 0x0A, 0, 0, 0, 0};
-                mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_TAGACC_DESC_CFG, false, msgBuffer);
+                sendHostRegRequest(HostRegRequests.HST_TAGACC_DESC_CFG, false, msgBuffer);
             }
             return accessRetry;
         }
@@ -1471,7 +1465,7 @@ public class RfidReaderChipR2000 {
             if (accessVerfiy)   msgBuffer[4] |= 0x01;
             this.accessVerfiy = accessVerfiy;
             this.accessRetry = accessRetry;
-            return mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_TAGACC_DESC_CFG, true, msgBuffer);
+            return sendHostRegRequest(HostRegRequests.HST_TAGACC_DESC_CFG, true, msgBuffer);
         }
 
         final int ACCBANK_INVALID = -1; final int ACCBANK_MIN = 0; final int ACCBANK_MAX = 3;
@@ -1479,7 +1473,7 @@ public class RfidReaderChipR2000 {
         int getAccessBank() {
             if (accessBank < ACCBANK_MIN || accessBank > ACCBANK_MAX) {
                 byte[] msgBuffer = new byte[]{(byte) 0x70, 0, 2, (byte) 0x0A, 0, 0, 0, 0};
-                mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_TAGACC_BANK, false, msgBuffer);
+                sendHostRegRequest(HostRegRequests.HST_TAGACC_BANK, false, msgBuffer);
             }
             return accessBank;
         }
@@ -1490,7 +1484,7 @@ public class RfidReaderChipR2000 {
             if (this.accessBank == accessBank && this.accessBank2 == 0 && sameCheck) return true;
             msgBuffer[4] = (byte) (accessBank & 0x03);
             this.accessBank = accessBank; this.accessBank2 = 0;
-            return mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_TAGACC_BANK, true, msgBuffer);
+            return sendHostRegRequest(HostRegRequests.HST_TAGACC_BANK, true, msgBuffer);
         }
         boolean setAccessBank(int accessBank, int accessBank2) {
             byte[] msgBuffer = new byte[]{(byte) 0x70, 1, 2, 0x0A, 0, 0, 0, 0};
@@ -1504,7 +1498,7 @@ public class RfidReaderChipR2000 {
             msgBuffer[4] = (byte) (accessBank & 0x03);
             msgBuffer[4] |= (byte) ((accessBank2 & 0x03) << 2);
             this.accessBank = accessBank; this.accessBank2 = accessBank2;
-            return mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_TAGACC_BANK, true, msgBuffer);
+            return sendHostRegRequest(HostRegRequests.HST_TAGACC_BANK, true, msgBuffer);
         }
 
         final int ACCOFFSET_INVALID = -1; final int ACCOFFSET_MIN = 0; final int ACCOFFSET_MAX = 0xFFFF;
@@ -1512,7 +1506,7 @@ public class RfidReaderChipR2000 {
         int getAccessOffset() {
             if (accessOffset < ACCOFFSET_MIN || accessOffset > ACCOFFSET_MAX) {
                 byte[] msgBuffer = new byte[]{(byte) 0x70, 0, 3, (byte) 0x0A, 0, 0, 0, 0};
-                mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_TAGACC_PTR, false, msgBuffer);
+                sendHostRegRequest(HostRegRequests.HST_TAGACC_PTR, false, msgBuffer);
             }
             return accessOffset;
         }
@@ -1526,7 +1520,7 @@ public class RfidReaderChipR2000 {
             msgBuffer[6] = (byte) ((accessOffset >> 16) & 0xFF);
             msgBuffer[7] = (byte) ((accessOffset >> 24) & 0xFF);
             this.accessOffset = accessOffset; this.accessOffset2 = 0;
-            return mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_TAGACC_PTR, true, msgBuffer);
+            return sendHostRegRequest(HostRegRequests.HST_TAGACC_PTR, true, msgBuffer);
         }
         boolean setAccessOffset(int accessOffset, int accessOffset2) {
             byte[] msgBuffer = new byte[]{(byte) 0x70, 1, 3, 0x0A, 0, 0, 0, 0};
@@ -1541,7 +1535,7 @@ public class RfidReaderChipR2000 {
             msgBuffer[6] = (byte) (accessOffset2 & 0xFF);
             msgBuffer[7] = (byte) ((accessOffset2 >> 8) & 0xFF);
             this.accessOffset = accessOffset; this.accessOffset2 = accessOffset2;
-            return mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_TAGACC_PTR, true, msgBuffer);
+            return sendHostRegRequest(HostRegRequests.HST_TAGACC_PTR, true, msgBuffer);
         }
 
         final int ACCCOUNT_INVALID = -1; final int ACCCOUNT_MIN = 0; final int ACCCOUNT_MAX = 255;
@@ -1549,7 +1543,7 @@ public class RfidReaderChipR2000 {
         int getAccessCount() {
             if (accessCount < ACCCOUNT_MIN || accessCount > ACCCOUNT_MAX) {
                 byte[] msgBuffer = new byte[]{(byte) 0x70, 0, 4, (byte) 0x0A, 0, 0, 0, 0};
-                mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_TAGACC_CNT, false, msgBuffer);
+                sendHostRegRequest(HostRegRequests.HST_TAGACC_CNT, false, msgBuffer);
             }
             return accessCount;
         }
@@ -1560,7 +1554,7 @@ public class RfidReaderChipR2000 {
             if (this.accessCount == accessCount && this.accessCount2 == 0 && sameCheck) return true;
             msgBuffer[4] = (byte) (accessCount & 0xFF);
             this.accessCount = accessCount; this.accessCount2 = 0;
-            return mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_TAGACC_CNT, true, msgBuffer);
+            return sendHostRegRequest(HostRegRequests.HST_TAGACC_CNT, true, msgBuffer);
         }
         boolean setAccessCount(int accessCount, int accessCount2) {
             byte[] msgBuffer = new byte[]{(byte) 0x70, 1, 4, 0x0A, 0, 0, 0, 0};
@@ -1573,7 +1567,7 @@ public class RfidReaderChipR2000 {
             msgBuffer[4] = (byte) (accessCount & 0xFF);
             msgBuffer[5] = (byte) (accessCount2 & 0xFF);
             this.accessCount = accessCount; this.accessCount2 = accessCount2;
-            return mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_TAGACC_CNT, true, msgBuffer);
+            return sendHostRegRequest(HostRegRequests.HST_TAGACC_CNT, true, msgBuffer);
         }
 
         final int ACCLOCKACTION_INVALID = -1; final int ACCLOCKACTION_MIN = 0; final int ACCLOCKACTION_MAX = 0x3FF;
@@ -1600,7 +1594,7 @@ public class RfidReaderChipR2000 {
 
         boolean getHST_TAGACC_LOCKCFG() {
             byte[] msgBuffer = new byte[]{(byte) 0x70, 0, 5, (byte) 0x0A, 0, 0, 0, 0};
-            return mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_TAGACC_LOCKCFG, false, msgBuffer);
+            return sendHostRegRequest(HostRegRequests.HST_TAGACC_LOCKCFG, false, msgBuffer);
         }
         boolean setAccessLockAction(int accessLockAction, int accessLockMask) {
             byte[] msgBuffer = new byte[]{(byte) 0x70, 1, 5, 0x0A, 0, 0, 0, 0};
@@ -1616,7 +1610,7 @@ public class RfidReaderChipR2000 {
             msgBuffer[6] |= (byte) ((accessLockMask & 0x3FF) >> 6);
             this.accessLockAction = accessLockAction;
             this.accessLockMask = accessLockMask;
-            return mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_TAGACC_LOCKCFG, true, msgBuffer);
+            return sendHostRegRequest(HostRegRequests.HST_TAGACC_LOCKCFG, true, msgBuffer);
         }
 
         final int ACCPWD_INVALID = 0; final long ACCPWD_MIN = 0; final long ACCPWD_MAX = 0x0FFFFFFFF;
@@ -1641,7 +1635,7 @@ public class RfidReaderChipR2000 {
                     }
                 }
             }
-            boolean retValue = mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_TAGACC_ACCPWD, true, msgBuffer);
+            boolean retValue = sendHostRegRequest(HostRegRequests.HST_TAGACC_ACCPWD, true, msgBuffer);
             if (DEBUG) appendToLog("sendHostRegRequest(): retValue = " + retValue);
             return retValue;
         }
@@ -1666,7 +1660,7 @@ public class RfidReaderChipR2000 {
                     }
                 }
             }
-            boolean retValue = mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_TAGACC_KILLPWD, true, msgBuffer);
+            boolean retValue = sendHostRegRequest(HostRegRequests.HST_TAGACC_KILLPWD, true, msgBuffer);
             if (DEBUG) appendToLog("sendHostRegRequest(): retValue = " + retValue);
             return retValue;
         }
@@ -1676,7 +1670,7 @@ public class RfidReaderChipR2000 {
         int getAccessWriteDataSelect() {
             if (accessWriteDataSelect < ACCWRITEDATSEL_MIN || accessWriteDataSelect > ACCWRITEDATSEL_MAX) {
                 byte[] msgBuffer = new byte[]{(byte) 0x70, 0, 8, (byte) 0x0A, 0, 0, 0, 0};
-                mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_TAGWRDAT_SEL, false, msgBuffer);
+                sendHostRegRequest(HostRegRequests.HST_TAGWRDAT_SEL, false, msgBuffer);
             }
             return accessWriteDataSelect;
         }
@@ -1688,7 +1682,7 @@ public class RfidReaderChipR2000 {
             accWriteDataReady = 0;
             msgBuffer[4] = (byte) (accessWriteDataSelect & 0x07);
             this.accessWriteDataSelect = accessWriteDataSelect;
-            return mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_TAGWRDAT_SEL, true, msgBuffer);
+            return sendHostRegRequest(HostRegRequests.HST_TAGWRDAT_SEL, true, msgBuffer);
         }
 
         byte[] accWriteData0_63; int accWriteDataReady = 0;
@@ -1703,7 +1697,7 @@ public class RfidReaderChipR2000 {
                     if ((accWriteDataReady & (0x01 << i)) == 0) {
                         byte[] msgBuffer = new byte[]{(byte) 0x70, 0, 9, (byte) 0x0A, 0, 0, 0, 0};
                         msgBuffer[2] += i;
-                        mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_TAGWRDAT_0, false, msgBuffer);
+                        sendHostRegRequest(HostRegRequests.HST_TAGWRDAT_0, false, msgBuffer);
 
                         strValue = null;
                         break;
@@ -1729,7 +1723,7 @@ public class RfidReaderChipR2000 {
                     if ((i / 16) * 16 == i) {
                         byte[] msgBuffer = new byte[]{(byte) 0x70, 1, 8, (byte) 0x0A, 0, 0, 0, 0};
                         msgBuffer[4] = (byte) (i / 16);
-                        if (mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_TAGWRDAT_SEL, true, msgBuffer) == false) {
+                        if (sendHostRegRequest(HostRegRequests.HST_TAGWRDAT_SEL, true, msgBuffer) == false) {
                             appendToLog("23");
                             return false;
                         }
@@ -1762,10 +1756,10 @@ public class RfidReaderChipR2000 {
                     if (wrieByteSize == 4) {
                         msgBuffer[6] = (byte)(i);
                     }
-                    if (mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_TAGWRDAT_0, true, msgBuffer) == false) {
+                    if (sendHostRegRequest(HostRegRequests.HST_TAGWRDAT_0, true, msgBuffer) == false) {
                         appendToLog("3"); return false;
                     } else {
-                        mRfidReaderChip.mRx000Setting.accWriteDataReady |= (0x01 << i);
+                        rx000Setting.accWriteDataReady |= (0x01 << i);
                         if (DEBUG) appendToLog("accWriteReady=" + accWriteDataReady);
                         for (int k = 0; k < 4; k++) {
                             accWriteData0_63[i * 4 + k] = msgBuffer[7 - k];
@@ -1786,7 +1780,7 @@ public class RfidReaderChipR2000 {
             } else {
                 if (currentProfile < PROFILE_MIN || currentProfile > PROFILE_MAX) {
                     byte[] msgBuffer = new byte[]{(byte) 0x70, 0, 0x60, 0x0B, 0, 0, 0, 0};
-                    mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_RFTC_CURRENT_PROFILE, false, msgBuffer);
+                    sendHostRegRequest(HostRegRequests.HST_RFTC_CURRENT_PROFILE, false, msgBuffer);
                 }
                 return currentProfile;
             }
@@ -1801,7 +1795,7 @@ public class RfidReaderChipR2000 {
                 if (this.currentProfile == currentProfile && sameCheck) return true;
                 msgBuffer[4] = (byte) (currentProfile);
                 this.currentProfile = currentProfile;
-                return mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_RFTC_CURRENT_PROFILE, true, msgBuffer);
+                return sendHostRegRequest(HostRegRequests.HST_RFTC_CURRENT_PROFILE, true, msgBuffer);
             }
         }
 
@@ -1817,7 +1811,7 @@ public class RfidReaderChipR2000 {
             if (freqChannelSelect < FREQCHANSEL_MIN || freqChannelSelect > FREQCHANSEL_MAX) {
                 {
                     byte[] msgBuffer = new byte[]{(byte) 0x70, 0, 1, 0x0C, 0, 0, 0, 0};
-                    mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_RFTC_FRQCH_SEL, false, msgBuffer);
+                    sendHostRegRequest(HostRegRequests.HST_RFTC_FRQCH_SEL, false, msgBuffer);
                 }
             }
             return freqChannelSelect;
@@ -1830,7 +1824,7 @@ public class RfidReaderChipR2000 {
             msgBuffer[4] = (byte) (freqChannelSelect);
             this.freqChannelSelect = freqChannelSelect;
             freqChannelSelect = FREQCHANCONFIG_INVALID; freqPllMultiplier = FREQPLLMULTIPLIER_INVALID;
-            return mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_RFTC_FRQCH_SEL, true, msgBuffer);
+            return sendHostRegRequest(HostRegRequests.HST_RFTC_FRQCH_SEL, true, msgBuffer);
         }
 
         final int FREQCHANCONFIG_INVALID = -1; final int FREQCHANCONFIG_MIN = 0; final int FREQCHANCONFIG_MAX = 1;
@@ -1838,7 +1832,7 @@ public class RfidReaderChipR2000 {
         int getFreqChannelConfig() {
             if (freqChannelConfig < FREQCHANCONFIG_MIN || freqChannelConfig > FREQCHANCONFIG_MAX) {
                 byte[] msgBuffer = new byte[]{(byte) 0x70, 0, 2, 0x0C, 0, 0, 0, 0};
-                mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_RFTC_FRQCH_CFG, false, msgBuffer);
+                sendHostRegRequest(HostRegRequests.HST_RFTC_FRQCH_CFG, false, msgBuffer);
             }
             return freqChannelConfig;
         }
@@ -1853,7 +1847,7 @@ public class RfidReaderChipR2000 {
             } else {
                 freqChannelConfig = 0;
             }
-            return mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_RFTC_FRQCH_CFG, true, msgBuffer);
+            return sendHostRegRequest(HostRegRequests.HST_RFTC_FRQCH_CFG, true, msgBuffer);
         }
 
         final int FREQPLLMULTIPLIER_INVALID = -1;
@@ -1861,7 +1855,7 @@ public class RfidReaderChipR2000 {
         int getFreqPllMultiplier() {
             if (freqPllMultiplier == FREQPLLMULTIPLIER_INVALID) {
                 byte[] msgBuffer = new byte[]{(byte) 0x70, 0, 3, 0x0C, 0, 0, 0, 0};
-                mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_RFTC_FRQCH_DESC_PLLDIVMULT, false, msgBuffer);
+                sendHostRegRequest(HostRegRequests.HST_RFTC_FRQCH_DESC_PLLDIVMULT, false, msgBuffer);
             }
             return freqPllMultiplier;
         }
@@ -1872,7 +1866,7 @@ public class RfidReaderChipR2000 {
             msgBuffer[6] = (byte)((freqPllMultiplier >> 16) & 0xFF);
             msgBuffer[7] = (byte)((freqPllMultiplier >> 24) & 0xFF);
             this.freqPllMultiplier = freqPllMultiplier;
-            return mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_RFTC_FRQCH_DESC_PLLDIVMULT, true, msgBuffer);
+            return sendHostRegRequest(HostRegRequests.HST_RFTC_FRQCH_DESC_PLLDIVMULT, true, msgBuffer);
         }
 
         final int FREQPLLDAC_INVALID = -1;
@@ -1880,7 +1874,7 @@ public class RfidReaderChipR2000 {
         int getFreqPllDac() {
             if (freqPllDac == FREQPLLDAC_INVALID) {
                 byte[] msgBuffer = new byte[]{(byte) 0x70, 0, 4, 0x0C, 0, 0, 0, 0};
-                mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_RFTC_FRQCH_DESC_PLLDACCTL, false, msgBuffer);
+                sendHostRegRequest(HostRegRequests.HST_RFTC_FRQCH_DESC_PLLDACCTL, false, msgBuffer);
             }
             return freqPllDac;
         }
@@ -1891,10 +1885,9 @@ public class RfidReaderChipR2000 {
             msgBuffer[5] = (byte)((freqStart >> 8) & 0xFF);
             msgBuffer[6] = (byte)((freqStart >> 16) & 0xFF);
             msgBuffer[7] = (byte)((freqStart >> 24) & 0xFF);
-            return mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_RFTC_FRQCH_CMDSTART, true, msgBuffer);
+            return sendHostRegRequest(HostRegRequests.HST_RFTC_FRQCH_CMDSTART, true, msgBuffer);
         }
     }
-
     class AntennaSelectedData {
         AntennaSelectedData(boolean set_default_setting, int default_setting_type) {
             if (default_setting_type < 0)    default_setting_type = 0;
@@ -2065,7 +2058,7 @@ public class RfidReaderChipR2000 {
 
         private boolean getHST_ANT_DESC_CFG() {
             byte[] msgBuffer = new byte[]{(byte) 0x70, 0, 2, 7, 0, 0, 0, 0};
-            return mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_ANT_DESC_CFG, false, msgBuffer);
+            return sendHostRegRequest(HostRegRequests.HST_ANT_DESC_CFG, false, msgBuffer);
         }
         boolean setAntennaEnable(int antennaEnable, int antennaInventoryMode, int antennaLocalAlgo, int antennaLocalStartQ,
                                  int antennaProfileMode, int antennaLocalProfile,
@@ -2109,7 +2102,7 @@ public class RfidReaderChipR2000 {
             this.antennaLocalProfile = antennaLocalProfile;
             this.antennaFrequencyMode = antennaFrequencyMode;
             this.antennaLocalFrequency = antennaLocalFrequency;
-            return mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_ANT_DESC_CFG, true, msgBuffer);
+            return sendHostRegRequest(HostRegRequests.HST_ANT_DESC_CFG, true, msgBuffer);
         }
 
         final int ANTSTATUS_INVALID = -1; final int ANTSTATUS_MIN = 0; final int ANTSTATUS_MAX = 0xFFFFF;
@@ -2117,7 +2110,7 @@ public class RfidReaderChipR2000 {
         int getAntennaStatus() {
             if (antennaStatus < ANTSTATUS_MIN || antennaStatus > ANTSTATUS_MAX) {
                 byte[] msgBuffer = new byte[]{(byte) 0x70, 0, 3, 7, 0, 0, 0, 0};
-                mRfidReaderChip.sendHostRegRequest(HostRegRequests.MAC_ANT_DESC_STAT, false, msgBuffer);
+                sendHostRegRequest(HostRegRequests.MAC_ANT_DESC_STAT, false, msgBuffer);
             }
             return antennaStatus;
         }
@@ -2127,7 +2120,7 @@ public class RfidReaderChipR2000 {
         int getAntennaDefine() {
             if (antennaDefine < ANTDEFINE_MIN || antennaDefine > ANTDEFINE_MAX) {
                 byte[] msgBuffer = new byte[]{(byte) 0x70, 0, 4, 7, 0, 0, 0, 0};
-                mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_ANT_DESC_PORTDEF, false, msgBuffer);
+                sendHostRegRequest(HostRegRequests.HST_ANT_DESC_PORTDEF, false, msgBuffer);
             }
             return antennaDefine;
         }
@@ -2137,7 +2130,7 @@ public class RfidReaderChipR2000 {
         long getAntennaDwell() {
             if (antennaDwell < ANTDWELL_MIN || antennaDwell > ANTDWELL_MAX) {
                 byte[] msgBuffer = new byte[]{(byte) 0x70, 0, 5, 7, 0, 0, 0, 0};
-                mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_ANT_DESC_DWELL, false, msgBuffer);
+                sendHostRegRequest(HostRegRequests.HST_ANT_DESC_DWELL, false, msgBuffer);
             }
             return antennaDwell;
         }
@@ -2151,7 +2144,7 @@ public class RfidReaderChipR2000 {
             msgBuffer[6] = (byte) ((antennaDwell >> 16) % 256);
             msgBuffer[7] = (byte) ((antennaDwell >> 24) % 256);
             this.antennaDwell = antennaDwell;
-            return mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_ANT_DESC_DWELL, true, msgBuffer);
+            return sendHostRegRequest(HostRegRequests.HST_ANT_DESC_DWELL, true, msgBuffer);
         }
 
         final int ANTARGET_INVALID = -1; final int ANTARGET_MIN = 0; final int ANTARGET_MAX = 1;
@@ -2167,7 +2160,7 @@ public class RfidReaderChipR2000 {
         long getAntennaPower() {
             if (antennaPower < ANTPOWER_MIN || antennaPower > ANTPOWER_MAX) {
                 byte[] msgBuffer = new byte[]{(byte) 0x70, 0, 6, 7, 0, 0, 0, 0};
-                mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_ANT_DESC_RFPOWER, false, msgBuffer);
+                sendHostRegRequest(HostRegRequests.HST_ANT_DESC_RFPOWER, false, msgBuffer);
             }
             return antennaPower;
         }
@@ -2181,7 +2174,7 @@ public class RfidReaderChipR2000 {
             msgBuffer[5] = (byte) ((antennaPower >> 8) % 256);
             this.antennaPower = antennaPower;
             antennaPowerSet = true;
-            return mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_ANT_DESC_RFPOWER, true, msgBuffer);
+            return sendHostRegRequest(HostRegRequests.HST_ANT_DESC_RFPOWER, true, msgBuffer);
         }
 
         final long ANTINVCOUNT_INVALID = -1; final long ANTINVCOUNT_MIN = 0; final long ANTINVCOUNT_MAX = 0xFFFFFFFFL;
@@ -2189,7 +2182,7 @@ public class RfidReaderChipR2000 {
         long getAntennaInvCount() {
             if (antennaInvCount < ANTINVCOUNT_MIN || antennaInvCount > ANTINVCOUNT_MAX) {
                 byte[] msgBuffer = new byte[]{(byte) 0x70, 0, 7, 7, 0, 0, 0, 0};
-                mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_ANT_DESC_INV_CNT, false, msgBuffer);
+                sendHostRegRequest(HostRegRequests.HST_ANT_DESC_INV_CNT, false, msgBuffer);
             }
             return antennaInvCount;
         }
@@ -2203,10 +2196,9 @@ public class RfidReaderChipR2000 {
             msgBuffer[6] = (byte) ((antennaInvCount >> 16) % 256);
             msgBuffer[7] = (byte) ((antennaInvCount >> 24) % 256);
             this.antennaInvCount = antennaInvCount;
-            return mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_ANT_DESC_INV_CNT, true, msgBuffer);
+            return sendHostRegRequest(HostRegRequests.HST_ANT_DESC_INV_CNT, true, msgBuffer);
         }
     }
-
     class InvSelectData {
         InvSelectData(boolean set_default_setting) {
             if (set_default_setting) {
@@ -2271,7 +2263,7 @@ public class RfidReaderChipR2000 {
                     || selectDelay < INVSELDELAY_MIN || selectDelay > INVSELDELAY_MAX
             ) {
                 byte[] msgBuffer = new byte[]{(byte) 0x70, 0, 1, 8, 0, 0, 0, 0};
-                return mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_TAGMSK_DESC_CFG, false, msgBuffer);
+                return sendHostRegRequest(HostRegRequests.HST_TAGMSK_DESC_CFG, false, msgBuffer);
             } else {
                 return false;
             }
@@ -2296,7 +2288,7 @@ public class RfidReaderChipR2000 {
             this.selectTarget = selectTarget;
             this.selectAction = selectAction;
             this.selectDelay = selectDelay;
-            return mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_TAGMSK_DESC_CFG, true, msgBuffer);
+            return sendHostRegRequest(HostRegRequests.HST_TAGMSK_DESC_CFG, true, msgBuffer);
         }
 
         final int INVSELMBANK_INVALID = -1; final int INVSELMBANK_MIN = 0; final int INVSELMBANK_MAX = 3;
@@ -2304,7 +2296,7 @@ public class RfidReaderChipR2000 {
         int getSelectMaskBank() {
             if (selectMaskBank < INVSELMBANK_MIN || selectMaskBank > INVSELMBANK_MAX) {
                 byte[] msgBuffer = new byte[]{(byte) 0x70, 0, 2, 8, 0, 0, 0, 0};
-                mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_TAGMSK_BANK, false, msgBuffer);
+                sendHostRegRequest(HostRegRequests.HST_TAGMSK_BANK, false, msgBuffer);
             }
             return selectMaskBank;
         }
@@ -2315,7 +2307,7 @@ public class RfidReaderChipR2000 {
             if (this.selectMaskBank == selectMaskBank && sameCheck) return true;
             msgBuffer[4] |= (byte) (selectMaskBank & 0x3);
             this.selectMaskBank = selectMaskBank;
-            return mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_TAGMSK_BANK, true, msgBuffer);
+            return sendHostRegRequest(HostRegRequests.HST_TAGMSK_BANK, true, msgBuffer);
         }
 
         final int INVSELMOFFSET_INVALID = -1; final int INVSELMOFFSET_MIN = 0; final int INVSELMOFFSET_MAX = 0xFFFF;
@@ -2323,7 +2315,7 @@ public class RfidReaderChipR2000 {
         int getSelectMaskOffset() {
             if (selectMaskOffset < INVSELMOFFSET_MIN || selectMaskOffset > INVSELMOFFSET_MAX) {
                 byte[] msgBuffer = new byte[]{(byte) 0x70, 0, 3, 8, 0, 0, 0, 0};
-                mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_TAGMSK_PTR, false, msgBuffer);
+                sendHostRegRequest(HostRegRequests.HST_TAGMSK_PTR, false, msgBuffer);
             }
             return selectMaskOffset;
         }
@@ -2335,7 +2327,7 @@ public class RfidReaderChipR2000 {
             msgBuffer[4] |= (byte) (selectMaskOffset & 0xFF);
             msgBuffer[5] |= (byte) ((selectMaskOffset >> 8) & 0xFF);
             this.selectMaskOffset = selectMaskOffset;
-            return mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_TAGMSK_PTR, true, msgBuffer);
+            return sendHostRegRequest(HostRegRequests.HST_TAGMSK_PTR, true, msgBuffer);
         }
 
         final int INVSELMLENGTH_INVALID = -1; final int INVSELMLENGTH_MIN = 0; final int INVSELMLENGTH_MAX = 255;
@@ -2344,7 +2336,7 @@ public class RfidReaderChipR2000 {
             appendToLog("getSelectMaskData with selectMaskLength = " + selectMaskLength);
             if (selectMaskLength < INVSELMLENGTH_MIN || selectMaskOffset > INVSELMLENGTH_MAX) {
                 byte[] msgBuffer = new byte[]{(byte) 0x70, 0, 4, 8, 0, 0, 0, 0};
-                mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_TAGMSK_LEN, false, msgBuffer);
+                sendHostRegRequest(HostRegRequests.HST_TAGMSK_LEN, false, msgBuffer);
             }
             return selectMaskLength;
         }
@@ -2356,7 +2348,7 @@ public class RfidReaderChipR2000 {
             msgBuffer[4] |= (byte) (selectMaskLength & 0xFF);
             if (selectMaskLength == INVSELMLENGTH_MAX) msgBuffer[5] = 1;
             this.selectMaskLength = selectMaskLength;
-            return mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_TAGMSK_PTR, true, msgBuffer);
+            return sendHostRegRequest(HostRegRequests.HST_TAGMSK_PTR, true, msgBuffer);
         }
 
         byte[] selectMaskData0_31 = new byte[4 * 8]; byte selectMaskDataReady = 0;
@@ -2372,7 +2364,7 @@ public class RfidReaderChipR2000 {
                         if ((selectMaskDataReady & (0x01 << i)) == 0) {
                             byte[] msgBuffer = new byte[]{(byte) 0x70, 0, 5, 8, 0, 0, 0, 0};
                             msgBuffer[2] += i;
-                            mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_TAGMSK_0_3, false, msgBuffer);
+                            sendHostRegRequest(HostRegRequests.HST_TAGMSK_0_3, false, msgBuffer);
 
                             strValue = null;
                             break;
@@ -2415,7 +2407,7 @@ public class RfidReaderChipR2000 {
                         }
                     }
                     msgBuffer[2] = (byte) ((msgBuffer[2] & 0xFF) + i);
-                    if (mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_TAGMSK_0_3, true, msgBuffer) == false)
+                    if (sendHostRegRequest(HostRegRequests.HST_TAGMSK_0_3, true, msgBuffer) == false)
                         return false;
                     else {
                         selectMaskDataReady |= (0x01 << i);
@@ -2428,7 +2420,6 @@ public class RfidReaderChipR2000 {
             return true;
         }
     }
-
     class AlgoSelectedData {
         AlgoSelectedData(boolean set_default_setting, int default_setting_type) {
             if (default_setting_type < 0) default_setting_type = 0;
@@ -2549,7 +2540,7 @@ public class RfidReaderChipR2000 {
 
         private boolean getHST_INV_ALG_PARM_0() {
             byte[] msgBuffer = new byte[]{(byte) 0x70, 0, 3, 9, 0, 0, 0, 0};
-            return mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_INV_ALG_PARM_0, false, msgBuffer);
+            return sendHostRegRequest(HostRegRequests.HST_INV_ALG_PARM_0, false, msgBuffer);
         }
         boolean setAlgoStartQ(int startQ, int algoMaxQ, int algoMinQ, int algoMaxRep, int algoHighThres, int algoLowThres) {
             boolean DEBUG = false;
@@ -2582,7 +2573,7 @@ public class RfidReaderChipR2000 {
             this.algoMaxRep = algoMaxRep;
             this.algoHighThres = algoHighThres;
             this.algoLowThres = algoLowThres;
-            return mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_INV_ALG_PARM_0, true, msgBuffer);
+            return sendHostRegRequest(HostRegRequests.HST_INV_ALG_PARM_0, true, msgBuffer);
         }
 
         final int ALGORETRY_INVALID = -1; final int ALGORETRY_MIN = 0; final int ALGORETRY_MAX = 255;
@@ -2590,7 +2581,7 @@ public class RfidReaderChipR2000 {
         int getAlgoRetry() {
             if (algoRetry < ALGORETRY_MIN || algoRetry > ALGORETRY_MAX) {
                 byte[] msgBuffer = new byte[]{(byte) 0x70, 0, 4, 9, 0, 0, 0, 0};
-                mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_INV_ALG_PARM_1, false, msgBuffer);
+                sendHostRegRequest(HostRegRequests.HST_INV_ALG_PARM_1, false, msgBuffer);
             }
             return algoRetry;
         }
@@ -2601,7 +2592,7 @@ public class RfidReaderChipR2000 {
             byte[] msgBuffer = new byte[]{(byte) 0x70, 1, 4, 9, 0, 0, 0, 0};
             msgBuffer[4] = (byte) algoRetry;
             this.algoRetry = algoRetry;
-            return mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_INV_ALG_PARM_1, true, msgBuffer);
+            return sendHostRegRequest(HostRegRequests.HST_INV_ALG_PARM_1, true, msgBuffer);
         }
 
         final int ALGOABFLIP_INVALID = -1; final int ALGOABFLIP_MIN = 0; final int ALGOABFLIP_MAX = 1;
@@ -2626,7 +2617,7 @@ public class RfidReaderChipR2000 {
 
         private boolean getHST_INV_ALG_PARM_2() {
             byte[] msgBuffer = new byte[]{(byte) 0x70, 0, 5, 9, 0, 0, 0, 0};
-            return mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_INV_ALG_PARM_2, false, msgBuffer);
+            return sendHostRegRequest(HostRegRequests.HST_INV_ALG_PARM_2, false, msgBuffer);
         }
         boolean setAlgoAbFlip(int algoAbFlip, int algoRunTilZero) {
             if (algoAbFlip < ALGOABFLIP_MIN || algoAbFlip > ALGOABFLIP_MAX)
@@ -2644,27 +2635,26 @@ public class RfidReaderChipR2000 {
             }
             this.algoAbFlip = algoAbFlip;
             this.algoRunTilZero = algoRunTilZero;
-            return mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_INV_ALG_PARM_2, true, msgBuffer);
+            return sendHostRegRequest(HostRegRequests.HST_INV_ALG_PARM_2, true, msgBuffer);
         }
     }
-
     class Rx000EngSetting {
         int narrowRSSI = -1, wideRSSI = -1;
         int getwideRSSI() {
             if (wideRSSI < 0) {
-                mRfidReaderChip.setPwrManagementMode(false);
-                mRfidReaderChip.mRx000Setting.writeMAC(0x100, 0x05); //sub-command: 0x05, Arg0: reserved
-                mRfidReaderChip.mRx000Setting.writeMAC(0x101,  3 + 0x20000); //Arg1: 15-0: number of RSSI sample
-                mRfidReaderChip.sendHostRegRequestHST_CMD(RfidReaderChipData.HostCommands.CMD_ENGTEST);
+                setPwrManagementMode(false);
+                rx000Setting.writeMAC(0x100, 0x05); //sub-command: 0x05, Arg0: reserved
+                rx000Setting.writeMAC(0x101,  3 + 0x20000); //Arg1: 15-0: number of RSSI sample
+                sendHostRegRequestHST_CMD(RfidReaderChipData.HostCommands.CMD_ENGTEST);
             } else appendToLog("Hello123: wideRSSI = " + wideRSSI);
             return wideRSSI;
         }
         int getnarrowRSSI() {
             if (narrowRSSI < 0) {
-                mRfidReaderChip.setPwrManagementMode(false);
-                mRfidReaderChip.mRx000Setting.writeMAC(0x100, 0x05); //sub-command: 0x05, Arg0: reserved
-                mRfidReaderChip.mRx000Setting.writeMAC(0x101,  3 + 0x20000); //Arg1: 15-0: number of RSSI sample
-                mRfidReaderChip.sendHostRegRequestHST_CMD(RfidReaderChipData.HostCommands.CMD_ENGTEST);
+                setPwrManagementMode(false);
+                rx000Setting.writeMAC(0x100, 0x05); //sub-command: 0x05, Arg0: reserved
+                rx000Setting.writeMAC(0x101,  3 + 0x20000); //Arg1: 15-0: number of RSSI sample
+                sendHostRegRequestHST_CMD(RfidReaderChipData.HostCommands.CMD_ENGTEST);
             } else appendToLog("Hello123: narrowRSSI = " + wideRSSI);
             return wideRSSI;
         }
@@ -2672,52 +2662,51 @@ public class RfidReaderChipR2000 {
             narrowRSSI = -1; wideRSSI = -1;
         }
     }
-
     class Rx000MbpSetting {
         final int RXGAIN_INVALID = -1; final int RXGAIN_MIN = 0; final int RXGAIN_MAX = 0x1FF;
         int rxGain = RXGAIN_INVALID;
         int getHighCompression() {
             int iRetValue = -1;
             if (rxGain < RXGAIN_MIN || rxGain > RXGAIN_MAX) {
-                mRfidReaderChip.setPwrManagementMode(false);
-                mRfidReaderChip.mRx000Setting.setMBPAddress(0x450); appendToLog("70010004: getHighCompression");
-                mRfidReaderChip.sendHostRegRequestHST_CMD(RfidReaderChipData.HostCommands.CMD_MBPRDREG);
+                setPwrManagementMode(false);
+                rx000Setting.setMBPAddress(0x450); appendToLog("70010004: getHighCompression");
+                sendHostRegRequestHST_CMD(RfidReaderChipData.HostCommands.CMD_MBPRDREG);
             } else iRetValue = (rxGain >> 8);
             return iRetValue;
         }
         int getRflnaGain() {
             int iRetValue = -1;
             if (rxGain < RXGAIN_MIN || rxGain > RXGAIN_MAX) {
-                mRfidReaderChip.setPwrManagementMode(false);
-                mRfidReaderChip.mRx000Setting.setMBPAddress(0x450); appendToLog("70010004: getRflnaGain");
-                mRfidReaderChip.sendHostRegRequestHST_CMD(RfidReaderChipData.HostCommands.CMD_MBPRDREG);
+                setPwrManagementMode(false);
+                rx000Setting.setMBPAddress(0x450); appendToLog("70010004: getRflnaGain");
+                sendHostRegRequestHST_CMD(RfidReaderChipData.HostCommands.CMD_MBPRDREG);
             } else iRetValue = ((rxGain & 0xC0) >> 6);
             return iRetValue;
         }
         int getIflnaGain() {
             int iRetValue = -1;
             if (rxGain < RXGAIN_MIN || rxGain > RXGAIN_MAX) {
-                mRfidReaderChip.setPwrManagementMode(false);
-                mRfidReaderChip.mRx000Setting.setMBPAddress(0x450); appendToLog("70010004: getIflnaGain");
-                mRfidReaderChip.sendHostRegRequestHST_CMD(RfidReaderChipData.HostCommands.CMD_MBPRDREG);
+                setPwrManagementMode(false);
+                rx000Setting.setMBPAddress(0x450); appendToLog("70010004: getIflnaGain");
+                sendHostRegRequestHST_CMD(RfidReaderChipData.HostCommands.CMD_MBPRDREG);
             } else iRetValue = ((rxGain & 0x38) >> 3);
             return iRetValue;
         }
         int getAgcGain() {
             int iRetValue = -1;
             if (rxGain < RXGAIN_MIN || rxGain > RXGAIN_MAX) {
-                mRfidReaderChip.setPwrManagementMode(false);
-                mRfidReaderChip.mRx000Setting.setMBPAddress(0x450); appendToLog("70010004: getAgcGain");
-                mRfidReaderChip.sendHostRegRequestHST_CMD(RfidReaderChipData.HostCommands.CMD_MBPRDREG);
+                setPwrManagementMode(false);
+                rx000Setting.setMBPAddress(0x450); appendToLog("70010004: getAgcGain");
+                sendHostRegRequestHST_CMD(RfidReaderChipData.HostCommands.CMD_MBPRDREG);
             } else iRetValue = (rxGain & 0x07);
             return iRetValue;
         }
         int getRxGain() {
             int iRetValue = -1;
             if (rxGain < RXGAIN_MIN || rxGain > RXGAIN_MAX) {
-                mRfidReaderChip.setPwrManagementMode(false);
-                mRfidReaderChip.mRx000Setting.setMBPAddress(0x450);
-                mRfidReaderChip.sendHostRegRequestHST_CMD(RfidReaderChipData.HostCommands.CMD_MBPRDREG);
+                setPwrManagementMode(false);
+                rx000Setting.setMBPAddress(0x450);
+                sendHostRegRequestHST_CMD(RfidReaderChipData.HostCommands.CMD_MBPRDREG);
             } else iRetValue = rxGain;
             return iRetValue;
         }
@@ -2728,24 +2717,23 @@ public class RfidReaderChipR2000 {
         boolean setRxGain(int rxGain_new) {
             boolean bRetValue = true;
             if ((rxGain_new != rxGain) || (sameCheck == false)) {
-                mRfidReaderChip.setPwrManagementMode(false);
-                bRetValue = mRfidReaderChip.mRx000Setting.setMBPAddress(0x450);
-                if (bRetValue != false) bRetValue = mRfidReaderChip.mRx000Setting.setMBPData(rxGain_new);
-                if (bRetValue != false) bRetValue = mRfidReaderChip.sendHostRegRequestHST_CMD(RfidReaderChipData.HostCommands.CMD_MBPWRREG);
+                setPwrManagementMode(false);
+                bRetValue = rx000Setting.setMBPAddress(0x450);
+                if (bRetValue != false) bRetValue = rx000Setting.setMBPData(rxGain_new);
+                if (bRetValue != false) bRetValue = sendHostRegRequestHST_CMD(RfidReaderChipData.HostCommands.CMD_MBPWRREG);
                 if (bRetValue != false) rxGain = rxGain_new;
             }
             return bRetValue;
         }
     }
-
     class Rx000OemSetting {
         final int COUNTRYCODE_INVALID = -1; final int COUNTRYCODE_MIN = 1; final int COUNTRYCODE_MAX = 9;
         int countryCode = COUNTRYCODE_INVALID;   // OemAddress = 0x02
         int getCountryCode() {
             if (countryCode < COUNTRYCODE_MIN || countryCode > COUNTRYCODE_MAX) {
-                mRfidReaderChip.setPwrManagementMode(false);
-                mRfidReaderChip.mRx000Setting.setOEMAddress(2);
-                mRfidReaderChip.sendHostRegRequestHST_CMD(RfidReaderChipData.HostCommands.CMD_RDOEM);
+                setPwrManagementMode(false);
+                rx000Setting.setOEMAddress(2);
+                sendHostRegRequestHST_CMD(RfidReaderChipData.HostCommands.CMD_RDOEM);
             }
             return countryCode;
         }
@@ -2759,9 +2747,9 @@ public class RfidReaderChipR2000 {
             for (int i = 0; i < length; i++) {
                 if (serialNumber[4 * i] == SERIALCODE_INVALID) {    // OemAddress = 0x04 - 7
                     invalid = true;
-                    mRfidReaderChip.setPwrManagementMode(false);
-                    mRfidReaderChip.mRx000Setting.setOEMAddress(0x04 + i);
-                    mRfidReaderChip.sendHostRegRequestHST_CMD(RfidReaderChipData.HostCommands.CMD_RDOEM);
+                    setPwrManagementMode(false);
+                    rx000Setting.setOEMAddress(0x04 + i);
+                    sendHostRegRequestHST_CMD(RfidReaderChipData.HostCommands.CMD_RDOEM);
                 }
             }
             if (invalid)    return null;
@@ -2786,9 +2774,9 @@ public class RfidReaderChipR2000 {
             for (int i = 0; i < length; i++) {
                 if (productserialNumber[4 * i] == PRODUCT_SERIALCODE_INVALID) {    // OemAddress = 0x04 - 7
                     invalid = true;
-                    mRfidReaderChip.setPwrManagementMode(false);
-                    mRfidReaderChip.mRx000Setting.setOEMAddress(0x08 + i);
-                    mRfidReaderChip.sendHostRegRequestHST_CMD(RfidReaderChipData.HostCommands.CMD_RDOEM);
+                    setPwrManagementMode(false);
+                    rx000Setting.setOEMAddress(0x08 + i);
+                    sendHostRegRequestHST_CMD(RfidReaderChipData.HostCommands.CMD_RDOEM);
                 }
             }
             if (invalid)    return null;
@@ -2808,9 +2796,9 @@ public class RfidReaderChipR2000 {
         int versionCode = VERSIONCODE_INVALID;   // OemAddress = 0x02
         int getVersionCode() {
             if (versionCode < VERSIONCODE_MIN || versionCode > VERSIONCODE_MAX) {
-                mRfidReaderChip.setPwrManagementMode(false);
-                mRfidReaderChip.mRx000Setting.setOEMAddress(0x0B);
-                mRfidReaderChip.sendHostRegRequestHST_CMD(RfidReaderChipData.HostCommands.CMD_RDOEM);
+                setPwrManagementMode(false);
+                rx000Setting.setOEMAddress(0x0B);
+                sendHostRegRequestHST_CMD(RfidReaderChipData.HostCommands.CMD_RDOEM);
             }
             return versionCode;
         }
@@ -2818,9 +2806,9 @@ public class RfidReaderChipR2000 {
         String spcialCountryVersion = null;
         String getSpecialCountryVersion() {
             if (spcialCountryVersion == null) {
-                mRfidReaderChip.setPwrManagementMode(false);
-                mRfidReaderChip.mRx000Setting.setOEMAddress(0x8E);
-                mRfidReaderChip.sendHostRegRequestHST_CMD(RfidReaderChipData.HostCommands.CMD_RDOEM);
+                setPwrManagementMode(false);
+                rx000Setting.setOEMAddress(0x8E);
+                sendHostRegRequestHST_CMD(RfidReaderChipData.HostCommands.CMD_RDOEM);
                 return "";
             }
             return spcialCountryVersion.replaceAll("[^A-Za-z0-9]", "");
@@ -2830,21 +2818,20 @@ public class RfidReaderChipR2000 {
         int freqModifyCode = FREQMODIFYCODE_INVALID;   // OemAddress = 0x8A
         int getFreqModifyCode() {
             if (freqModifyCode < FREQMODIFYCODE_MIN || freqModifyCode > FREQMODIFYCODE_MAX) {
-                mRfidReaderChip.setPwrManagementMode(false);
-                mRfidReaderChip.mRx000Setting.setOEMAddress(0x8F);
-                mRfidReaderChip.sendHostRegRequestHST_CMD(RfidReaderChipData.HostCommands.CMD_RDOEM);
+                setPwrManagementMode(false);
+                rx000Setting.setOEMAddress(0x8F);
+                sendHostRegRequestHST_CMD(RfidReaderChipData.HostCommands.CMD_RDOEM);
             }
             return freqModifyCode;
         }
 
         void writeOEM(int address, int value) {
-            mRfidReaderChip.setPwrManagementMode(false);
-            mRfidReaderChip.mRx000Setting.setOEMAddress(address);
-            mRfidReaderChip.mRx000Setting.setOEMData(value);
-            mRfidReaderChip.sendHostRegRequestHST_CMD(RfidReaderChipData.HostCommands.CMD_WROEM);
+            setPwrManagementMode(false);
+            rx000Setting.setOEMAddress(address);
+            rx000Setting.setOEMData(value);
+            sendHostRegRequestHST_CMD(RfidReaderChipData.HostCommands.CMD_WROEM);
         }
     }
-
     public boolean bFirmware_reset_before = false;
     final int RFID_READING_BUFFERSIZE = 1024;
     enum RfidDataReadTypes {
@@ -2855,16 +2842,15 @@ public class RfidReaderChipR2000 {
         RFID_DATA_READ_COMMAND_MBPREAD, RFID_DATA_READ_COMMAND_OEMREAD,
         RFID_DATA_READ_COMMAND_RSSI, RFID_DATA_READ_COMMAND_ACTIVE
     };
-
-    class RfidReaderChip {
+    //class RfidReaderChip {
         byte[] mRfidToReading = new byte[RFID_READING_BUFFERSIZE];
         int mRfidToReadingOffset = 0;
         ArrayList<RfidConnector.CsReaderRfidData> mRx000ToWrite = new ArrayList<>();
 
-        Rx000Setting mRx000Setting = new Rx000Setting(true);
-        Rx000EngSetting mRx000EngSetting = new Rx000EngSetting();
-        Rx000MbpSetting mRx000MbpSetting = new Rx000MbpSetting();
-        Rx000OemSetting mRx000OemSetting = new Rx000OemSetting();
+        Rx000Setting rx000Setting = new Rx000Setting(true);
+        Rx000EngSetting rx000EngSetting = new Rx000EngSetting();
+        Rx000MbpSetting rx000MbpSetting = new Rx000MbpSetting();
+        Rx000OemSetting rx000OemSetting = new Rx000OemSetting();
 
         ArrayList<RfidReaderChipData.Rx000pkgData> mRx000ToRead = new ArrayList<>();
         private boolean clearTempDataIn_request = false;
@@ -3082,158 +3068,158 @@ public class RfidReaderChipR2000 {
                                                     int patchVersion = dataIn[startIndex + 4] + (dataIn[startIndex + 5] & 0x0F) * 256;
                                                     int minorVersion = (dataIn[startIndex + 5] >> 4) + dataIn[startIndex + 6] * 256;
                                                     int majorVersion = dataIn[startIndex + 7];
-                                                    mRx000Setting.macVer = String.valueOf(majorVersion) + "." + String.valueOf(minorVersion) + "." + String.valueOf(patchVersion);
+                                                    rx000Setting.macVer = String.valueOf(majorVersion) + "." + String.valueOf(minorVersion) + "." + String.valueOf(patchVersion);
                                                     if (DEBUG)
-                                                        appendToLog("found MacVer =" + mRx000Setting.macVer);
+                                                        appendToLog("found MacVer =" + rx000Setting.macVer);
                                                     break;
                                                 case 9:
-                                                    mRx000Setting.mac_last_command_duration = (dataIn[startIndex + 4] & 0xFF)
+                                                    rx000Setting.mac_last_command_duration = (dataIn[startIndex + 4] & 0xFF)
                                                             + (dataIn[startIndex + 5] & 0xFF) * 256
                                                             + (dataIn[startIndex + 6] & 0xFF) * 256 * 256
                                                             + (dataIn[startIndex + 7] & 0xFF) * 256 * 256 * 256;
                                                     if (DEBUG)
-                                                        appendToLog("found mac_last_command_duration =" + mRx000Setting.mac_last_command_duration);
+                                                        appendToLog("found mac_last_command_duration =" + rx000Setting.mac_last_command_duration);
                                                     break;
                                                 case 0x0201:
-                                                    mRx000Setting.diagnosticCfg = (dataIn[startIndex + 4] & 0x0FF) + ((dataIn[startIndex + 5] & 0x03) * 256);
+                                                    rx000Setting.diagnosticCfg = (dataIn[startIndex + 4] & 0x0FF) + ((dataIn[startIndex + 5] & 0x03) * 256);
                                                     if (DEBUG)
-                                                        appendToLog("found diagnostic configuration: " + byteArrayToString(dataInPayload) + ", diagnosticCfg=" + mRx000Setting.diagnosticCfg);
+                                                        appendToLog("found diagnostic configuration: " + byteArrayToString(dataInPayload) + ", diagnosticCfg=" + rx000Setting.diagnosticCfg);
                                                     break;
                                                 case 0x0203:
-                                                    mRx000Setting.impinjExtensionValue = (dataIn[startIndex + 4] & 0x03F);
+                                                    rx000Setting.impinjExtensionValue = (dataIn[startIndex + 4] & 0x03F);
                                                     break;
                                                 case 0x204:
-                                                    mRx000Setting.pwrMgmtStatus = (dataIn[startIndex + 4] & 0x07);
+                                                    rx000Setting.pwrMgmtStatus = (dataIn[startIndex + 4] & 0x07);
                                                     if (DEBUG)
-                                                        appendToLog("pwrMgmtStatus = " + mRx000Setting.pwrMgmtStatus);
+                                                        appendToLog("pwrMgmtStatus = " + rx000Setting.pwrMgmtStatus);
                                                     break;
                                                 case 0x0700:
-                                                    mRx000Setting.antennaCycle = (dataIn[startIndex + 4] & 0xFF) + (dataIn[startIndex + 5] & 0xFF) * 256;
-                                                    mRx000Setting.antennaFreqAgile = 0;
+                                                    rx000Setting.antennaCycle = (dataIn[startIndex + 4] & 0xFF) + (dataIn[startIndex + 5] & 0xFF) * 256;
+                                                    rx000Setting.antennaFreqAgile = 0;
                                                     if ((dataIn[startIndex + 7] & 0x01) != 0)
-                                                        mRx000Setting.antennaFreqAgile = 1;
+                                                        rx000Setting.antennaFreqAgile = 1;
                                                     if (DEBUG)
-                                                        appendToLog("found antenna cycle: " + byteArrayToString(dataInPayload) + ", cycle=" + mRx000Setting.antennaCycle + ", frequencyAgile=" + mRx000Setting.antennaFreqAgile);
+                                                        appendToLog("found antenna cycle: " + byteArrayToString(dataInPayload) + ", cycle=" + rx000Setting.antennaCycle + ", frequencyAgile=" + rx000Setting.antennaFreqAgile);
                                                     break;
                                                 case 0x0701:
-                                                    mRx000Setting.antennaSelect = (dataIn[startIndex + 4] & 0xFF) + (dataIn[startIndex + 5] & 0xFF) * 256 + (dataIn[startIndex + 6] & 0xFF) * 256 * 256 + (dataIn[startIndex + 7] & 0xFF) * 256 * 256 * 256;
+                                                    rx000Setting.antennaSelect = (dataIn[startIndex + 4] & 0xFF) + (dataIn[startIndex + 5] & 0xFF) * 256 + (dataIn[startIndex + 6] & 0xFF) * 256 * 256 + (dataIn[startIndex + 7] & 0xFF) * 256 * 256 * 256;
                                                     if (DEBUG)
-                                                        appendToLog("found antenna select, select=" + mRx000Setting.antennaSelect);
+                                                        appendToLog("found antenna select, select=" + rx000Setting.antennaSelect);
                                                     break;
                                                 case 0x0702:
-                                                    mRx000Setting.antennaSelectedData[mRx000Setting.antennaSelect].antennaEnable = (dataIn[startIndex + 4] & 0x01);
-                                                    mRx000Setting.antennaSelectedData[mRx000Setting.antennaSelect].antennaInventoryMode = (dataIn[startIndex + 4] & 0x02) >> 1;
-                                                    mRx000Setting.antennaSelectedData[mRx000Setting.antennaSelect].antennaLocalAlgo = (dataIn[startIndex + 4] & 0x0C) >> 2;
-                                                    mRx000Setting.antennaSelectedData[mRx000Setting.antennaSelect].antennaLocalStartQ = (dataIn[startIndex + 4] & 0xF0) >> 4;
-                                                    mRx000Setting.antennaSelectedData[mRx000Setting.antennaSelect].antennaProfileMode = (dataIn[startIndex + 5] & 0x01);
-                                                    mRx000Setting.antennaSelectedData[mRx000Setting.antennaSelect].antennaLocalProfile = ((dataIn[startIndex + 5] & 0x1E) >> 1);
-                                                    mRx000Setting.antennaSelectedData[mRx000Setting.antennaSelect].antennaFrequencyMode = ((dataIn[startIndex + 5] & 0x20) >> 5);
-                                                    mRx000Setting.antennaSelectedData[mRx000Setting.antennaSelect].antennaLocalFrequency = (dataIn[startIndex + 5] & 0x0F) * 4 + ((dataIn[startIndex + 5] & 0xC0) >> 6);
+                                                    rx000Setting.antennaSelectedData[rx000Setting.antennaSelect].antennaEnable = (dataIn[startIndex + 4] & 0x01);
+                                                    rx000Setting.antennaSelectedData[rx000Setting.antennaSelect].antennaInventoryMode = (dataIn[startIndex + 4] & 0x02) >> 1;
+                                                    rx000Setting.antennaSelectedData[rx000Setting.antennaSelect].antennaLocalAlgo = (dataIn[startIndex + 4] & 0x0C) >> 2;
+                                                    rx000Setting.antennaSelectedData[rx000Setting.antennaSelect].antennaLocalStartQ = (dataIn[startIndex + 4] & 0xF0) >> 4;
+                                                    rx000Setting.antennaSelectedData[rx000Setting.antennaSelect].antennaProfileMode = (dataIn[startIndex + 5] & 0x01);
+                                                    rx000Setting.antennaSelectedData[rx000Setting.antennaSelect].antennaLocalProfile = ((dataIn[startIndex + 5] & 0x1E) >> 1);
+                                                    rx000Setting.antennaSelectedData[rx000Setting.antennaSelect].antennaFrequencyMode = ((dataIn[startIndex + 5] & 0x20) >> 5);
+                                                    rx000Setting.antennaSelectedData[rx000Setting.antennaSelect].antennaLocalFrequency = (dataIn[startIndex + 5] & 0x0F) * 4 + ((dataIn[startIndex + 5] & 0xC0) >> 6);
                                                     if (DEBUG)
                                                         appendToLog("found antenna selectEnable: " + byteArrayToString(dataInPayload)
-                                                                + ", selectEnable=" + mRx000Setting.antennaSelectedData[mRx000Setting.antennaSelect].antennaEnable
-                                                                + ", inventoryMode=" + mRx000Setting.antennaSelectedData[mRx000Setting.antennaSelect].antennaInventoryMode
-                                                                + ", localAlgo=" + mRx000Setting.antennaSelectedData[mRx000Setting.antennaSelect].antennaLocalAlgo
-                                                                + ", localStartQ=" + mRx000Setting.antennaSelectedData[mRx000Setting.antennaSelect].antennaLocalStartQ
-                                                                + ", profileMode=" + mRx000Setting.antennaSelectedData[mRx000Setting.antennaSelect].antennaProfileMode
-                                                                + ", localProfile=" + mRx000Setting.antennaSelectedData[mRx000Setting.antennaSelect].antennaLocalProfile
-                                                                + ", frequencyMode=" + mRx000Setting.antennaSelectedData[mRx000Setting.antennaSelect].antennaFrequencyMode
-                                                                + ", localFrequency=" + mRx000Setting.antennaSelectedData[mRx000Setting.antennaSelect].antennaLocalFrequency
+                                                                + ", selectEnable=" + rx000Setting.antennaSelectedData[rx000Setting.antennaSelect].antennaEnable
+                                                                + ", inventoryMode=" + rx000Setting.antennaSelectedData[rx000Setting.antennaSelect].antennaInventoryMode
+                                                                + ", localAlgo=" + rx000Setting.antennaSelectedData[rx000Setting.antennaSelect].antennaLocalAlgo
+                                                                + ", localStartQ=" + rx000Setting.antennaSelectedData[rx000Setting.antennaSelect].antennaLocalStartQ
+                                                                + ", profileMode=" + rx000Setting.antennaSelectedData[rx000Setting.antennaSelect].antennaProfileMode
+                                                                + ", localProfile=" + rx000Setting.antennaSelectedData[rx000Setting.antennaSelect].antennaLocalProfile
+                                                                + ", frequencyMode=" + rx000Setting.antennaSelectedData[rx000Setting.antennaSelect].antennaFrequencyMode
+                                                                + ", localFrequency=" + rx000Setting.antennaSelectedData[rx000Setting.antennaSelect].antennaLocalFrequency
                                                         );
                                                     break;
                                                 case 0x0703:
-                                                    mRx000Setting.antennaSelectedData[mRx000Setting.antennaSelect].antennaStatus = (dataIn[startIndex + 4] & 0xFF) + (dataIn[startIndex + 5] & 0xFF) * 256 + (dataIn[startIndex + 6] & 0x0F) * 256 * 256;
+                                                    rx000Setting.antennaSelectedData[rx000Setting.antennaSelect].antennaStatus = (dataIn[startIndex + 4] & 0xFF) + (dataIn[startIndex + 5] & 0xFF) * 256 + (dataIn[startIndex + 6] & 0x0F) * 256 * 256;
                                                     if (DEBUG)
-                                                        appendToLog("found antenna status: " + byteArrayToString(dataInPayload) + ", status=" + mRx000Setting.antennaSelectedData[mRx000Setting.antennaSelect].antennaStatus);
+                                                        appendToLog("found antenna status: " + byteArrayToString(dataInPayload) + ", status=" + rx000Setting.antennaSelectedData[rx000Setting.antennaSelect].antennaStatus);
                                                     break;
                                                 case 0x0704:
-                                                    mRx000Setting.antennaSelectedData[mRx000Setting.antennaSelect].antennaDefine = (dataIn[startIndex + 4] & 0x3);
+                                                    rx000Setting.antennaSelectedData[rx000Setting.antennaSelect].antennaDefine = (dataIn[startIndex + 4] & 0x3);
                                                     //      mRx000Setting.antennaSelectedData[mRx000Setting.antennaSelect].antennaRxDefine = (dataIn[startIndex + 6] & 0x3);
                                                     if (DEBUG)
                                                         appendToLog("found antenna define: " + byteArrayToString(dataInPayload)
-                                                                        + ", define=" + mRx000Setting.antennaSelectedData[mRx000Setting.antennaSelect].antennaDefine
+                                                                        + ", define=" + rx000Setting.antennaSelectedData[rx000Setting.antennaSelect].antennaDefine
                                                                 //        + ", RxDefine=" + mRx000Setting.antennaSelectedData[mRx000Setting.antennaSelect].antennaRxDefine
                                                         );
                                                     break;
                                                 case 0x0705:
-                                                    mRx000Setting.antennaSelectedData[mRx000Setting.antennaSelect].antennaDwell = (dataIn[startIndex + 4] & 0xFF) + (dataIn[startIndex + 5] & 0xFF) * 256 + (dataIn[startIndex + 6] & 0xFF) * 256 * 256 + (dataIn[startIndex + 7] & 0xFF) * 256 * 256 * 256;
+                                                    rx000Setting.antennaSelectedData[rx000Setting.antennaSelect].antennaDwell = (dataIn[startIndex + 4] & 0xFF) + (dataIn[startIndex + 5] & 0xFF) * 256 + (dataIn[startIndex + 6] & 0xFF) * 256 * 256 + (dataIn[startIndex + 7] & 0xFF) * 256 * 256 * 256;
                                                     if (DEBUG)
-                                                        appendToLog("found antenna dwell=" + mRx000Setting.antennaSelectedData[mRx000Setting.antennaSelect].antennaDwell);
+                                                        appendToLog("found antenna dwell=" + rx000Setting.antennaSelectedData[rx000Setting.antennaSelect].antennaDwell);
                                                     break;
                                                 case 0x0706:
-                                                    if (mRx000Setting.antennaSelectedData[mRx000Setting.antennaSelect].antennaPowerSet == false)
-                                                        mRx000Setting.antennaSelectedData[mRx000Setting.antennaSelect].antennaPower = (dataIn[startIndex + 4] & 0xFF) + (dataIn[startIndex + 5] & 0xFF) * 256 + (dataIn[startIndex + 6] & 0xFF) * 256 * 256 + (dataIn[startIndex + 7] & 0xFF) * 256 * 256 * 256;
+                                                    if (rx000Setting.antennaSelectedData[rx000Setting.antennaSelect].antennaPowerSet == false)
+                                                        rx000Setting.antennaSelectedData[rx000Setting.antennaSelect].antennaPower = (dataIn[startIndex + 4] & 0xFF) + (dataIn[startIndex + 5] & 0xFF) * 256 + (dataIn[startIndex + 6] & 0xFF) * 256 * 256 + (dataIn[startIndex + 7] & 0xFF) * 256 * 256 * 256;
                                                     break;
                                                 case 0x0707:
-                                                    mRx000Setting.antennaSelectedData[mRx000Setting.antennaSelect].antennaInvCount = (dataIn[startIndex + 4] & 0xFF) + (dataIn[startIndex + 5] & 0xFF) * 256 + (dataIn[startIndex + 6] & 0xFF) * 256 * 256 + (dataIn[startIndex + 7] & 0xFF) * 256 * 256 * 256;
+                                                    rx000Setting.antennaSelectedData[rx000Setting.antennaSelect].antennaInvCount = (dataIn[startIndex + 4] & 0xFF) + (dataIn[startIndex + 5] & 0xFF) * 256 + (dataIn[startIndex + 6] & 0xFF) * 256 * 256 + (dataIn[startIndex + 7] & 0xFF) * 256 * 256 * 256;
                                                     if (DEBUG)
-                                                        appendToLog("found antenna InvCount=" + mRx000Setting.antennaSelectedData[mRx000Setting.antennaSelect].antennaInvCount);
+                                                        appendToLog("found antenna InvCount=" + rx000Setting.antennaSelectedData[rx000Setting.antennaSelect].antennaInvCount);
                                                     break;
                                                 case 0x0800:
-                                                    mRx000Setting.invSelectIndex = (dataIn[startIndex + 4] & 0xFF) + (dataIn[startIndex + 5] & 0xFF) * 256 + (dataIn[startIndex + 6] & 0xFF) * 256 * 256 + (dataIn[startIndex + 7] & 0xFF) * 256 * 256 * 256;
+                                                    rx000Setting.invSelectIndex = (dataIn[startIndex + 4] & 0xFF) + (dataIn[startIndex + 5] & 0xFF) * 256 + (dataIn[startIndex + 6] & 0xFF) * 256 * 256 + (dataIn[startIndex + 7] & 0xFF) * 256 * 256 * 256;
                                                     if (DEBUG)
-                                                        appendToLog("found inventory select: " + byteArrayToString(dataInPayload) + ", select=" + mRx000Setting.invSelectIndex);
+                                                        appendToLog("found inventory select: " + byteArrayToString(dataInPayload) + ", select=" + rx000Setting.invSelectIndex);
                                                     break;
                                                 case 0x0801: {
-                                                    int dataIndex = mRx000Setting.invSelectIndex;
-                                                    if (dataIndex < mRx000Setting.INVSELECT_MIN || dataIndex > mRx000Setting.INVSELECT_MAX) {
+                                                    int dataIndex = rx000Setting.invSelectIndex;
+                                                    if (dataIndex < rx000Setting.INVSELECT_MIN || dataIndex > rx000Setting.INVSELECT_MAX) {
                                                         if (DEBUG)
                                                             appendToLog("found inventory select configuration: " + byteArrayToString(dataInPayload) + ", but invalid index=" + dataIndex);
                                                     } else {
-                                                        mRx000Setting.invSelectData[dataIndex].selectEnable = (dataIn[startIndex + 4] & 0x01);
-                                                        mRx000Setting.invSelectData[dataIndex].selectTarget = ((dataIn[startIndex + 4] & 0x0E) >> 1);
-                                                        mRx000Setting.invSelectData[dataIndex].selectAction = ((dataIn[startIndex + 4] & 0x70) >> 4);
-                                                        mRx000Setting.invSelectData[dataIndex].selectDelay = dataIn[startIndex + 5];
+                                                        rx000Setting.invSelectData[dataIndex].selectEnable = (dataIn[startIndex + 4] & 0x01);
+                                                        rx000Setting.invSelectData[dataIndex].selectTarget = ((dataIn[startIndex + 4] & 0x0E) >> 1);
+                                                        rx000Setting.invSelectData[dataIndex].selectAction = ((dataIn[startIndex + 4] & 0x70) >> 4);
+                                                        rx000Setting.invSelectData[dataIndex].selectDelay = dataIn[startIndex + 5];
                                                         if (DEBUG)
                                                             appendToLog("found inventory select configuration: " + byteArrayToString(dataInPayload)
-                                                                    + ", selectEnable=" + mRx000Setting.invSelectData[dataIndex].selectEnable
-                                                                    + ", selectTarget=" + mRx000Setting.invSelectData[dataIndex].selectTarget
-                                                                    + ", selectAction=" + mRx000Setting.invSelectData[dataIndex].selectAction
-                                                                    + ", selectDelay=" + mRx000Setting.invSelectData[dataIndex].selectDelay
+                                                                    + ", selectEnable=" + rx000Setting.invSelectData[dataIndex].selectEnable
+                                                                    + ", selectTarget=" + rx000Setting.invSelectData[dataIndex].selectTarget
+                                                                    + ", selectAction=" + rx000Setting.invSelectData[dataIndex].selectAction
+                                                                    + ", selectDelay=" + rx000Setting.invSelectData[dataIndex].selectDelay
                                                             );
                                                     }
                                                     break;
                                                 }
                                                 case 0x0802: {
-                                                    int dataIndex = mRx000Setting.invSelectIndex;
-                                                    if (dataIndex < mRx000Setting.INVSELECT_MIN || dataIndex > mRx000Setting.INVSELECT_MAX) {
+                                                    int dataIndex = rx000Setting.invSelectIndex;
+                                                    if (dataIndex < rx000Setting.INVSELECT_MIN || dataIndex > rx000Setting.INVSELECT_MAX) {
                                                         if (DEBUG)
                                                             appendToLog("found inventory select mask bank: " + byteArrayToString(dataInPayload) + ", but invalid index=" + dataIndex);
                                                     } else {
-                                                        mRx000Setting.invSelectData[dataIndex].selectMaskBank = (dataIn[startIndex + 4] & 0x03);
+                                                        rx000Setting.invSelectData[dataIndex].selectMaskBank = (dataIn[startIndex + 4] & 0x03);
                                                         if (DEBUG)
                                                             appendToLog("found inventory select mask bank: " + byteArrayToString(dataInPayload)
-                                                                    + ", selectMaskBank=" + mRx000Setting.invSelectData[dataIndex].selectMaskBank
+                                                                    + ", selectMaskBank=" + rx000Setting.invSelectData[dataIndex].selectMaskBank
                                                             );
                                                     }
                                                     break;
                                                 }
                                                 case 0x0803: {
-                                                    int dataIndex = mRx000Setting.invSelectIndex;
-                                                    if (dataIndex < mRx000Setting.INVSELECT_MIN || dataIndex > mRx000Setting.INVSELECT_MAX) {
+                                                    int dataIndex = rx000Setting.invSelectIndex;
+                                                    if (dataIndex < rx000Setting.INVSELECT_MIN || dataIndex > rx000Setting.INVSELECT_MAX) {
                                                         if (DEBUG)
                                                             appendToLog("found inventory select mask offset: " + byteArrayToString(dataInPayload) + ", but invalid index=" + dataIndex);
                                                     } else {
-                                                        mRx000Setting.invSelectData[dataIndex].selectMaskOffset = (dataIn[startIndex + 4] & 0x0FF) + (dataIn[startIndex + 5] & 0x0FF) * 256 + (dataIn[startIndex + 6] & 0x0FF) * 256 * 256 + (dataIn[startIndex + 7] & 0x0FF) * 256 * 256 * 256;
+                                                        rx000Setting.invSelectData[dataIndex].selectMaskOffset = (dataIn[startIndex + 4] & 0x0FF) + (dataIn[startIndex + 5] & 0x0FF) * 256 + (dataIn[startIndex + 6] & 0x0FF) * 256 * 256 + (dataIn[startIndex + 7] & 0x0FF) * 256 * 256 * 256;
                                                         if (DEBUG)
                                                             appendToLog("found inventory select mask offset: " + byteArrayToString(dataInPayload)
-                                                                    + ", selectMaskOffset=" + mRx000Setting.invSelectData[dataIndex].selectMaskOffset
+                                                                    + ", selectMaskOffset=" + rx000Setting.invSelectData[dataIndex].selectMaskOffset
                                                             );
                                                     }
                                                     break;
                                                 }
                                                 case 0x0804: {
-                                                    int dataIndex = mRx000Setting.invSelectIndex;
-                                                    if (dataIndex < mRx000Setting.INVSELECT_MIN || dataIndex > mRx000Setting.INVSELECT_MAX) {
+                                                    int dataIndex = rx000Setting.invSelectIndex;
+                                                    if (dataIndex < rx000Setting.INVSELECT_MIN || dataIndex > rx000Setting.INVSELECT_MAX) {
                                                         if (DEBUG)
                                                             appendToLog("found inventory select mask length: " + byteArrayToString(dataInPayload) + ", but invalid index=" + dataIndex);
                                                     } else {
-                                                        mRx000Setting.invSelectData[dataIndex].selectMaskLength = (dataIn[startIndex + 4] & 0x0FF);
+                                                        rx000Setting.invSelectData[dataIndex].selectMaskLength = (dataIn[startIndex + 4] & 0x0FF);
                                                         if (DEBUG)
-                                                            appendToLog("getSelectMaskData with read selectMaskLength = " + mRx000Setting.invSelectData[dataIndex].selectMaskLength);
+                                                            appendToLog("getSelectMaskData with read selectMaskLength = " + rx000Setting.invSelectData[dataIndex].selectMaskLength);
                                                         if (DEBUG)
                                                             appendToLog("found inventory select mask length: " + byteArrayToString(dataInPayload)
-                                                                    + ", selectMaskLength=" + mRx000Setting.invSelectData[dataIndex].selectMaskLength
+                                                                    + ", selectMaskLength=" + rx000Setting.invSelectData[dataIndex].selectMaskLength
                                                             );
                                                     }
                                                     break;
@@ -3246,126 +3232,126 @@ public class RfidReaderChipR2000 {
                                                 case 0x080A:
                                                 case 0x080B:
                                                 case 0x080C: {
-                                                    int dataIndex = mRx000Setting.invSelectIndex;
-                                                    if (dataIndex < mRx000Setting.INVSELECT_MIN || dataIndex > mRx000Setting.INVSELECT_MAX) {
+                                                    int dataIndex = rx000Setting.invSelectIndex;
+                                                    if (dataIndex < rx000Setting.INVSELECT_MIN || dataIndex > rx000Setting.INVSELECT_MAX) {
                                                         if (DEBUG)
                                                             appendToLog("found inventory select mask 0-3: " + byteArrayToString(dataInPayload) + ", but invalid index=" + dataIndex);
                                                     } else {
                                                         int maskDataIndex = addressToRead - 0x0805;
                                                         if (DEBUG)
-                                                            appendToLog("Old selectMaskData0_31 = " + byteArrayToString(mRx000Setting.invSelectData[dataIndex].selectMaskData0_31));
-                                                        System.arraycopy(dataIn, startIndex + 4, mRx000Setting.invSelectData[dataIndex].selectMaskData0_31, maskDataIndex * 4, 4);
+                                                            appendToLog("Old selectMaskData0_31 = " + byteArrayToString(rx000Setting.invSelectData[dataIndex].selectMaskData0_31));
+                                                        System.arraycopy(dataIn, startIndex + 4, rx000Setting.invSelectData[dataIndex].selectMaskData0_31, maskDataIndex * 4, 4);
                                                         if (DEBUG)
-                                                            appendToLog("Old selectMaskData0_31 = " + byteArrayToString(mRx000Setting.invSelectData[dataIndex].selectMaskData0_31));
-                                                        mRx000Setting.invSelectData[dataIndex].selectMaskDataReady |= (0x01 << maskDataIndex);
+                                                            appendToLog("Old selectMaskData0_31 = " + byteArrayToString(rx000Setting.invSelectData[dataIndex].selectMaskData0_31));
+                                                        rx000Setting.invSelectData[dataIndex].selectMaskDataReady |= (0x01 << maskDataIndex);
                                                         if (DEBUG)
                                                             appendToLog("found inventory select mask 0-3: " + byteArrayToString(dataInPayload));
                                                     }
                                                     break;
                                                 }
                                                 case 0x0900:
-                                                    if (mRx000Setting.queryTarget != 2)
-                                                        mRx000Setting.queryTarget = (dataIn[startIndex + 4] >> 4) & 0x01;
-                                                    mRx000Setting.querySession = (dataIn[startIndex + 4] >> 5) & 0x03;
-                                                    mRx000Setting.querySelect = (dataIn[startIndex + 4] >> 7) & 0x01 + ((dataIn[startIndex + 5] & 0x01) * 2);
+                                                    if (rx000Setting.queryTarget != 2)
+                                                        rx000Setting.queryTarget = (dataIn[startIndex + 4] >> 4) & 0x01;
+                                                    rx000Setting.querySession = (dataIn[startIndex + 4] >> 5) & 0x03;
+                                                    rx000Setting.querySelect = (dataIn[startIndex + 4] >> 7) & 0x01 + ((dataIn[startIndex + 5] & 0x01) * 2);
                                                     if (DEBUG)
-                                                        appendToLog("found query configuration: " + byteArrayToString(dataInPayload) + ", target=" + mRx000Setting.queryTarget + ", session=" + mRx000Setting.querySession + ", select=" + mRx000Setting.querySelect);
+                                                        appendToLog("found query configuration: " + byteArrayToString(dataInPayload) + ", target=" + rx000Setting.queryTarget + ", session=" + rx000Setting.querySession + ", select=" + rx000Setting.querySelect);
                                                     break;
                                                 case 0x0901:
-                                                    mRx000Setting.invAlgo = dataIn[startIndex + 4] & 0x3F;
-                                                    mRx000Setting.matchRep = ((dataIn[startIndex + 4] & 0xC0) >> 6) + (dataIn[startIndex + 5] & 0x3F) * 4;
-                                                    mRx000Setting.tagSelect = ((dataIn[startIndex + 5] & 0x40) >> 6);
-                                                    mRx000Setting.noInventory = ((dataIn[startIndex + 5] & 0x80) >> 7);
-                                                    mRx000Setting.tagRead = dataIn[startIndex + 6] & 0x03;
-                                                    mRx000Setting.tagDelay = ((dataIn[startIndex + 7] & 0x03) * 16 + ((dataIn[startIndex + 6] & 0xF0) >> 4));
-                                                    mRx000Setting.invModeCompact = (dataIn[startIndex + 7] & 0x04);
+                                                    rx000Setting.invAlgo = dataIn[startIndex + 4] & 0x3F;
+                                                    rx000Setting.matchRep = ((dataIn[startIndex + 4] & 0xC0) >> 6) + (dataIn[startIndex + 5] & 0x3F) * 4;
+                                                    rx000Setting.tagSelect = ((dataIn[startIndex + 5] & 0x40) >> 6);
+                                                    rx000Setting.noInventory = ((dataIn[startIndex + 5] & 0x80) >> 7);
+                                                    rx000Setting.tagRead = dataIn[startIndex + 6] & 0x03;
+                                                    rx000Setting.tagDelay = ((dataIn[startIndex + 7] & 0x03) * 16 + ((dataIn[startIndex + 6] & 0xF0) >> 4));
+                                                    rx000Setting.invModeCompact = (dataIn[startIndex + 7] & 0x04);
                                                     if (DEBUG)
-                                                        appendToLog("found inventory configuration: " + byteArrayToString(dataInPayload) + ", algorithm=" + mRx000Setting.invAlgo + ", matchRep=" + mRx000Setting.matchRep + ", tagSelect=" + mRx000Setting.tagSelect + ", noInventory=" + mRx000Setting.noInventory + ", tagRead=" + mRx000Setting.tagRead + ", tagDelay=" + mRx000Setting.tagDelay);
+                                                        appendToLog("found inventory configuration: " + byteArrayToString(dataInPayload) + ", algorithm=" + rx000Setting.invAlgo + ", matchRep=" + rx000Setting.matchRep + ", tagSelect=" + rx000Setting.tagSelect + ", noInventory=" + rx000Setting.noInventory + ", tagRead=" + rx000Setting.tagRead + ", tagDelay=" + rx000Setting.tagDelay);
                                                     break;
                                                 case 0x0902:
                                                     if (dataIn[startIndex + 6] != 0 || dataIn[startIndex + 7] != 0) {
                                                         if (DEBUG)
                                                             appendToLog("found inventory select, but too big: " + byteArrayToString(dataInPayload));
                                                     } else {
-                                                        mRx000Setting.algoSelect = (dataIn[startIndex + 4] & 0xFF) + (dataIn[startIndex + 5] & 0xFF) * 256;
+                                                        rx000Setting.algoSelect = (dataIn[startIndex + 4] & 0xFF) + (dataIn[startIndex + 5] & 0xFF) * 256;
                                                         if (DEBUG)
-                                                            appendToLog("found inventory algorithm select=" + mRx000Setting.algoSelect);
+                                                            appendToLog("found inventory algorithm select=" + rx000Setting.algoSelect);
                                                     }
                                                     break;
                                                 case 0x0903: {
-                                                    int dataIndex = mRx000Setting.algoSelect;
-                                                    if (dataIndex < mRx000Setting.ALGOSELECT_MIN || dataIndex > mRx000Setting.ALGOSELECT_MAX) {
+                                                    int dataIndex = rx000Setting.algoSelect;
+                                                    if (dataIndex < rx000Setting.ALGOSELECT_MIN || dataIndex > rx000Setting.ALGOSELECT_MAX) {
                                                         if (DEBUG)
                                                             appendToLog("found inventory algo parameter 0: " + byteArrayToString(dataInPayload) + ", but invalid index=" + dataIndex);
                                                     } else {
-                                                        mRx000Setting.algoSelectedData[dataIndex].algoStartQ = (dataIn[startIndex + 4] & 0x0F);
-                                                        mRx000Setting.algoSelectedData[dataIndex].algoMaxQ = ((dataIn[startIndex + 4] & 0xF0) >> 4);
-                                                        mRx000Setting.algoSelectedData[dataIndex].algoMinQ = (dataIn[startIndex + 5] & 0x0F);
-                                                        mRx000Setting.algoSelectedData[dataIndex].algoMaxRep = ((dataIn[startIndex + 5] & 0xF0) >> 4) + ((dataIn[startIndex + 6] & 0x0F) << 4);
-                                                        mRx000Setting.algoSelectedData[dataIndex].algoHighThres = ((dataIn[startIndex + 6] & 0xF0) >> 4);
-                                                        mRx000Setting.algoSelectedData[dataIndex].algoLowThres = (dataIn[startIndex + 7] & 0x0F);
+                                                        rx000Setting.algoSelectedData[dataIndex].algoStartQ = (dataIn[startIndex + 4] & 0x0F);
+                                                        rx000Setting.algoSelectedData[dataIndex].algoMaxQ = ((dataIn[startIndex + 4] & 0xF0) >> 4);
+                                                        rx000Setting.algoSelectedData[dataIndex].algoMinQ = (dataIn[startIndex + 5] & 0x0F);
+                                                        rx000Setting.algoSelectedData[dataIndex].algoMaxRep = ((dataIn[startIndex + 5] & 0xF0) >> 4) + ((dataIn[startIndex + 6] & 0x0F) << 4);
+                                                        rx000Setting.algoSelectedData[dataIndex].algoHighThres = ((dataIn[startIndex + 6] & 0xF0) >> 4);
+                                                        rx000Setting.algoSelectedData[dataIndex].algoLowThres = (dataIn[startIndex + 7] & 0x0F);
                                                         if (DEBUG)
                                                             appendToLog("found inventory algo parameter 0: " + byteArrayToString(dataInPayload)
-                                                                    + ", algoStartQ=" + mRx000Setting.algoSelectedData[dataIndex].algoStartQ
-                                                                    + ", algoMaxQ=" + mRx000Setting.algoSelectedData[dataIndex].algoMaxQ
-                                                                    + ", algoMinQ=" + mRx000Setting.algoSelectedData[dataIndex].algoMinQ
-                                                                    + ", algoMaxRep=" + mRx000Setting.algoSelectedData[dataIndex].algoMaxRep
-                                                                    + ", algoHighThres=" + mRx000Setting.algoSelectedData[dataIndex].algoHighThres
-                                                                    + ", algoLowThres=" + mRx000Setting.algoSelectedData[dataIndex].algoLowThres
+                                                                    + ", algoStartQ=" + rx000Setting.algoSelectedData[dataIndex].algoStartQ
+                                                                    + ", algoMaxQ=" + rx000Setting.algoSelectedData[dataIndex].algoMaxQ
+                                                                    + ", algoMinQ=" + rx000Setting.algoSelectedData[dataIndex].algoMinQ
+                                                                    + ", algoMaxRep=" + rx000Setting.algoSelectedData[dataIndex].algoMaxRep
+                                                                    + ", algoHighThres=" + rx000Setting.algoSelectedData[dataIndex].algoHighThres
+                                                                    + ", algoLowThres=" + rx000Setting.algoSelectedData[dataIndex].algoLowThres
                                                             );
                                                     }
                                                     break;
                                                 }
                                                 case 0x0904: {
-                                                    int dataIndex = mRx000Setting.algoSelect;
-                                                    if (dataIndex < mRx000Setting.ALGOSELECT_MIN || dataIndex > mRx000Setting.ALGOSELECT_MAX) {
+                                                    int dataIndex = rx000Setting.algoSelect;
+                                                    if (dataIndex < rx000Setting.ALGOSELECT_MIN || dataIndex > rx000Setting.ALGOSELECT_MAX) {
                                                         if (DEBUG)
                                                             appendToLog("found inventory algo parameter 1: " + byteArrayToString(dataInPayload) + ", but invalid index=" + dataIndex);
                                                     } else {
-                                                        mRx000Setting.algoSelectedData[dataIndex].algoRetry = dataIn[startIndex + 4] & 0x0FF;
+                                                        rx000Setting.algoSelectedData[dataIndex].algoRetry = dataIn[startIndex + 4] & 0x0FF;
                                                         if (DEBUG)
-                                                            appendToLog("found inventory algo parameter 1: " + byteArrayToString(dataInPayload) + ", algoRetry=" + mRx000Setting.algoSelectedData[dataIndex].algoRetry);
+                                                            appendToLog("found inventory algo parameter 1: " + byteArrayToString(dataInPayload) + ", algoRetry=" + rx000Setting.algoSelectedData[dataIndex].algoRetry);
                                                     }
                                                     break;
                                                 }
                                                 case 0x0905: {
-                                                    int dataIndex = mRx000Setting.algoSelect;
-                                                    if (dataIndex < mRx000Setting.ALGOSELECT_MIN || dataIndex > mRx000Setting.ALGOSELECT_MAX) {
+                                                    int dataIndex = rx000Setting.algoSelect;
+                                                    if (dataIndex < rx000Setting.ALGOSELECT_MIN || dataIndex > rx000Setting.ALGOSELECT_MAX) {
                                                         if (DEBUG)
                                                             appendToLog("found inventory algo parameter 2: " + byteArrayToString(dataInPayload) + ", but invalid index=" + dataIndex);
                                                     } else {
                                                         if (DEBUG)
-                                                            appendToLog("found inventory algo parameter 2: " + byteArrayToString(dataInPayload) + ", dataIndex=" + dataIndex + ", algoAbFlip=" + mRx000Setting.algoSelectedData[dataIndex].algoAbFlip + ", algoRunTilZero=" + mRx000Setting.algoSelectedData[dataIndex].algoRunTilZero);
-                                                        mRx000Setting.algoSelectedData[dataIndex].algoAbFlip = dataIn[startIndex + 4] & 0x01;
-                                                        mRx000Setting.algoSelectedData[dataIndex].algoRunTilZero = (dataIn[startIndex + 4] & 0x02) >> 1;
+                                                            appendToLog("found inventory algo parameter 2: " + byteArrayToString(dataInPayload) + ", dataIndex=" + dataIndex + ", algoAbFlip=" + rx000Setting.algoSelectedData[dataIndex].algoAbFlip + ", algoRunTilZero=" + rx000Setting.algoSelectedData[dataIndex].algoRunTilZero);
+                                                        rx000Setting.algoSelectedData[dataIndex].algoAbFlip = dataIn[startIndex + 4] & 0x01;
+                                                        rx000Setting.algoSelectedData[dataIndex].algoRunTilZero = (dataIn[startIndex + 4] & 0x02) >> 1;
                                                         if (DEBUG)
-                                                            appendToLog("found inventory algo parameter 2: " + byteArrayToString(dataInPayload) + ", algoAbFlip=" + mRx000Setting.algoSelectedData[dataIndex].algoAbFlip + ", algoRunTilZero=" + mRx000Setting.algoSelectedData[dataIndex].algoRunTilZero);
+                                                            appendToLog("found inventory algo parameter 2: " + byteArrayToString(dataInPayload) + ", algoAbFlip=" + rx000Setting.algoSelectedData[dataIndex].algoAbFlip + ", algoRunTilZero=" + rx000Setting.algoSelectedData[dataIndex].algoRunTilZero);
                                                     }
                                                     break;
                                                 }
                                                 case 0x0907:
-                                                    mRx000Setting.rssiFilterType = dataIn[startIndex + 4] & 0xF;
-                                                    mRx000Setting.rssiFilterOption = (dataIn[startIndex + 4] >> 4) & 0xF;
+                                                    rx000Setting.rssiFilterType = dataIn[startIndex + 4] & 0xF;
+                                                    rx000Setting.rssiFilterOption = (dataIn[startIndex + 4] >> 4) & 0xF;
                                                     break;
                                                 case 0x0908:
-                                                    mRx000Setting.rssiFilterThreshold1 = dataIn[startIndex + 4];
-                                                    mRx000Setting.rssiFilterThreshold1 += (dataIn[startIndex + 5] << 8);
-                                                    mRx000Setting.rssiFilterThreshold2 = dataIn[startIndex + 6];
-                                                    mRx000Setting.rssiFilterThreshold2 += (dataIn[startIndex + 7] << 8);
+                                                    rx000Setting.rssiFilterThreshold1 = dataIn[startIndex + 4];
+                                                    rx000Setting.rssiFilterThreshold1 += (dataIn[startIndex + 5] << 8);
+                                                    rx000Setting.rssiFilterThreshold2 = dataIn[startIndex + 6];
+                                                    rx000Setting.rssiFilterThreshold2 += (dataIn[startIndex + 7] << 8);
                                                     break;
                                                 case 0x0909:
-                                                    mRx000Setting.rssiFilterCount = dataIn[startIndex + 4];
-                                                    mRx000Setting.rssiFilterCount += (dataIn[startIndex + 5] << 8);
-                                                    mRx000Setting.rssiFilterCount += (dataIn[startIndex + 6] << 16);
-                                                    mRx000Setting.rssiFilterCount += (dataIn[startIndex + 7] << 24);
+                                                    rx000Setting.rssiFilterCount = dataIn[startIndex + 4];
+                                                    rx000Setting.rssiFilterCount += (dataIn[startIndex + 5] << 8);
+                                                    rx000Setting.rssiFilterCount += (dataIn[startIndex + 6] << 16);
+                                                    rx000Setting.rssiFilterCount += (dataIn[startIndex + 7] << 24);
                                                     break;
                                                 case 0x0911:
-                                                    mRx000Setting.matchEnable = dataIn[startIndex + 4] & 0x01;
-                                                    mRx000Setting.matchType = ((dataIn[startIndex + 4] & 0x02) >> 1);
-                                                    mRx000Setting.matchLength = ((dataIn[startIndex + 4] & 0x0FF) >> 2) + (dataIn[startIndex + 5] & 0x07) * 64;
-                                                    mRx000Setting.matchOffset = ((dataIn[startIndex + 5] & 0x0FF) >> 3) + (dataIn[startIndex + 6] & 0x1F) * 32;
+                                                    rx000Setting.matchEnable = dataIn[startIndex + 4] & 0x01;
+                                                    rx000Setting.matchType = ((dataIn[startIndex + 4] & 0x02) >> 1);
+                                                    rx000Setting.matchLength = ((dataIn[startIndex + 4] & 0x0FF) >> 2) + (dataIn[startIndex + 5] & 0x07) * 64;
+                                                    rx000Setting.matchOffset = ((dataIn[startIndex + 5] & 0x0FF) >> 3) + (dataIn[startIndex + 6] & 0x1F) * 32;
                                                     if (DEBUG)
-                                                        appendToLog("found inventory match configuration: " + byteArrayToString(dataInPayload) + ", selectEnable=" + mRx000Setting.matchEnable + ", matchType=" + mRx000Setting.matchType + ", matchLength=" + mRx000Setting.matchLength + ", matchOffset=" + mRx000Setting.matchOffset);
+                                                        appendToLog("found inventory match configuration: " + byteArrayToString(dataInPayload) + ", selectEnable=" + rx000Setting.matchEnable + ", matchType=" + rx000Setting.matchType + ", matchLength=" + rx000Setting.matchLength + ", matchOffset=" + rx000Setting.matchOffset);
                                                     break;
                                                 case 0x0912:
                                                 case 0x0913:
@@ -3384,49 +3370,49 @@ public class RfidReaderChipR2000 {
                                                 case 0x0920:
                                                 case 0x0921: {
                                                     int maskDataIndex = addressToRead - 0x0912;
-                                                    System.arraycopy(dataIn, startIndex + 4, mRx000Setting.invMatchData0_63, maskDataIndex * 4, 4);
-                                                    mRx000Setting.invMatchDataReady |= (0x01 << maskDataIndex);
+                                                    System.arraycopy(dataIn, startIndex + 4, rx000Setting.invMatchData0_63, maskDataIndex * 4, 4);
+                                                    rx000Setting.invMatchDataReady |= (0x01 << maskDataIndex);
                                                     if (DEBUG)
                                                         appendToLog("found inventory match Data 0-3: " + byteArrayToString(dataInPayload));
                                                     break;
                                                 }
                                                 case 0x0A01:
-                                                    mRx000Setting.accessRetry = (dataIn[startIndex + 4] & 0x0E) >> 1;
+                                                    rx000Setting.accessRetry = (dataIn[startIndex + 4] & 0x0E) >> 1;
                                                     if (DEBUG)
-                                                        appendToLog("found access algoRetry: " + byteArrayToString(dataInPayload) + ", accessRetry=" + mRx000Setting.accessRetry);
+                                                        appendToLog("found access algoRetry: " + byteArrayToString(dataInPayload) + ", accessRetry=" + rx000Setting.accessRetry);
                                                     break;
                                                 case 0x0A02:
-                                                    mRx000Setting.accessBank = (dataIn[startIndex + 4] & 0x03);
-                                                    mRx000Setting.accessBank2 = ((dataIn[startIndex + 4] >> 2) & 0x03);
+                                                    rx000Setting.accessBank = (dataIn[startIndex + 4] & 0x03);
+                                                    rx000Setting.accessBank2 = ((dataIn[startIndex + 4] >> 2) & 0x03);
                                                     if (DEBUG)
-                                                        appendToLog("found access bank: " + byteArrayToString(dataInPayload) + ", accessBank=" + mRx000Setting.accessBank + ", accessBank2=" + mRx000Setting.accessBank2);
+                                                        appendToLog("found access bank: " + byteArrayToString(dataInPayload) + ", accessBank=" + rx000Setting.accessBank + ", accessBank2=" + rx000Setting.accessBank2);
                                                     break;
                                                 case 0x0A03:
-                                                    if (mRx000Setting.tagRead != 0) {
-                                                        mRx000Setting.accessOffset = (dataIn[startIndex + 4] & 0x0FF) + (dataIn[startIndex + 5] & 0x0FF) * 256;     // + (dataIn[startIndex + 6] & 0x0FF) * 256 * 256 + (dataIn[startIndex + 7] & 0x0FF) * 256 * 256 * 256;
-                                                        mRx000Setting.accessOffset2 = (dataIn[startIndex + 6] & 0x0FF) + (dataIn[startIndex + 7] & 0x0FF) * 256;    // + (dataIn[startIndex + 6] & 0x0FF) * 256 * 256 + (dataIn[startIndex + 7] & 0x0FF) * 256 * 256 * 256;
+                                                    if (rx000Setting.tagRead != 0) {
+                                                        rx000Setting.accessOffset = (dataIn[startIndex + 4] & 0x0FF) + (dataIn[startIndex + 5] & 0x0FF) * 256;     // + (dataIn[startIndex + 6] & 0x0FF) * 256 * 256 + (dataIn[startIndex + 7] & 0x0FF) * 256 * 256 * 256;
+                                                        rx000Setting.accessOffset2 = (dataIn[startIndex + 6] & 0x0FF) + (dataIn[startIndex + 7] & 0x0FF) * 256;    // + (dataIn[startIndex + 6] & 0x0FF) * 256 * 256 + (dataIn[startIndex + 7] & 0x0FF) * 256 * 256 * 256;
                                                     } else {
-                                                        mRx000Setting.accessOffset = (dataIn[startIndex + 4] & 0x0FF) + (dataIn[startIndex + 5] & 0x0FF) * 256 + (dataIn[startIndex + 6] & 0x0FF) * 256 * 256 + (dataIn[startIndex + 7] & 0x0FF) * 256 * 256 * 256;
+                                                        rx000Setting.accessOffset = (dataIn[startIndex + 4] & 0x0FF) + (dataIn[startIndex + 5] & 0x0FF) * 256 + (dataIn[startIndex + 6] & 0x0FF) * 256 * 256 + (dataIn[startIndex + 7] & 0x0FF) * 256 * 256 * 256;
                                                     }
                                                     if (DEBUG)
-                                                        appendToLog("found access offset: " + byteArrayToString(dataInPayload) + ", accessOffset=" + mRx000Setting.accessOffset + ", accessOffset2=" + mRx000Setting.accessOffset2);
+                                                        appendToLog("found access offset: " + byteArrayToString(dataInPayload) + ", accessOffset=" + rx000Setting.accessOffset + ", accessOffset2=" + rx000Setting.accessOffset2);
                                                     break;
                                                 case 0x0A04:
-                                                    mRx000Setting.accessCount = (dataIn[startIndex + 4] & 0x0FF);
-                                                    mRx000Setting.accessCount2 = (dataIn[startIndex + 5] & 0x0FF);
+                                                    rx000Setting.accessCount = (dataIn[startIndex + 4] & 0x0FF);
+                                                    rx000Setting.accessCount2 = (dataIn[startIndex + 5] & 0x0FF);
                                                     if (DEBUG)
-                                                        appendToLog("found access count: " + byteArrayToString(dataInPayload) + ", accessCount=" + mRx000Setting.accessCount + ", accessCount2=" + mRx000Setting.accessCount2);
+                                                        appendToLog("found access count: " + byteArrayToString(dataInPayload) + ", accessCount=" + rx000Setting.accessCount + ", accessCount2=" + rx000Setting.accessCount2);
                                                     break;
                                                 case 0x0A05:
-                                                    mRx000Setting.accessLockAction = (dataIn[startIndex + 4] & 0x0FF) + ((dataIn[startIndex + 5] & 0x03) * 256);
-                                                    mRx000Setting.accessLockMask = ((dataIn[startIndex + 5] & 0x0FF) >> 2) + ((dataIn[startIndex + 6] & 0x0F) * 64);
+                                                    rx000Setting.accessLockAction = (dataIn[startIndex + 4] & 0x0FF) + ((dataIn[startIndex + 5] & 0x03) * 256);
+                                                    rx000Setting.accessLockMask = ((dataIn[startIndex + 5] & 0x0FF) >> 2) + ((dataIn[startIndex + 6] & 0x0F) * 64);
                                                     if (DEBUG)
-                                                        appendToLog("found access lock configuration: " + byteArrayToString(dataInPayload) + ", accessLockAction=" + mRx000Setting.accessLockAction + ", accessLockMask=" + mRx000Setting.accessLockMask);
+                                                        appendToLog("found access lock configuration: " + byteArrayToString(dataInPayload) + ", accessLockAction=" + rx000Setting.accessLockAction + ", accessLockMask=" + rx000Setting.accessLockMask);
                                                     break;
                                                 case 0x0A08:
-                                                    mRx000Setting.accessWriteDataSelect = (dataIn[startIndex + 4] & 0x07);
+                                                    rx000Setting.accessWriteDataSelect = (dataIn[startIndex + 4] & 0x07);
                                                     if (DEBUG)
-                                                        appendToLog("found write data select: " + byteArrayToString(dataInPayload) + ", accessWriteDataSelect=" + mRx000Setting.accessWriteDataSelect);
+                                                        appendToLog("found write data select: " + byteArrayToString(dataInPayload) + ", accessWriteDataSelect=" + rx000Setting.accessWriteDataSelect);
                                                     break;
                                                 case 0x0A09:
                                                 case 0x0A0A:
@@ -3446,37 +3432,37 @@ public class RfidReaderChipR2000 {
                                                 case 0x0A18: {
                                                     int maskDataIndex = addressToRead - 0x0A09;
                                                     int maskDataIndexH = 0;
-                                                    if (mRx000Setting.accessWriteDataSelect != 0)
+                                                    if (rx000Setting.accessWriteDataSelect != 0)
                                                         maskDataIndexH = 16;
                                                     for (int k = 0; k < 4; k++) {
-                                                        mRx000Setting.accWriteData0_63[(maskDataIndexH + maskDataIndex) * 4 + k] = dataIn[startIndex + 7 - k];
+                                                        rx000Setting.accWriteData0_63[(maskDataIndexH + maskDataIndex) * 4 + k] = dataIn[startIndex + 7 - k];
                                                     }
-                                                    mRx000Setting.accWriteDataReady |= (0x01 << (maskDataIndexH + maskDataIndex));
+                                                    rx000Setting.accWriteDataReady |= (0x01 << (maskDataIndexH + maskDataIndex));
                                                     if (DEBUG)
-                                                        appendToLog("accessWriteData=" + mRx000Setting.accWriteData0_63);
+                                                        appendToLog("accessWriteData=" + rx000Setting.accWriteData0_63);
                                                     if (DEBUG)
                                                         appendToLog("found access write data 0-3: " + byteArrayToString(dataInPayload));
                                                     break;
                                                 }
                                                 case 0x0b60:
-                                                    mRx000Setting.currentProfile = dataIn[startIndex + 4];
+                                                    rx000Setting.currentProfile = dataIn[startIndex + 4];
                                                     if (DEBUG)
-                                                        appendToLog("found current profile: " + byteArrayToString(dataInPayload) + ", profile=" + mRx000Setting.currentProfile);
+                                                        appendToLog("found current profile: " + byteArrayToString(dataInPayload) + ", profile=" + rx000Setting.currentProfile);
                                                     break;
                                                 case 0x0c01:
-                                                    mRx000Setting.freqChannelSelect = dataIn[startIndex + 4];
+                                                    rx000Setting.freqChannelSelect = dataIn[startIndex + 4];
                                                     if (DEBUG)
-                                                        appendToLog("setFreqChannelSelect: found frequency channel select: " + byteArrayToString(dataInPayload) + ", freqChannelSelect=" + mRx000Setting.freqChannelSelect);
+                                                        appendToLog("setFreqChannelSelect: found frequency channel select: " + byteArrayToString(dataInPayload) + ", freqChannelSelect=" + rx000Setting.freqChannelSelect);
                                                     break;
                                                 case 0x0c02:
-                                                    mRx000Setting.freqChannelConfig = dataIn[startIndex + 4] & 0x01;
+                                                    rx000Setting.freqChannelConfig = dataIn[startIndex + 4] & 0x01;
                                                     if (DEBUG)
-                                                        appendToLog("found frequency channel configuration: " + byteArrayToString(dataInPayload) + ", channelConfig=" + mRx000Setting.freqChannelConfig);
+                                                        appendToLog("found frequency channel configuration: " + byteArrayToString(dataInPayload) + ", channelConfig=" + rx000Setting.freqChannelConfig);
                                                     break;
                                                 case 0x0f00:
-                                                    mRx000Setting.authenticateSendReply = ((dataIn[startIndex + 4] & 1) != 0) ? true : false;
-                                                    mRx000Setting.authenticateIncReplyLength = ((dataIn[startIndex + 4] & 2) != 0) ? true : false;
-                                                    mRx000Setting.authenticateLength = ((dataIn[startIndex + 5] & 0xFC) >> 3) + (dataIn[startIndex + 6] & 0x3F);
+                                                    rx000Setting.authenticateSendReply = ((dataIn[startIndex + 4] & 1) != 0) ? true : false;
+                                                    rx000Setting.authenticateIncReplyLength = ((dataIn[startIndex + 4] & 2) != 0) ? true : false;
+                                                    rx000Setting.authenticateLength = ((dataIn[startIndex + 5] & 0xFC) >> 3) + (dataIn[startIndex + 6] & 0x3F);
                                                     if (DEBUG)
                                                         appendToLog("found authenticate configuration: " + byteArrayToString(dataInPayload));
                                                     break;
@@ -3485,19 +3471,19 @@ public class RfidReaderChipR2000 {
                                                 case 0x0f03:
                                                 case 0x0f04: {
                                                     int maskDataIndex = addressToRead - 0x0f01;
-                                                    System.arraycopy(dataIn, startIndex + 4, mRx000Setting.authMatchData0_63, maskDataIndex * 4, 4);
+                                                    System.arraycopy(dataIn, startIndex + 4, rx000Setting.authMatchData0_63, maskDataIndex * 4, 4);
                                                     //mRx000Setting.authMatchDataReady |= (0x01 << maskDataIndex);
                                                     if (DEBUG)
                                                         appendToLog("found authenticate match Data 0-3: " + byteArrayToString(dataInPayload));
                                                     break;
                                                 }
                                                 case 0x0f05:
-                                                    mRx000Setting.untraceableRange = dataIn[startIndex + 4] & 0x03;
-                                                    mRx000Setting.untraceableUser = ((dataIn[startIndex + 4] & 0x04) != 0) ? true : false;
-                                                    mRx000Setting.untraceableTid = ((dataIn[startIndex + 4] & 0x18) >> 3);
-                                                    mRx000Setting.untraceableEpcLength = ((dataIn[startIndex + 4] & 0xE0) >> 5) + ((dataIn[startIndex + 5] & 0x3) << 3);
-                                                    mRx000Setting.untraceableEpc = ((dataIn[startIndex + 5] & 4) != 0) ? true : false;
-                                                    mRx000Setting.untraceableUXpc = ((dataIn[startIndex + 5] & 8) != 0) ? true : false;
+                                                    rx000Setting.untraceableRange = dataIn[startIndex + 4] & 0x03;
+                                                    rx000Setting.untraceableUser = ((dataIn[startIndex + 4] & 0x04) != 0) ? true : false;
+                                                    rx000Setting.untraceableTid = ((dataIn[startIndex + 4] & 0x18) >> 3);
+                                                    rx000Setting.untraceableEpcLength = ((dataIn[startIndex + 4] & 0xE0) >> 5) + ((dataIn[startIndex + 5] & 0x3) << 3);
+                                                    rx000Setting.untraceableEpc = ((dataIn[startIndex + 5] & 4) != 0) ? true : false;
+                                                    rx000Setting.untraceableUXpc = ((dataIn[startIndex + 5] & 8) != 0) ? true : false;
                                                     if (DEBUG)
                                                         appendToLog("found untraceable configuration: " + byteArrayToString(dataInPayload));
                                                     break;
@@ -3931,7 +3917,7 @@ public class RfidReaderChipR2000 {
                                                 int address = (dataIn[startIndex + 8] & 0xFF) + (dataIn[startIndex + 9] & 0xFF) * 256;
                                                 switch (address) {
                                                     case 0x450:
-                                                        mRx000MbpSetting.rxGain = (dataIn[startIndex + 10] & 0xFF) + (dataIn[startIndex + 11] & 0xFF) * 256;
+                                                        rx000MbpSetting.rxGain = (dataIn[startIndex + 10] & 0xFF) + (dataIn[startIndex + 11] & 0xFF) * 256;
                                                         break;
                                                     default:
                                                         break;
@@ -3942,30 +3928,30 @@ public class RfidReaderChipR2000 {
                                                 switch (address) {
                                                     case 0x02:
 //                                                    dataIn[startIndex + 12] = 3;
-                                                        mRx000OemSetting.countryCode = (dataIn[startIndex + 12] & 0xFF) + (dataIn[startIndex + 13] & 0xFF) * 256 + (dataIn[startIndex + 14] & 0xFF) * 256 * 256 + (dataIn[startIndex + 15] & 0xFF) * 256 * 256 * 256;
+                                                        rx000OemSetting.countryCode = (dataIn[startIndex + 12] & 0xFF) + (dataIn[startIndex + 13] & 0xFF) * 256 + (dataIn[startIndex + 14] & 0xFF) * 256 * 256 + (dataIn[startIndex + 15] & 0xFF) * 256 * 256 * 256;
                                                         if (DEBUG)
-                                                            appendToLog("countryCode = " + mRx000OemSetting.countryCode);
+                                                            appendToLog("countryCode = " + rx000OemSetting.countryCode);
                                                         break;
                                                     case 0x04:
                                                     case 0x05:
                                                     case 0x06:
                                                     case 0x07:
-                                                        System.arraycopy(dataIn, startIndex + 12, mRx000OemSetting.serialNumber, 4 * (address - 4), 4);
+                                                        System.arraycopy(dataIn, startIndex + 12, rx000OemSetting.serialNumber, 4 * (address - 4), 4);
                                                         break;
                                                     case 0x08:
                                                     case 0x09:
                                                     case 0x0A:
-                                                        System.arraycopy(dataIn, startIndex + 12, mRx000OemSetting.productserialNumber, 4 * (address - 8), 4);
+                                                        System.arraycopy(dataIn, startIndex + 12, rx000OemSetting.productserialNumber, 4 * (address - 8), 4);
                                                         break;
                                                     case 0x0B:  //VERSIONCODE_MAX
-                                                        System.arraycopy(dataIn, startIndex + 12, mRx000OemSetting.productserialNumber, 4 * (address - 8), 4);
+                                                        System.arraycopy(dataIn, startIndex + 12, rx000OemSetting.productserialNumber, 4 * (address - 8), 4);
                                                         if (dataIn[startIndex + 12] == 0 && dataIn[startIndex + 13] == 0 && dataIn[startIndex + 14] == 0 && dataIn[startIndex + 15] == 0) {
-                                                            mRx000OemSetting.versionCode = 0;
+                                                            rx000OemSetting.versionCode = 0;
                                                         } else if (dataIn[startIndex + 12] == 0x20 && dataIn[startIndex + 13] == 0x17 && dataIn[startIndex + 14] == 0) {
-                                                            mRx000OemSetting.versionCode = (dataIn[startIndex + 14] & 0xFF) + (dataIn[startIndex + 15] & 0xFF) * 256;
+                                                            rx000OemSetting.versionCode = (dataIn[startIndex + 14] & 0xFF) + (dataIn[startIndex + 15] & 0xFF) * 256;
                                                         }
                                                         if (DEBUG)
-                                                            appendToLog("versionCode = " + mRx000OemSetting.versionCode);
+                                                            appendToLog("versionCode = " + rx000OemSetting.versionCode);
                                                         break;
                                                     case 0x8E:
                                                 /*dataIn[startIndex + 12] = 0x2A; //0x4F;
@@ -3973,9 +3959,9 @@ public class RfidReaderChipR2000 {
                                                 dataIn[startIndex + 14] = 0x4E; //0x41; //0x43;
                                                 dataIn[startIndex + 15] = 0x5A; //0x53; //0x41; */
                                                         if (dataIn[startIndex + 12] == 0 || dataIn[startIndex + 13] == 0 || dataIn[startIndex + 14] == 0 || dataIn[startIndex + 15] == 0) {
-                                                            mRx000OemSetting.spcialCountryVersion = "";
+                                                            rx000OemSetting.spcialCountryVersion = "";
                                                         } else {
-                                                            mRx000OemSetting.spcialCountryVersion = String.valueOf((char) dataIn[startIndex + 15])
+                                                            rx000OemSetting.spcialCountryVersion = String.valueOf((char) dataIn[startIndex + 15])
                                                                     + String.valueOf((char) dataIn[startIndex + 14])
                                                                     + String.valueOf((char) dataIn[startIndex + 13])
                                                                     + String.valueOf((char) dataIn[startIndex + 12]);
@@ -3983,13 +3969,13 @@ public class RfidReaderChipR2000 {
                                                         byte[] dataInPart = new byte[4];
                                                         System.arraycopy(dataIn, startIndex + 12, dataInPart, 0, dataInPart.length);
                                                         if (DEBUG)
-                                                            appendToLog("spcialCountryVersion = " + mRx000OemSetting.spcialCountryVersion + ", data = " + byteArrayToString(dataInPart));
+                                                            appendToLog("spcialCountryVersion = " + rx000OemSetting.spcialCountryVersion + ", data = " + byteArrayToString(dataInPart));
                                                         break;
                                                     case 0x8F:
                                                         //dataIn[startIndex + 12] = (byte)0xAA;
-                                                        mRx000OemSetting.freqModifyCode = (dataIn[startIndex + 12] & 0xFF) + (dataIn[startIndex + 13] & 0xFF) * 256 + (dataIn[startIndex + 14] & 0xFF) * 256 * 256 + (dataIn[startIndex + 15] & 0xFF) * 256 * 256 * 256;
+                                                        rx000OemSetting.freqModifyCode = (dataIn[startIndex + 12] & 0xFF) + (dataIn[startIndex + 13] & 0xFF) * 256 + (dataIn[startIndex + 14] & 0xFF) * 256 * 256 + (dataIn[startIndex + 15] & 0xFF) * 256 * 256 * 256;
                                                         if (DEBUG)
-                                                            appendToLog("freqModifyCode = " + mRx000OemSetting.freqModifyCode);
+                                                            appendToLog("freqModifyCode = " + rx000OemSetting.freqModifyCode);
                                                         break;
                                                     default:
                                                         break;
@@ -4007,10 +3993,10 @@ public class RfidReaderChipR2000 {
                                                 if (DEBUG)
                                                     appendToLog("Hello123: RFID_PACKET_TYPE_ENG_RSSI S is found: " + byteArrayToString(dataInPayload));
                                                 if ((dataIn[startIndex + 8] & 0x02) != 0) {
-                                                    mRx000EngSetting.narrowRSSI = (dataIn[startIndex + 28] & 0xFF) + (dataIn[startIndex + 29] & 0xFF) * 256;
-                                                    mRx000EngSetting.wideRSSI = (dataIn[startIndex + 30] & 0xFF) + (dataIn[startIndex + 31] & 0xFF) * 256;
+                                                    rx000EngSetting.narrowRSSI = (dataIn[startIndex + 28] & 0xFF) + (dataIn[startIndex + 29] & 0xFF) * 256;
+                                                    rx000EngSetting.wideRSSI = (dataIn[startIndex + 30] & 0xFF) + (dataIn[startIndex + 31] & 0xFF) * 256;
                                                     if (DEBUG)
-                                                        appendToLog("Hello123: narrorRSSI = " + String.format("%04X", mRx000EngSetting.narrowRSSI) + ", wideRSSI = " + String.format("%04X", mRx000EngSetting.wideRSSI));
+                                                        appendToLog("Hello123: narrorRSSI = " + String.format("%04X", rx000EngSetting.narrowRSSI) + ", wideRSSI = " + String.format("%04X", rx000EngSetting.wideRSSI));
                                                     rfidDataReadTypes = RfidDataReadTypes.RFID_DATA_READ_COMMAND_RSSI;
                                                 }
                                                 break;
@@ -4241,11 +4227,11 @@ public class RfidReaderChipR2000 {
             if (bLowPowerStandby == false)
                 return true;     //for testing if setPwrManagementMode(false) is needed
             if (this.bLowPowerStandby == bLowPowerStandby) return true;
-            boolean result = mRx000Setting.writeMAC(0x200, (bLowPowerStandby ? 1 : 0));
+            boolean result = rx000Setting.writeMAC(0x200, (bLowPowerStandby ? 1 : 0));
             if (result) {
                 result = sendHostRegRequestHST_CMD(RfidReaderChipData.HostCommands.CMD_SETPWRMGMTCFG);
                 this.bLowPowerStandby = bLowPowerStandby;
-                mRx000Setting.getPwrMgmtStatus();
+                rx000Setting.getPwrMgmtStatus();
             }
             return result;
         }
@@ -4513,7 +4499,7 @@ public class RfidReaderChipR2000 {
                 csReaderConnector.rfidConnector.mRfidToWrite.add(csReaderRfidData);
             }
         }
-    }
+    //}
 
     boolean inventoring = false;
     boolean isInventoring() { return  inventoring; }

@@ -21,7 +21,6 @@ import com.csl.cs710ademoapp.CustomPopupWindow;
 import com.csl.cs710ademoapp.MainActivity;
 import com.csl.cs710ademoapp.R;
 import com.csl.cs710ademoapp.SettingTask;
-import com.csl.cs710library4a.CsLibrary4A;
 import com.csl.cslibrary4a.RfidReaderChipData;
 
 public class SettingAdminFragment extends CommonFragment {

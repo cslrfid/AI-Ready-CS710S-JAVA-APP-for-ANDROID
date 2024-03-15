@@ -12,7 +12,6 @@ import android.os.Environment;
 import android.provider.Settings;
 import android.widget.Toast;
 
-import com.csl.cs710library4a.CsLibrary4A;
 import com.csl.cslibrary4a.ReaderDevice;
 import com.csl.cslibrary4a.RfidReaderChipData;
 

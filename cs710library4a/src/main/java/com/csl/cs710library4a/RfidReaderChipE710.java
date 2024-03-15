@@ -4,7 +4,6 @@ import static java.lang.Math.log10;
 import static java.lang.Math.pow;
 
 import android.content.Context;
-import android.widget.TextView;
 
 import com.csl.cslibrary4a.RfidConnector;
 import com.csl.cslibrary4a.RfidReaderChipData;
@@ -18,25 +17,21 @@ import java.util.Date;
 public class RfidReaderChipE710 {
     boolean DEBUG_PKDATA, DEBUG;
     boolean sameCheck = true;
-    Context context; TextView mLogView;
-    RfidReaderChip mRfidReaderChip;
-    CsReaderConnector csReaderConnector;
+    //RfidReaderChip mRfidReaderChip;
     boolean DEBUGTHREAD = false, DEBUG_APDATA = false;
     int intervalRx000UplinkHandler;
     public int invalidata, invalidUpdata; //invalidata, invalidUpdata, validata;
     boolean aborting = false;
-    public RfidReaderChipE710(Context context, TextView mLogView, CsReaderConnector csReaderConnector, Utility utility) {
+    Context context; Utility utility; CsReaderConnector csReaderConnector;
+    public RfidReaderChipE710(Context context, Utility utility, CsReaderConnector csReaderConnector) {
         this.context = context;
-        this.mLogView = mLogView;
         this.utility = utility; DEBUG_PKDATA = utility.DEBUG_PKDATA;
-        mRfidReaderChip = new RfidReaderChip();
+        //mRfidReaderChip = new RfidReaderChip();
         this.csReaderConnector = csReaderConnector;
         this.DEBUGTHREAD = csReaderConnector.DEBUGTHREAD;
         this.DEBUG_APDATA = csReaderConnector.DEBUG_APDATA;
         this.intervalRx000UplinkHandler = csReaderConnector.intervalRx000UplinkHandler;
     }
-
-    Utility utility;
     private String byteArrayToString(byte[] packet) { return utility.byteArrayToString(packet); }
     private boolean compareArray(byte[] array1, byte[] array2, int length) { return utility.compareByteArray(array1, array2, length); }
     private void appendToLog(String s) { utility.appendToLog(s); }
@@ -45,12 +40,10 @@ public class RfidReaderChipE710 {
     private String byteArray2DisplayString(byte[] byteData) { return utility.byteArray2DisplayString(byteData); }
     private int byteArrayToInt(byte[] bytes) { return utility.byteArrayToInt(bytes); }
     private double get2BytesOfRssi(byte[] bytes, int index) { return utility.get2BytesOfRssi(bytes, index); }
-
     enum ControlCommands {
         NULL,
         CANCEL, SOFTRESET, ABORT, PAUSE, RESUME, GETSERIALNUMBER, RESETTOBOOTLOADER
     }
-
     enum HostRegRequests {
         MAC_OPERATION,
         //MAC_VER, MAC_LAST_COMMAND_DURATION,
@@ -66,7 +59,6 @@ public class RfidReaderChipE710 {
         HST_AUTHENTICATE_CFG, HST_AUTHENTICATE_MSG, HST_READBUFFER_LEN, HST_UNTRACEABLE_CFG,
         HST_CMD
     }
-
     class Rx000Setting {
         Rx000Setting(boolean set_default_setting) {
             if (set_default_setting) {
@@ -225,7 +217,7 @@ public class RfidReaderChipE710 {
             msgBuffer[8] = (byte) ((address >> 8) % 256);
             msgBuffer[9] = (byte) (address % 256);
             msgBuffer[10] = (byte) (length & 0xFF);
-            return mRfidReaderChip.sendHostRegRequest(HostRegRequests.MAC_OPERATION, false, msgBuffer);
+            return sendHostRegRequest(HostRegRequests.MAC_OPERATION, false, msgBuffer);
         }
         boolean writeMAC(int address, byte[] bytes, boolean bReady) {
             //if (address != 0x3031
@@ -236,10 +228,10 @@ public class RfidReaderChipE710 {
             //        && address != 0x3140
             //)
             if (false && address == 0x3035) {
-                appendToLog(String.format("0 writeMAC[address = 0x%X, bytes = %s with antennaPortConfig = %s", address, byteArrayToString(bytes), byteArrayToString(mRfidReaderChip.mRx000Setting.getAntennaPortConfig(0))));
+                appendToLog(String.format("0 writeMAC[address = 0x%X, bytes = %s with antennaPortConfig = %s", address, byteArrayToString(bytes), byteArrayToString(rx000Setting.getAntennaPortConfig(0))));
                 //bytes[1] = 0x1E; //(byte)0x86; //orginal 6, new 0x9E
                 //bytes[8] = 1; //original 1, new 8
-                appendToLog(String.format("0A writeMAC[address = 0x%X, bytes = %s with antennaPortConfig = %s", address, byteArrayToString(bytes), byteArrayToString(mRfidReaderChip.mRx000Setting.getAntennaPortConfig(0))));
+                appendToLog(String.format("0A writeMAC[address = 0x%X, bytes = %s with antennaPortConfig = %s", address, byteArrayToString(bytes), byteArrayToString(rx000Setting.getAntennaPortConfig(0))));
                 //return true;
             }
             byte[] header = new byte[] {(byte) 0x80, (byte)0xb3, (byte)0x9A, 6, 0, 0, 4,   1, 0, 8, 0 };
@@ -253,18 +245,18 @@ public class RfidReaderChipE710 {
             msgBuffer[10] = (byte) (bytes.length & 0XFF);
             System.arraycopy(bytes, 0, msgBuffer, 11, bytes.length);
             if (false) appendToLog(String.format("3 writeMAC with address = 0x%X, msgBuffer = ", address) + byteArrayToString(msgBuffer));
-            return mRfidReaderChip.sendHostRegRequest(HostRegRequests.MAC_OPERATION, true, msgBuffer);
+            return sendHostRegRequest(HostRegRequests.MAC_OPERATION, true, msgBuffer);
         }
         boolean readMAC(int address) {
             byte[] msgBuffer = new byte[]{(byte) 0x70, 0, 0, 0, 0, 0, 0, 0};
             msgBuffer[2] = (byte) (address % 256);
             msgBuffer[3] = (byte) ((address >> 8) % 256);
-            return mRfidReaderChip.sendHostRegRequest(HostRegRequests.MAC_OPERATION, false, msgBuffer);
+            return sendHostRegRequest(HostRegRequests.MAC_OPERATION, false, msgBuffer);
         }
         boolean writeMAC(int address, long value) {
             byte[] msgBuffer = null;
             appendToLog(String.format("3A setTagFocus with address = 0x%X, value = 0x%X ", address, value));
-            return mRfidReaderChip.sendHostRegRequest(HostRegRequests.MAC_OPERATION, true, msgBuffer);
+            return sendHostRegRequest(HostRegRequests.MAC_OPERATION, true, msgBuffer);
         }
 
         String macVer = null; int macVerBuild = -1;
@@ -325,7 +317,7 @@ public class RfidReaderChipE710 {
             byte[] bytes = new byte[1];
             bytes[0] = currentPortNew;
             boolean bValue;
-            bValue = mRfidReaderChip.mRx000Setting.writeMAC(0x3948, bytes, true);
+            bValue = rx000Setting.writeMAC(0x3948, bytes, true);
             appendToLog("new currentPort = " + byteArrayToString(bytes) + ", old currentPort = " + byteArrayToString(currentPort));
             if (bValue) currentPort = bytes;
             return true;
@@ -334,8 +326,8 @@ public class RfidReaderChipE710 {
             byte currentPortOld = getCurrentPort();
             byte currentPortNew = 0;
             for (int i = 0; i < 16; i++) {
-                if (mRfidReaderChip.mRx000Setting.antennaPortConfig[i] != null) {
-                    if (mRfidReaderChip.mRx000Setting.antennaPortConfig[i][0] != 0) {
+                if (rx000Setting.antennaPortConfig[i] != null) {
+                    if (rx000Setting.antennaPortConfig[i][0] != 0) {
                         currentPortNew = (byte)(i & 0xFF);
                     }
                 }
@@ -744,7 +736,7 @@ public class RfidReaderChipE710 {
             this.antennaCycle = antennaCycle;
             this.antennaFreqAgile = antennaFreqAgile;
             appendToLog("3 Set HST_ANT_CYCLES");
-            return mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_ANT_CYCLES, true, msgBuffer);
+            return sendHostRegRequest(HostRegRequests.HST_ANT_CYCLES, true, msgBuffer);
         }
 
         final int FREQAGILE_INVALID = -1; final int FREQAGILE_MIN = 0; final int FREQAGILE_MAX = 1;
@@ -761,7 +753,7 @@ public class RfidReaderChipE710 {
 
         private boolean getHST_ANT_CYCLES() {
             byte[] msgBuffer = new byte[]{(byte) 0x70, 0, 0, 7, 0, 0, 0, 0};
-            return mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_ANT_CYCLES, false, msgBuffer);
+            return sendHostRegRequest(HostRegRequests.HST_ANT_CYCLES, false, msgBuffer);
         }
 
         final int ANTSELECT_INVALID = -1; final int ANTSLECT_MIN = 0; final int ANTSELECT_MAX = 15;
@@ -778,7 +770,7 @@ public class RfidReaderChipE710 {
             boolean DEBUG = false;
             int iValue = -1;
             if (antennaPortConfig[antennaSelect] == null) {
-                mRfidReaderChip.mRx000Setting.getAntennaPortConfig(antennaSelect);
+                rx000Setting.getAntennaPortConfig(antennaSelect);
                 readMAC(0x3030 + antennaSelect * 16, 16);
                 appendToLog("CANNOT continue as antennaPortConfig[" + antennaSelect + "] is null !!!");
             } else {
@@ -1297,7 +1289,7 @@ public class RfidReaderChipE710 {
                     bValue = true;
                 } else {
                     appendToLog("test 2");
-                    bValue = mRfidReaderChip.mRx000Setting.writeMAC(0x3030 + antennaSelect * 16 + 5, bytes, true);
+                    bValue = rx000Setting.writeMAC(0x3030 + antennaSelect * 16 + 5, bytes, true);
                     if (bValue)
                         System.arraycopy(bytes, 0, antennaPortConfig[antennaSelect], 5, bytes.length);
                 }
@@ -1368,7 +1360,7 @@ public class RfidReaderChipE710 {
                             appendToLog(String.format("!!! Skip sending repeated data %s in address 0x%X", byteArrayToString(bytes), 0x3030 + antennaSelect * 16 + 5));
                         bValue = true;
                     } else {
-                        bValue = mRfidReaderChip.mRx000Setting.writeMAC(0x3030 + antennaSelect * 16 + 6, bytes, true);
+                        bValue = rx000Setting.writeMAC(0x3030 + antennaSelect * 16 + 6, bytes, true);
                         if (bValue) antennaPortConfig[antennaSelect][6] = bytes[0];
                     }
                     if (DEBUG)
@@ -1381,7 +1373,7 @@ public class RfidReaderChipE710 {
 
         private boolean getHST_QUERY_CFG() {
             byte[] msgBuffer = new byte[]{(byte) 0x70, 0, 0, 9, 0, 0, 0, 0};
-            return mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_QUERY_CFG, false, msgBuffer);
+            return sendHostRegRequest(HostRegRequests.HST_QUERY_CFG, false, msgBuffer);
         }
 
         final int INVALGO_INVALID = -1; final int INVALGO_MIN = 0; final int INVALGO_MAX = 3;
@@ -1461,50 +1453,51 @@ public class RfidReaderChipE710 {
         int tagRead = TAGREAD_INVALID;
         int getTagRead() {
             int iValue = 0;
-            if (mRfidReaderChip.mRx000Setting.multibankReadConfig[0] == null)
+            if (rx000Setting.multibankReadConfig[0] == null)
                 appendToLog("!!! CANNOT continue as multibankReadConfig[0] is null !!!");
-            else if (mRfidReaderChip.mRx000Setting.multibankReadConfig[1] == null)
+            else if (rx000Setting.multibankReadConfig[1] == null)
                 appendToLog("!!! CANNOT continue as multibankReadConfig[1] is null !!!");
-            else if (mRfidReaderChip.mRx000Setting.multibankReadConfig[0][0] != 0) {
+            else if (rx000Setting.multibankReadConfig[0][0] != 0) {
                 iValue++;
-                if (mRfidReaderChip.mRx000Setting.multibankReadConfig[1][0] != 0)
+                if (rx000Setting.multibankReadConfig[1][0] != 0)
                     iValue++;
-            }
+                appendToLog("getTagRead = " + iValue);
+            } else appendToLog("getTagRead = 0 as multibankReadConfig[0] = " + byteArrayToString(multibankReadConfig[0]) + ", [1] = " + byteArrayToString(multibankReadConfig[1]));
             return iValue;
         }
         boolean setTagRead(int tagRead) {
             boolean bValue = false, DEBUG = false;
             if (DEBUG) appendToLog("0 setTagRead with tagRead = " + tagRead);
-            if (mRfidReaderChip.mRx000Setting.multibankReadConfig[0] == null)
+            if (rx000Setting.multibankReadConfig[0] == null)
                 appendToLog("!!! CANNOT continue as multibankReadConfig[0] is null !!!");
-            else if (mRfidReaderChip.mRx000Setting.multibankReadConfig[1] == null)
+            else if (rx000Setting.multibankReadConfig[1] == null)
                 appendToLog("!!! CANNOT continue as multibankReadConfig[1] is null !!!");
             else {
                 if (DEBUG)
-                    appendToLog("0 multibankReadConfig[0] = " + byteArrayToString(mRfidReaderChip.mRx000Setting.multibankReadConfig[0]));
-                if ((tagRead == 0 && mRfidReaderChip.mRx000Setting.multibankReadConfig[0][0] != 0)
-                        || (tagRead != 0 && mRfidReaderChip.mRx000Setting.multibankReadConfig[0][0] == 0)) {
+                    appendToLog("0 multibankReadConfig[0] = " + byteArrayToString(rx000Setting.multibankReadConfig[0]));
+                if ((tagRead == 0 && rx000Setting.multibankReadConfig[0][0] != 0)
+                        || (tagRead != 0 && rx000Setting.multibankReadConfig[0][0] == 0)) {
                     byte[] bytes = new byte[1];
                     if (tagRead != 0) bytes[0] = 1;
                     else bytes[0] = 0;
                     bValue = writeMAC(0x3270 + 7 * 0, bytes, true);
                     if (bValue)
-                        mRfidReaderChip.mRx000Setting.multibankReadConfig[0][0] = bytes[0];
+                        rx000Setting.multibankReadConfig[0][0] = bytes[0];
                     if (DEBUG)
-                        appendToLog("0A multibankReadConfig[0] = " + byteArrayToString(mRfidReaderChip.mRx000Setting.multibankReadConfig[0]) + ", with bValue = " + bValue);
+                        appendToLog("0A multibankReadConfig[0] = " + byteArrayToString(rx000Setting.multibankReadConfig[0]) + ", with bValue = " + bValue);
                 } else bValue = true;
                 if (DEBUG)
-                    appendToLog("0 multibankReadConfig[1] = " + byteArrayToString(mRfidReaderChip.mRx000Setting.multibankReadConfig[1]));
-                if (bValue && ((tagRead < 2 && mRfidReaderChip.mRx000Setting.multibankReadConfig[1][0] != 0)
-                        || (tagRead >= 2 && mRfidReaderChip.mRx000Setting.multibankReadConfig[1][0] == 0))) {
+                    appendToLog("0 multibankReadConfig[1] = " + byteArrayToString(rx000Setting.multibankReadConfig[1]));
+                if (bValue && ((tagRead < 2 && rx000Setting.multibankReadConfig[1][0] != 0)
+                        || (tagRead >= 2 && rx000Setting.multibankReadConfig[1][0] == 0))) {
                     byte[] bytes = new byte[1];
                     if (tagRead >= 2) bytes[0] = 1;
                     else bytes[0] = 0;
                     bValue = writeMAC(0x3270 + 7 * 1, bytes, true);
                     if (bValue)
-                        mRfidReaderChip.mRx000Setting.multibankReadConfig[1][0] = bytes[0];
+                        rx000Setting.multibankReadConfig[1][0] = bytes[0];
                     if (DEBUG)
-                        appendToLog("0A multibankReadConfig[1] = " + byteArrayToString(mRfidReaderChip.mRx000Setting.multibankReadConfig[1]));
+                        appendToLog("0A multibankReadConfig[1] = " + byteArrayToString(rx000Setting.multibankReadConfig[1]));
                 }
             }
             return bValue;
@@ -1541,7 +1534,7 @@ public class RfidReaderChipE710 {
             byte[] bytes = new byte[1];
             bytes[0] = dupElimDelay;
             boolean bValue;
-            bValue = mRfidReaderChip.mRx000Setting.writeMAC(0x3900, bytes, true);
+            bValue = rx000Setting.writeMAC(0x3900, bytes, true);
             if (bValue) dupElimRollWindow = bytes;
             return true;
         }
@@ -1573,7 +1566,7 @@ public class RfidReaderChipE710 {
             byte[] bytes = new byte[2];
             bytes[1] = byteEventPacketUplinkEnable;
             boolean bValue;
-            bValue = mRfidReaderChip.mRx000Setting.writeMAC(0x3906, bytes, true);
+            bValue = rx000Setting.writeMAC(0x3906, bytes, true);
             if (bValue) eventPacketUplnkEnable = bytes;
             return true;
         }
@@ -1594,7 +1587,7 @@ public class RfidReaderChipE710 {
             byte[] bytes = new byte[1];
             bytes[0] = intraPkDelay;
             boolean bValue;
-            bValue = mRfidReaderChip.mRx000Setting.writeMAC(0x3908, bytes, true);
+            bValue = rx000Setting.writeMAC(0x3908, bytes, true);
             if (bValue) intraPacketDelay = bytes;
             return true;
         }
@@ -1622,7 +1615,7 @@ public class RfidReaderChipE710 {
         }
         private boolean getHST_AUTHENTICATE_CFG() {
             byte[] msgBuffer = new byte[]{(byte) 0x70, 0, 0, (byte) 0x0F, 0, 0, 0, 0};
-            return mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_AUTHENTICATE_CFG, false, msgBuffer);
+            return sendHostRegRequest(HostRegRequests.HST_AUTHENTICATE_CFG, false, msgBuffer);
         }
         boolean setHST_AUTHENTICATE_CFG(boolean sendReply, boolean incReplyLenth, int csi, int length) {
             appendToLog("sendReply = " + sendReply + ", incReplyLenth = " + incReplyLenth + ", length = " + length);
@@ -1635,7 +1628,7 @@ public class RfidReaderChipE710 {
             msgBuffer[5] |= ((csi >> 6) & 0x03);
             msgBuffer[5] |= ((length & 0x3F) << 2);
             msgBuffer[6] |= ((length & 0xFC0) >> 6); authenticateLength = length;
-            return mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_AUTHENTICATE_CFG, true, msgBuffer);
+            return sendHostRegRequest(HostRegRequests.HST_AUTHENTICATE_CFG, true, msgBuffer);
         }
 
         byte[] authMatchData0_63; int authMatchDataReady = 0;
@@ -1648,7 +1641,7 @@ public class RfidReaderChipE710 {
                     if ((authMatchDataReady & (0x01 << i)) == 0) {
                         byte[] msgBuffer = new byte[]{(byte) 0x70, 0, 1, (byte)0x0F, 0, 0, 0, 0};
                         msgBuffer[2] += i;
-                        mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_AUTHENTICATE_MSG, false, msgBuffer);
+                        sendHostRegRequest(HostRegRequests.HST_AUTHENTICATE_MSG, false, msgBuffer);
                     } else {
                         for (int j = 0; j < 4; j++) {
                             strValue += String.format("%02X", authMatchData0_63[i * 4 + j]);
@@ -1686,7 +1679,7 @@ public class RfidReaderChipE710 {
                         }
                     }
                     msgBuffer[2] = (byte) ((msgBuffer[2] & 0xFF) + i);
-                    if (mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_AUTHENTICATE_MSG, true, msgBuffer) == false)
+                    if (sendHostRegRequest(HostRegRequests.HST_AUTHENTICATE_MSG, true, msgBuffer) == false)
                         return false;
                     else {
                         //authMatchDataReady |= (0x01 << i);
@@ -1711,7 +1704,7 @@ public class RfidReaderChipE710 {
         }
         private boolean getHST_UNTRACEABLE_CFG() {
             byte[] msgBuffer = new byte[]{(byte) 0x70, 0, 5, (byte) 0x0F, 0, 0, 0, 0};
-            return mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_UNTRACEABLE_CFG, false, msgBuffer);
+            return sendHostRegRequest(HostRegRequests.HST_UNTRACEABLE_CFG, false, msgBuffer);
         }
         boolean setHST_UNTRACEABLE_CFG(int range, boolean user, int tid, int epcLength, boolean epc, boolean uxpc) {
             appendToLog("range = " + range + ", user = " + user + ", tid = " + tid + ", epc = " + epc + ", epcLength = " + epcLength + ", xcpc = " + uxpc);
@@ -1728,7 +1721,7 @@ public class RfidReaderChipE710 {
             if (epc) msgBuffer[5] |= 0x04; untraceableEpc = epc;
             if (uxpc) msgBuffer[5] |= 0x08; untraceableUXpc = uxpc;
             appendToLog("going to do sendHostRegRequest(HostRegRequests.HST_UNTRACEABLE_CFG,");
-            return mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_UNTRACEABLE_CFG, true, msgBuffer);
+            return sendHostRegRequest(HostRegRequests.HST_UNTRACEABLE_CFG, true, msgBuffer);
         }
 
         final int TAGJOIN_INVALID = -1; final int TAGJOIN_MIN = 0; final int TAGJOIN_MAX = 1;
@@ -1761,7 +1754,7 @@ public class RfidReaderChipE710 {
 
         private boolean getHST_INV_CFG() {
             byte[] msgBuffer = new byte[]{(byte) 0x70, 0, 1, 9, 0, 0, 0, 0};
-            return mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_INV_CFG, false, msgBuffer);
+            return sendHostRegRequest(HostRegRequests.HST_INV_CFG, false, msgBuffer);
         }
         boolean setInvAlgo(int invAlgo, int matchRep, int tagSelect, int noInventory, int tagRead, int tagDelay, int invModeCompact, int invBrandId) {
             appendToLog("0 setInvAlgo with invAlgo = " + invAlgo + ", matchRep = " + matchRep + ", tagSelect = " + tagSelect
@@ -1813,7 +1806,7 @@ public class RfidReaderChipE710 {
             this.tagDelay = tagDelay;
             this.invModeCompact = invModeCompact;
             this.invBrandId = invBrandId;
-            return mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_INV_CFG, true, msgBuffer);
+            return sendHostRegRequest(HostRegRequests.HST_INV_CFG, true, msgBuffer);
         }
 
         final int ALGOSELECT_INVALID = -1; final int ALGOSELECT_MIN = 0; final int ALGOSELECT_MAX = 3;   //DataSheet says Max=1
@@ -1821,7 +1814,7 @@ public class RfidReaderChipE710 {
         int getAlgoSelect() {
             if (algoSelect < ALGOSELECT_MIN || algoSelect > ALGOSELECT_MAX) {
                 byte[] msgBuffer = new byte[]{(byte) 0x70, 0, 2, 9, 0, 0, 0, 0};
-                mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_INV_SEL, false, msgBuffer);
+                sendHostRegRequest(HostRegRequests.HST_INV_SEL, false, msgBuffer);
             }
             return algoSelect;
         }
@@ -1847,7 +1840,7 @@ public class RfidReaderChipE710 {
                     if (DEBUG_PKDATA) appendToLog(String.format("!!! Skip sending repeated data %s in address 0x%X", byteArrayToString(bytes),  0x3030 + antennaSelect * 16 + 6));
                     bValue = true;
                 } else {
-                    bValue = mRfidReaderChip.mRx000Setting.writeMAC(0x3030 + antennaSelect * 16 + 6, bytes, true);
+                    bValue = rx000Setting.writeMAC(0x3030 + antennaSelect * 16 + 6, bytes, true);
                     if (bValue) antennaPortConfig[antennaSelect][6] = bytes[0];
                 }
                 if (DEBUG) appendToLog("2b setAlgoSelect: with updated array " + byteArrayToString(antennaPortConfig[antennaSelect]));
@@ -2085,7 +2078,7 @@ public class RfidReaderChipE710 {
         }
         private boolean getHST_INV_RSSI_FILTERING_CONFIG() {
             byte[] msgBuffer = new byte[]{(byte) 0x70, 0, 7, 9, 0, 0, 0, 0};
-            return mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_INV_RSSI_FILTERING_CONFIG, false, msgBuffer);
+            return sendHostRegRequest(HostRegRequests.HST_INV_RSSI_FILTERING_CONFIG, false, msgBuffer);
         }
         boolean setHST_INV_RSSI_FILTERING_CONFIG(int rssiFilterType, int rssiFilterOption) {
             appendToLog("rssiFilterType = " + rssiFilterType + ", rssiFilterOption = " + rssiFilterOption);
@@ -2115,7 +2108,7 @@ public class RfidReaderChipE710 {
         }
         private boolean getHST_INV_RSSI_FILTERING_THRESHOLD() {
             byte[] msgBuffer = new byte[]{(byte) 0x70, 0, 8, 9, 0, 0, 0, 0};
-            return mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_INV_RSSI_FILTERING_THRESHOLD, false, msgBuffer);
+            return sendHostRegRequest(HostRegRequests.HST_INV_RSSI_FILTERING_THRESHOLD, false, msgBuffer);
         }
         boolean setHST_INV_RSSI_FILTERING_THRESHOLD(int rssiFilterThreshold1, int rssiFilterThreshold2) {
             byte[] bytes = new byte[2];
@@ -2137,7 +2130,7 @@ public class RfidReaderChipE710 {
         }
         private boolean getHST_INV_RSSI_FILTERING_COUNT() {
             byte[] msgBuffer = new byte[]{(byte) 0x70, 0, 9, 9, 0, 0, 0, 0};
-            return mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_INV_RSSI_FILTERING_THRESHOLD, false, msgBuffer);
+            return sendHostRegRequest(HostRegRequests.HST_INV_RSSI_FILTERING_THRESHOLD, false, msgBuffer);
         }
         boolean setHST_INV_RSSI_FILTERING_COUNT(long rssiFilterCount) {
             appendToLog("entry: rssiFilterCount = " + rssiFilterCount + ", this.rssiFilterCount = " + this.rssiFilterCount);
@@ -2153,7 +2146,7 @@ public class RfidReaderChipE710 {
             msgBuffer[7] |= (byte) ((rssiFilterCount >> 24) & 0xFF);
             this.rssiFilterCount = rssiFilterCount;
             appendToLog("entering to sendHostRegRequest: rssiFilterCount = " + rssiFilterCount);
-            boolean bValue = mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_INV_RSSI_FILTERING_COUNT, true, msgBuffer);
+            boolean bValue = sendHostRegRequest(HostRegRequests.HST_INV_RSSI_FILTERING_COUNT, true, msgBuffer);
             appendToLog("after sendHostRegRequest: rssiFilterCount = " + rssiFilterCount);
             return bValue;
         }
@@ -2216,7 +2209,7 @@ public class RfidReaderChipE710 {
         int getAccessRetry() {
             if (accessRetry < ACCRETRY_MIN || accessRetry > ACCRETRY_MAX) {
                 byte[] msgBuffer = new byte[]{(byte) 0x70, 0, 1, (byte) 0x0A, 0, 0, 0, 0};
-                mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_TAGACC_DESC_CFG, false, msgBuffer);
+                sendHostRegRequest(HostRegRequests.HST_TAGACC_DESC_CFG, false, msgBuffer);
             }
             return accessRetry;
         }
@@ -2229,26 +2222,26 @@ public class RfidReaderChipE710 {
         boolean setAccessEnable(int accessEnable, int accessEnable2) {
             boolean bValue = false, DEBUG = false;
             if (DEBUG) appendToLog("0 setAccessEnable with accessEnable = " + accessEnable + ", accessEnable2 = " + accessEnable2);
-            if (mRfidReaderChip.mRx000Setting.multibankReadConfig[0] == null) appendToLog("!!! CANNOT continue as multibankReadConfig[0] is null !!!");
-            else if (mRfidReaderChip.mRx000Setting.multibankReadConfig[1] == null) appendToLog("!!! CANNOT continue as multibankReadConfig[1] is null !!!");
+            if (rx000Setting.multibankReadConfig[0] == null) appendToLog("!!! CANNOT continue as multibankReadConfig[0] is null !!!");
+            else if (rx000Setting.multibankReadConfig[1] == null) appendToLog("!!! CANNOT continue as multibankReadConfig[1] is null !!!");
             else {
-                if (DEBUG) appendToLog("0 multibankReadConfig[0] = " + byteArrayToString(mRfidReaderChip.mRx000Setting.multibankReadConfig[0]));
-                if (accessEnable == mRfidReaderChip.mRx000Setting.multibankReadConfig[0][0] && sameCheck) bValue = true;
+                if (DEBUG) appendToLog("0 multibankReadConfig[0] = " + byteArrayToString(rx000Setting.multibankReadConfig[0]));
+                if (accessEnable == rx000Setting.multibankReadConfig[0][0] && sameCheck) bValue = true;
                 else {
                     byte[] bytes = new byte[1];
                     bytes[0] = (byte) (accessEnable & 0xFF);
                     bValue = writeMAC(0x3270 + 7 * 0, bytes, true);
-                    if (bValue) mRfidReaderChip.mRx000Setting.multibankReadConfig[0][0] = bytes[0];
-                    if (DEBUG) appendToLog("0A multibankReadConfig[0] = " + byteArrayToString(mRfidReaderChip.mRx000Setting.multibankReadConfig[0]));
+                    if (bValue) rx000Setting.multibankReadConfig[0][0] = bytes[0];
+                    if (DEBUG) appendToLog("0A multibankReadConfig[0] = " + byteArrayToString(rx000Setting.multibankReadConfig[0]));
                 }
-                if (DEBUG) appendToLog("0 multibankReadConfig[1] = " + byteArrayToString(mRfidReaderChip.mRx000Setting.multibankReadConfig[1]));
-                if (accessEnable2 == mRfidReaderChip.mRx000Setting.multibankReadConfig[1][0] && sameCheck) { }
+                if (DEBUG) appendToLog("0 multibankReadConfig[1] = " + byteArrayToString(rx000Setting.multibankReadConfig[1]));
+                if (accessEnable2 == rx000Setting.multibankReadConfig[1][0] && sameCheck) { }
                 else if (bValue) {
                     byte[] bytes = new byte[1];
                     bytes[0] = (byte) (accessEnable2 & 0xFF);
                     bValue = writeMAC(0x3270 + 7 * 1, bytes, true);
-                    if (bValue) mRfidReaderChip.mRx000Setting.multibankReadConfig[1][0] = bytes[0];
-                    if (DEBUG) appendToLog("0A multibankReadConfig[1] = " + byteArrayToString(mRfidReaderChip.mRx000Setting.multibankReadConfig[1]));
+                    if (bValue) rx000Setting.multibankReadConfig[1][0] = bytes[0];
+                    if (DEBUG) appendToLog("0A multibankReadConfig[1] = " + byteArrayToString(rx000Setting.multibankReadConfig[1]));
                 }
             }
             return bValue;
@@ -2257,34 +2250,34 @@ public class RfidReaderChipE710 {
         int accessBank = ACCBANK_INVALID; int accessBank2 = ACCBANK_INVALID;
         int getAccessBank() {
             boolean DEBUG = false; int iValue = -1;
-            if (accessBank >= 0 && accessBank <= 3 && mRfidReaderChip.mRx000Setting.multibankReadConfig[0] == null) appendToLog("!!! CANNOT continue as multibankReadConfig[0] is null !!!");
-            else iValue = mRfidReaderChip.mRx000Setting.multibankReadConfig[0][1];
+            if (accessBank >= 0 && accessBank <= 3 && rx000Setting.multibankReadConfig[0] == null) appendToLog("!!! CANNOT continue as multibankReadConfig[0] is null !!!");
+            else iValue = rx000Setting.multibankReadConfig[0][1];
             return iValue;
         }
         boolean setAccessBank(int accessBank) { return setAccessBank(accessBank, 0); }
         boolean setAccessBank(int accessBank, int accessBank2) {
-            boolean bValue = false, DEBUG = false;
+            boolean bValue = false, DEBUG = true;
             if (DEBUG) appendToLog("0 setAccessBank with accessBank = " + accessBank + ", accessBank2 = " + accessBank2);
-            if (accessBank >= 0 && accessBank <= 3 && mRfidReaderChip.mRx000Setting.multibankReadConfig[0] == null) appendToLog("!!! CANNOT continue as multibankReadConfig[0] is null !!!");
-            else if (accessBank2 >= 0 && accessBank2 <= 3 && mRfidReaderChip.mRx000Setting.multibankReadConfig[1] == null) appendToLog("!!! CANNOT continue as multibankReadConfig[1] is null !!!");
+            if (accessBank >= 0 && accessBank <= 3 && rx000Setting.multibankReadConfig[0] == null) appendToLog("!!! CANNOT continue as multibankReadConfig[0] is null !!!");
+            else if (accessBank2 >= 0 && accessBank2 <= 3 && rx000Setting.multibankReadConfig[1] == null) appendToLog("!!! CANNOT continue as multibankReadConfig[1] is null !!!");
             else {
-                if (DEBUG) appendToLog("0 multibankReadConfig[0] = " + byteArrayToString(mRfidReaderChip.mRx000Setting.multibankReadConfig[0]));
-                if (accessBank == mRfidReaderChip.mRx000Setting.multibankReadConfig[0][1] && sameCheck) bValue = true;
+                if (DEBUG) appendToLog("0 multibankReadConfig[0] = " + byteArrayToString(rx000Setting.multibankReadConfig[0]));
+                if (accessBank == rx000Setting.multibankReadConfig[0][1] && sameCheck) bValue = true;
                 else if (accessBank >= 0 && accessBank <= 3) {
                     byte[] bytes = new byte[1];
                     bytes[0] = (byte)(accessBank & 0xFF);
                     bValue = writeMAC(0x3270 + 7 * 0 + 1, bytes, true);
-                    if (bValue) mRfidReaderChip.mRx000Setting.multibankReadConfig[0][1] = bytes[0];
-                    if (DEBUG) appendToLog("0A multibankReadConfig[0] = " + byteArrayToString(mRfidReaderChip.mRx000Setting.multibankReadConfig[0]));
+                    if (bValue) rx000Setting.multibankReadConfig[0][1] = bytes[0];
+                    if (DEBUG) appendToLog("0A multibankReadConfig[0] = " + byteArrayToString(rx000Setting.multibankReadConfig[0]));
                 }
-                if (DEBUG) appendToLog("0 multibankReadConfig[1] = " + byteArrayToString(mRfidReaderChip.mRx000Setting.multibankReadConfig[1]));
-                if (accessBank2 == mRfidReaderChip.mRx000Setting.multibankReadConfig[1][1] && sameCheck) { }
+                if (DEBUG) appendToLog("0 multibankReadConfig[1] = " + byteArrayToString(rx000Setting.multibankReadConfig[1]));
+                if (accessBank2 == rx000Setting.multibankReadConfig[1][1] && sameCheck) { }
                 else if (bValue && accessBank2 >= 0 && accessBank2 <= 3) {
                     byte[] bytes = new byte[1];
                     bytes[0] = (byte)(accessBank2 & 0xFF);
                     bValue = writeMAC(0x3270 + 7 * 1 + 1, bytes, true);
-                    if (bValue) mRfidReaderChip.mRx000Setting.multibankReadConfig[1][1] = bytes[0];
-                    if (DEBUG) appendToLog("0A multibankReadConfig[1] = " + byteArrayToString(mRfidReaderChip.mRx000Setting.multibankReadConfig[1]));
+                    if (bValue) rx000Setting.multibankReadConfig[1][1] = bytes[0];
+                    if (DEBUG) appendToLog("0A multibankReadConfig[1] = " + byteArrayToString(rx000Setting.multibankReadConfig[1]));
                 }
             }
             return bValue;
@@ -2294,12 +2287,12 @@ public class RfidReaderChipE710 {
         int accessOffset = ACCOFFSET_INVALID; int accessOffset2 = ACCOFFSET_INVALID;
         int getAccessOffset() {
             boolean DEBUG = false; int iValue = -1;
-            if (accessBank >= 0 && accessBank <= 3 && mRfidReaderChip.mRx000Setting.multibankReadConfig[0] == null) appendToLog("!!! CANNOT continue as multibankReadConfig[0] is null !!!");
+            if (accessBank >= 0 && accessBank <= 3 && rx000Setting.multibankReadConfig[0] == null) appendToLog("!!! CANNOT continue as multibankReadConfig[0] is null !!!");
             else {
-                iValue = (mRfidReaderChip.mRx000Setting.multibankReadConfig[0][2] & 0xFF) << 24;
-                iValue |= (mRfidReaderChip.mRx000Setting.multibankReadConfig[0][3] & 0xFF) << 16;
-                iValue |= (mRfidReaderChip.mRx000Setting.multibankReadConfig[0][4] & 0xFF) << 8;
-                iValue |= (mRfidReaderChip.mRx000Setting.multibankReadConfig[0][5] & 0xFF);
+                iValue = (rx000Setting.multibankReadConfig[0][2] & 0xFF) << 24;
+                iValue |= (rx000Setting.multibankReadConfig[0][3] & 0xFF) << 16;
+                iValue |= (rx000Setting.multibankReadConfig[0][4] & 0xFF) << 8;
+                iValue |= (rx000Setting.multibankReadConfig[0][5] & 0xFF);
             }
             return iValue;
         }
@@ -2309,37 +2302,37 @@ public class RfidReaderChipE710 {
         boolean setAccessOffset(int accessOffset, int accessOffset2) {
             boolean bValue = false, DEBUG = false;
             if (DEBUG) appendToLog("0 setAccessOffset with accessOffset = " + accessOffset + ", accessOffset2 = " + accessOffset2);
-            if (accessOffset >= 0 && mRfidReaderChip.mRx000Setting.multibankReadConfig[0] == null) appendToLog("!!! CANNOT continue as multibankReadConfig[0] is null !!!");
-            else if (accessOffset2 >= 0 && mRfidReaderChip.mRx000Setting.multibankReadConfig[1] == null) appendToLog("!!! CANNOT continue as multibankReadConfig[1] is null !!!");
+            if (accessOffset >= 0 && rx000Setting.multibankReadConfig[0] == null) appendToLog("!!! CANNOT continue as multibankReadConfig[0] is null !!!");
+            else if (accessOffset2 >= 0 && rx000Setting.multibankReadConfig[1] == null) appendToLog("!!! CANNOT continue as multibankReadConfig[1] is null !!!");
             else {
-                if (DEBUG) appendToLog("0 multibankReadConfig[0] = " + byteArrayToString(mRfidReaderChip.mRx000Setting.multibankReadConfig[0]));
+                if (DEBUG) appendToLog("0 multibankReadConfig[0] = " + byteArrayToString(rx000Setting.multibankReadConfig[0]));
                 if (accessOffset >= 0) {
                     byte[] bytes = new byte[4];
                     bytes[0] = (byte)((accessOffset >> 24) & 0xFF);
                     bytes[1] = (byte)((accessOffset >> 16) & 0xFF);
                     bytes[2] = (byte)((accessOffset >> 8) & 0xFF);
                     bytes[3] = (byte)(accessOffset & 0xFF);
-                    byte[] bytesOld = new byte[4]; System.arraycopy(mRfidReaderChip.mRx000Setting.multibankReadConfig[0], 2, bytesOld, 0, bytesOld.length);
+                    byte[] bytesOld = new byte[4]; System.arraycopy(rx000Setting.multibankReadConfig[0], 2, bytesOld, 0, bytesOld.length);
                     if (compareArray(bytes, bytesOld, bytesOld.length) && sameCheck) bValue = true;
                     else {
                         bValue = writeMAC(0x3270 + 7 * 0 + 2, bytes, true);
-                        if (bValue) System.arraycopy(bytes, 0, mRfidReaderChip.mRx000Setting.multibankReadConfig[0], 2, bytes.length);
-                        if (DEBUG) appendToLog("0A multibankReadConfig[0] = " + byteArrayToString(mRfidReaderChip.mRx000Setting.multibankReadConfig[0]));
+                        if (bValue) System.arraycopy(bytes, 0, rx000Setting.multibankReadConfig[0], 2, bytes.length);
+                        if (DEBUG) appendToLog("0A multibankReadConfig[0] = " + byteArrayToString(rx000Setting.multibankReadConfig[0]));
                     }
                 }
-                if (DEBUG) appendToLog("0 multibankReadConfig[1] = " + byteArrayToString(mRfidReaderChip.mRx000Setting.multibankReadConfig[1]));
+                if (DEBUG) appendToLog("0 multibankReadConfig[1] = " + byteArrayToString(rx000Setting.multibankReadConfig[1]));
                 if (bValue && accessOffset2 >= 0) {
                     byte[] bytes = new byte[4];
                     bytes[0] = (byte)((accessOffset2 >> 24) & 0xFF);
                     bytes[1] = (byte)((accessOffset2 >> 16) & 0xFF);
                     bytes[2] = (byte)((accessOffset2 >> 8) & 0xFF);
                     bytes[3] = (byte)(accessOffset2 & 0xFF);
-                    byte[] bytesOld = new byte[4]; System.arraycopy(mRfidReaderChip.mRx000Setting.multibankReadConfig[1], 2, bytesOld, 0, bytesOld.length);
+                    byte[] bytesOld = new byte[4]; System.arraycopy(rx000Setting.multibankReadConfig[1], 2, bytesOld, 0, bytesOld.length);
                     if (compareArray(bytes, bytesOld, bytesOld.length) && sameCheck) { }
                     else {
                         bValue = writeMAC(0x3270 + 7 * 1 + 2, bytes, true);
-                        if (bValue) System.arraycopy(bytes, 0, mRfidReaderChip.mRx000Setting.multibankReadConfig[1], 2, bytes.length);
-                        if (DEBUG) appendToLog("0A multibankReadConfig[1] = " + byteArrayToString(mRfidReaderChip.mRx000Setting.multibankReadConfig[1]));
+                        if (bValue) System.arraycopy(bytes, 0, rx000Setting.multibankReadConfig[1], 2, bytes.length);
+                        if (DEBUG) appendToLog("0A multibankReadConfig[1] = " + byteArrayToString(rx000Setting.multibankReadConfig[1]));
                     }
                 }
             }
@@ -2351,7 +2344,7 @@ public class RfidReaderChipE710 {
         int getAccessCount() {
             if (accessCount < ACCCOUNT_MIN || accessCount > ACCCOUNT_MAX) {
                 byte[] msgBuffer = new byte[]{(byte) 0x70, 0, 4, (byte) 0x0A, 0, 0, 0, 0};
-                mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_TAGACC_CNT, false, msgBuffer);
+                sendHostRegRequest(HostRegRequests.HST_TAGACC_CNT, false, msgBuffer);
             }
             return accessCount;
         }
@@ -2361,26 +2354,26 @@ public class RfidReaderChipE710 {
         boolean setAccessCount(int accessCount, int accessCount2) {
             boolean bValue = false, DEBUG = false;
             if (DEBUG) appendToLog("0 setAccessCount with accessCount = " + accessCount + ", accessCount2 = " + accessCount2);
-            if (mRfidReaderChip.mRx000Setting.multibankReadConfig[0] == null) appendToLog("!!! CANNOT continue as multibankReadConfig[0] is null !!!");
-            else if (mRfidReaderChip.mRx000Setting.multibankReadConfig[1] == null) appendToLog("!!! CANNOT continue as multibankReadConfig[1] is null !!!");
+            if (rx000Setting.multibankReadConfig[0] == null) appendToLog("!!! CANNOT continue as multibankReadConfig[0] is null !!!");
+            else if (rx000Setting.multibankReadConfig[1] == null) appendToLog("!!! CANNOT continue as multibankReadConfig[1] is null !!!");
             else {
-                if (DEBUG) appendToLog("0 multibankReadConfig[0] = " + byteArrayToString(mRfidReaderChip.mRx000Setting.multibankReadConfig[0]));
-                if (accessCount == mRfidReaderChip.mRx000Setting.multibankReadConfig[0][6] && sameCheck) bValue = true;
+                if (DEBUG) appendToLog("0 multibankReadConfig[0] = " + byteArrayToString(rx000Setting.multibankReadConfig[0]));
+                if (accessCount == rx000Setting.multibankReadConfig[0][6] && sameCheck) bValue = true;
                 else {
                     byte[] bytes = new byte[1];
                     bytes[0] = (byte)(accessCount & 0xFF);
                     bValue = writeMAC(0x3270 + 7 * 0 + 6, bytes, true);
-                    if (bValue) mRfidReaderChip.mRx000Setting.multibankReadConfig[0][6] = bytes[0];
-                    if (DEBUG) appendToLog("0A multibankReadConfig[0] = " + byteArrayToString(mRfidReaderChip.mRx000Setting.multibankReadConfig[0]));
+                    if (bValue) rx000Setting.multibankReadConfig[0][6] = bytes[0];
+                    if (DEBUG) appendToLog("0A multibankReadConfig[0] = " + byteArrayToString(rx000Setting.multibankReadConfig[0]));
                 }
-                if (DEBUG) appendToLog("0 multibankReadConfig[1] = " + byteArrayToString(mRfidReaderChip.mRx000Setting.multibankReadConfig[1]));
-                if (accessCount2 == mRfidReaderChip.mRx000Setting.multibankReadConfig[1][6] && sameCheck) { }
+                if (DEBUG) appendToLog("0 multibankReadConfig[1] = " + byteArrayToString(rx000Setting.multibankReadConfig[1]));
+                if (accessCount2 == rx000Setting.multibankReadConfig[1][6] && sameCheck) { }
                 else if (bValue) {
                     byte[] bytes = new byte[1];
                     bytes[0] = (byte)(accessCount2 & 0xFF);
                     bValue = writeMAC(0x3270 + 7 * 1 + 6, bytes, true);
-                    if (bValue) mRfidReaderChip.mRx000Setting.multibankReadConfig[1][6] = bytes[0];
-                    if (DEBUG) appendToLog("0A multibankReadConfig[1] = " + byteArrayToString(mRfidReaderChip.mRx000Setting.multibankReadConfig[1]));
+                    if (bValue) rx000Setting.multibankReadConfig[1][6] = bytes[0];
+                    if (DEBUG) appendToLog("0A multibankReadConfig[1] = " + byteArrayToString(rx000Setting.multibankReadConfig[1]));
                 }
             }
             return bValue;
@@ -2410,7 +2403,7 @@ public class RfidReaderChipE710 {
 
         boolean getHST_TAGACC_LOCKCFG() {
             byte[] msgBuffer = new byte[]{(byte) 0x70, 0, 5, (byte) 0x0A, 0, 0, 0, 0};
-            return mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_TAGACC_LOCKCFG, false, msgBuffer);
+            return sendHostRegRequest(HostRegRequests.HST_TAGACC_LOCKCFG, false, msgBuffer);
         }
 
         byte[] lockMask, lockAction;
@@ -2508,7 +2501,7 @@ public class RfidReaderChipE710 {
         int getAccessWriteDataSelect() {
             if (accessWriteDataSelect < ACCWRITEDATSEL_MIN || accessWriteDataSelect > ACCWRITEDATSEL_MAX) {
                 byte[] msgBuffer = new byte[]{(byte) 0x70, 0, 8, (byte) 0x0A, 0, 0, 0, 0};
-                mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_TAGWRDAT_SEL, false, msgBuffer);
+                sendHostRegRequest(HostRegRequests.HST_TAGWRDAT_SEL, false, msgBuffer);
             }
             return accessWriteDataSelect;
         }
@@ -2520,7 +2513,7 @@ public class RfidReaderChipE710 {
             accWriteDataReady = 0;
             msgBuffer[4] = (byte) (accessWriteDataSelect & 0x07);
             this.accessWriteDataSelect = accessWriteDataSelect;
-            return mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_TAGWRDAT_SEL, true, msgBuffer);
+            return sendHostRegRequest(HostRegRequests.HST_TAGWRDAT_SEL, true, msgBuffer);
         }
 
         byte[] accWriteData0_63; int accWriteDataReady = 0;
@@ -2535,7 +2528,7 @@ public class RfidReaderChipE710 {
                     if ((accWriteDataReady & (0x01 << i)) == 0) {
                         byte[] msgBuffer = new byte[]{(byte) 0x70, 0, 9, (byte) 0x0A, 0, 0, 0, 0};
                         msgBuffer[2] += i;
-                        mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_TAGWRDAT_0, false, msgBuffer);
+                        sendHostRegRequest(HostRegRequests.HST_TAGWRDAT_0, false, msgBuffer);
 
                         strValue = null;
                         break;
@@ -2662,7 +2655,7 @@ public class RfidReaderChipE710 {
         int getFreqChannelConfig() {
             if (freqChannelConfig < FREQCHANCONFIG_MIN || freqChannelConfig > FREQCHANCONFIG_MAX) {
                 byte[] msgBuffer = new byte[]{(byte) 0x70, 0, 2, 0x0C, 0, 0, 0, 0};
-                mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_RFTC_FRQCH_CFG, false, msgBuffer);
+                sendHostRegRequest(HostRegRequests.HST_RFTC_FRQCH_CFG, false, msgBuffer);
             }
             appendToLog("freqChannelConfig = " + freqChannelConfig);
             return freqChannelConfig;
@@ -2673,7 +2666,7 @@ public class RfidReaderChipE710 {
         int getFreqPllMultiplier() {
             if (freqPllMultiplier == FREQPLLMULTIPLIER_INVALID) {
                 byte[] msgBuffer = new byte[]{(byte) 0x70, 0, 3, 0x0C, 0, 0, 0, 0};
-                mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_RFTC_FRQCH_DESC_PLLDIVMULT, false, msgBuffer);
+                sendHostRegRequest(HostRegRequests.HST_RFTC_FRQCH_DESC_PLLDIVMULT, false, msgBuffer);
             }
             return freqPllMultiplier;
         }
@@ -2684,7 +2677,7 @@ public class RfidReaderChipE710 {
             msgBuffer[6] = (byte)((freqPllMultiplier >> 16) & 0xFF);
             msgBuffer[7] = (byte)((freqPllMultiplier >> 24) & 0xFF);
             this.freqPllMultiplier = freqPllMultiplier;
-            return mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_RFTC_FRQCH_DESC_PLLDIVMULT, true, msgBuffer);
+            return sendHostRegRequest(HostRegRequests.HST_RFTC_FRQCH_DESC_PLLDIVMULT, true, msgBuffer);
         }
 
         final int FREQPLLDAC_INVALID = -1;
@@ -2692,7 +2685,7 @@ public class RfidReaderChipE710 {
         int getFreqPllDac() {
             if (freqPllDac == FREQPLLDAC_INVALID) {
                 byte[] msgBuffer = new byte[]{(byte) 0x70, 0, 4, 0x0C, 0, 0, 0, 0};
-                mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_RFTC_FRQCH_DESC_PLLDACCTL, false, msgBuffer);
+                sendHostRegRequest(HostRegRequests.HST_RFTC_FRQCH_DESC_PLLDACCTL, false, msgBuffer);
             }
             return freqPllDac;
         }
@@ -2703,10 +2696,9 @@ public class RfidReaderChipE710 {
             msgBuffer[5] = (byte)((freqStart >> 8) & 0xFF);
             msgBuffer[6] = (byte)((freqStart >> 16) & 0xFF);
             msgBuffer[7] = (byte)((freqStart >> 24) & 0xFF);
-            return mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_RFTC_FRQCH_CMDSTART, true, msgBuffer);
+            return sendHostRegRequest(HostRegRequests.HST_RFTC_FRQCH_CMDSTART, true, msgBuffer);
         }
     }
-
     class AntennaSelectedData {
         AntennaSelectedData(boolean set_default_setting, int default_setting_type) {
             if (default_setting_type < 0)    default_setting_type = 0;
@@ -2878,7 +2870,7 @@ public class RfidReaderChipE710 {
 
         private boolean getHST_ANT_DESC_CFG() {
             byte[] msgBuffer = new byte[]{(byte) 0x70, 0, 2, 7, 0, 0, 0, 0};
-            return mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_ANT_DESC_CFG, false, msgBuffer);
+            return sendHostRegRequest(HostRegRequests.HST_ANT_DESC_CFG, false, msgBuffer);
         }
         boolean setAntennaEnable(int antennaEnable, int antennaInventoryMode, int antennaLocalAlgo, int antennaLocalStartQ,
                                  int antennaProfileMode, int antennaLocalProfile,
@@ -2922,7 +2914,7 @@ public class RfidReaderChipE710 {
             this.antennaLocalProfile = antennaLocalProfile;
             this.antennaFrequencyMode = antennaFrequencyMode;
             this.antennaLocalFrequency = antennaLocalFrequency;
-            return mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_ANT_DESC_CFG, true, msgBuffer);
+            return sendHostRegRequest(HostRegRequests.HST_ANT_DESC_CFG, true, msgBuffer);
         }
 
         final int ANTSTATUS_INVALID = -1; final int ANTSTATUS_MIN = 0; final int ANTSTATUS_MAX = 0xFFFFF;
@@ -2930,7 +2922,7 @@ public class RfidReaderChipE710 {
         int getAntennaStatus() {
             if (antennaStatus < ANTSTATUS_MIN || antennaStatus > ANTSTATUS_MAX) {
                 byte[] msgBuffer = new byte[]{(byte) 0x70, 0, 3, 7, 0, 0, 0, 0};
-                mRfidReaderChip.sendHostRegRequest(HostRegRequests.MAC_ANT_DESC_STAT, false, msgBuffer);
+                sendHostRegRequest(HostRegRequests.MAC_ANT_DESC_STAT, false, msgBuffer);
             }
             return antennaStatus;
         }
@@ -2940,7 +2932,7 @@ public class RfidReaderChipE710 {
         int getAntennaDefine() {
             if (antennaDefine < ANTDEFINE_MIN || antennaDefine > ANTDEFINE_MAX) {
                 byte[] msgBuffer = new byte[]{(byte) 0x70, 0, 4, 7, 0, 0, 0, 0};
-                mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_ANT_DESC_PORTDEF, false, msgBuffer);
+                sendHostRegRequest(HostRegRequests.HST_ANT_DESC_PORTDEF, false, msgBuffer);
             }
             return antennaDefine;
         }
@@ -2950,7 +2942,7 @@ public class RfidReaderChipE710 {
         long getAntennaDwell() {
             if (antennaDwell < ANTDWELL_MIN || antennaDwell > ANTDWELL_MAX) {
                 byte[] msgBuffer = new byte[]{(byte) 0x70, 0, 5, 7, 0, 0, 0, 0};
-                mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_ANT_DESC_DWELL, false, msgBuffer);
+                sendHostRegRequest(HostRegRequests.HST_ANT_DESC_DWELL, false, msgBuffer);
             }
             return antennaDwell;
         }
@@ -2964,7 +2956,7 @@ public class RfidReaderChipE710 {
             msgBuffer[6] = (byte) ((antennaDwell >> 16) % 256);
             msgBuffer[7] = (byte) ((antennaDwell >> 24) % 256);
             this.antennaDwell = antennaDwell;
-            return mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_ANT_DESC_DWELL, true, msgBuffer);
+            return sendHostRegRequest(HostRegRequests.HST_ANT_DESC_DWELL, true, msgBuffer);
         }
 
         final int ANTARGET_INVALID = -1; final int ANTARGET_MIN = 0; final int ANTARGET_MAX = 1;
@@ -2980,7 +2972,7 @@ public class RfidReaderChipE710 {
         long getAntennaPower() {
             if (antennaPower < ANTPOWER_MIN || antennaPower > ANTPOWER_MAX) {
                 byte[] msgBuffer = new byte[]{(byte) 0x70, 0, 6, 7, 0, 0, 0, 0};
-                mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_ANT_DESC_RFPOWER, false, msgBuffer);
+                sendHostRegRequest(HostRegRequests.HST_ANT_DESC_RFPOWER, false, msgBuffer);
             }
             return antennaPower;
         }
@@ -2995,7 +2987,7 @@ public class RfidReaderChipE710 {
             this.antennaPower = antennaPower;
             antennaPowerSet = true;
             appendToLog("3 setPowerLevel");
-            return mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_ANT_DESC_RFPOWER, true, msgBuffer);
+            return sendHostRegRequest(HostRegRequests.HST_ANT_DESC_RFPOWER, true, msgBuffer);
         }
 
         final long ANTINVCOUNT_INVALID = -1; final long ANTINVCOUNT_MIN = 0; final long ANTINVCOUNT_MAX = 0xFFFFFFFFL;
@@ -3003,7 +2995,7 @@ public class RfidReaderChipE710 {
         long getAntennaInvCount() {
             if (antennaInvCount < ANTINVCOUNT_MIN || antennaInvCount > ANTINVCOUNT_MAX) {
                 byte[] msgBuffer = new byte[]{(byte) 0x70, 0, 7, 7, 0, 0, 0, 0};
-                mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_ANT_DESC_INV_CNT, false, msgBuffer);
+                sendHostRegRequest(HostRegRequests.HST_ANT_DESC_INV_CNT, false, msgBuffer);
             }
             return antennaInvCount;
         }
@@ -3017,10 +3009,9 @@ public class RfidReaderChipE710 {
             msgBuffer[6] = (byte) ((antennaInvCount >> 16) % 256);
             msgBuffer[7] = (byte) ((antennaInvCount >> 24) % 256);
             this.antennaInvCount = antennaInvCount;
-            return mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_ANT_DESC_INV_CNT, true, msgBuffer);
+            return sendHostRegRequest(HostRegRequests.HST_ANT_DESC_INV_CNT, true, msgBuffer);
         }
     }
-
     class InvSelectData {
         InvSelectData(boolean set_default_setting) {
             if (set_default_setting) {
@@ -3086,7 +3077,7 @@ public class RfidReaderChipE710 {
                     || selectDelay < INVSELDELAY_MIN || selectDelay > INVSELDELAY_MAX
             ) {
                 byte[] msgBuffer = new byte[]{(byte) 0x70, 0, 1, 8, 0, 0, 0, 0};
-                return mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_TAGMSK_DESC_CFG, false, msgBuffer);
+                return sendHostRegRequest(HostRegRequests.HST_TAGMSK_DESC_CFG, false, msgBuffer);
             } else {
                 return false;
             }
@@ -3112,7 +3103,7 @@ public class RfidReaderChipE710 {
             this.selectTarget = selectTarget;
             this.selectAction = selectAction;
             this.selectDelay = selectDelay;
-            return mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_TAGMSK_DESC_CFG, true, msgBuffer);
+            return sendHostRegRequest(HostRegRequests.HST_TAGMSK_DESC_CFG, true, msgBuffer);
         }
 
         final int INVSELMBANK_INVALID = -1; final int INVSELMBANK_MIN = 0; final int INVSELMBANK_MAX = 3;
@@ -3120,7 +3111,7 @@ public class RfidReaderChipE710 {
         int getSelectMaskBank() {
             if (selectMaskBank < INVSELMBANK_MIN || selectMaskBank > INVSELMBANK_MAX) {
                 byte[] msgBuffer = new byte[]{(byte) 0x70, 0, 2, 8, 0, 0, 0, 0};
-                mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_TAGMSK_BANK, false, msgBuffer);
+                sendHostRegRequest(HostRegRequests.HST_TAGMSK_BANK, false, msgBuffer);
             }
             return selectMaskBank;
         }
@@ -3132,7 +3123,7 @@ public class RfidReaderChipE710 {
             if (this.selectMaskBank == selectMaskBank && sameCheck) return true;
             msgBuffer[4] |= (byte) (selectMaskBank & 0x3);
             this.selectMaskBank = selectMaskBank;
-            return mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_TAGMSK_BANK, true, msgBuffer);
+            return sendHostRegRequest(HostRegRequests.HST_TAGMSK_BANK, true, msgBuffer);
         }
 
         final int INVSELMOFFSET_INVALID = -1; final int INVSELMOFFSET_MIN = 0; final int INVSELMOFFSET_MAX = 0xFFFF;
@@ -3140,7 +3131,7 @@ public class RfidReaderChipE710 {
         int getSelectMaskOffset() {
             if (selectMaskOffset < INVSELMOFFSET_MIN || selectMaskOffset > INVSELMOFFSET_MAX) {
                 byte[] msgBuffer = new byte[]{(byte) 0x70, 0, 3, 8, 0, 0, 0, 0};
-                mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_TAGMSK_PTR, false, msgBuffer);
+                sendHostRegRequest(HostRegRequests.HST_TAGMSK_PTR, false, msgBuffer);
             }
             return selectMaskOffset;
         }
@@ -3152,7 +3143,7 @@ public class RfidReaderChipE710 {
             msgBuffer[4] |= (byte) (selectMaskOffset & 0xFF);
             msgBuffer[5] |= (byte) ((selectMaskOffset >> 8) & 0xFF);
             this.selectMaskOffset = selectMaskOffset;
-            return mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_TAGMSK_PTR, true, msgBuffer);
+            return sendHostRegRequest(HostRegRequests.HST_TAGMSK_PTR, true, msgBuffer);
         }
 
         final int INVSELMLENGTH_INVALID = -1; final int INVSELMLENGTH_MIN = 0; final int INVSELMLENGTH_MAX = 255;
@@ -3161,7 +3152,7 @@ public class RfidReaderChipE710 {
             appendToLog("getSelectMaskData with selectMaskLength = " + selectMaskLength);
             if (selectMaskLength < INVSELMLENGTH_MIN || selectMaskOffset > INVSELMLENGTH_MAX) {
                 byte[] msgBuffer = new byte[]{(byte) 0x70, 0, 4, 8, 0, 0, 0, 0};
-                mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_TAGMSK_LEN, false, msgBuffer);
+                sendHostRegRequest(HostRegRequests.HST_TAGMSK_LEN, false, msgBuffer);
             }
             return selectMaskLength;
         }
@@ -3173,7 +3164,7 @@ public class RfidReaderChipE710 {
             msgBuffer[4] |= (byte) (selectMaskLength & 0xFF);
             if (selectMaskLength == INVSELMLENGTH_MAX) msgBuffer[5] = 1;
             this.selectMaskLength = selectMaskLength; if (false) appendToLog("getSelectMaskData with saved selectMaskLength = " + selectMaskLength);
-            return mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_TAGMSK_PTR, true, msgBuffer);
+            return sendHostRegRequest(HostRegRequests.HST_TAGMSK_PTR, true, msgBuffer);
         }
 
         byte[] selectMaskData0_31 = new byte[4 * 8]; byte selectMaskDataReady = 0;
@@ -3189,7 +3180,7 @@ public class RfidReaderChipE710 {
                         if ((selectMaskDataReady & (0x01 << i)) == 0) {
                             byte[] msgBuffer = new byte[]{(byte) 0x70, 0, 5, 8, 0, 0, 0, 0};
                             msgBuffer[2] += i;
-                            mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_TAGMSK_0_3, false, msgBuffer);
+                            sendHostRegRequest(HostRegRequests.HST_TAGMSK_0_3, false, msgBuffer);
 
                             strValue = null;
                             break;
@@ -3232,7 +3223,7 @@ public class RfidReaderChipE710 {
                         }
                     }
                     msgBuffer[2] = (byte) ((msgBuffer[2] & 0xFF) + i);
-                    if (mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_TAGMSK_0_3, true, msgBuffer) == false)
+                    if (sendHostRegRequest(HostRegRequests.HST_TAGMSK_0_3, true, msgBuffer) == false)
                         return false;
                     else {
                         selectMaskDataReady |= (0x01 << i);
@@ -3245,7 +3236,6 @@ public class RfidReaderChipE710 {
             return true;
         }
     }
-
     class AlgoSelectedData {
         AlgoSelectedData(boolean set_default_setting, int default_setting_type) {
             if (default_setting_type < 0) default_setting_type = 0;
@@ -3372,7 +3362,7 @@ public class RfidReaderChipE710 {
 
         private boolean getHST_INV_ALG_PARM_0() {
             byte[] msgBuffer = new byte[]{(byte) 0x70, 0, 3, 9, 0, 0, 0, 0};
-            return mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_INV_ALG_PARM_0, false, msgBuffer);
+            return sendHostRegRequest(HostRegRequests.HST_INV_ALG_PARM_0, false, msgBuffer);
         }
         boolean setAlgoStartQ(int startQ, int algoMaxQ, int algoMinQ, int algoMaxRep, int algoHighThres, int algoLowThres) {
             appendToLog("0 setAlgoStartQ with startQ = " + startQ);
@@ -3403,7 +3393,7 @@ public class RfidReaderChipE710 {
             this.algoMaxRep = algoMaxRep;
             this.algoHighThres = algoHighThres;
             this.algoLowThres = algoLowThres;
-            return mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_INV_ALG_PARM_0, true, msgBuffer);
+            return sendHostRegRequest(HostRegRequests.HST_INV_ALG_PARM_0, true, msgBuffer);
         }
 
         final int ALGORETRY_INVALID = -1; final int ALGORETRY_MIN = 0; final int ALGORETRY_MAX = 255;
@@ -3411,7 +3401,7 @@ public class RfidReaderChipE710 {
         int getAlgoRetry() {
             if (algoRetry < ALGORETRY_MIN || algoRetry > ALGORETRY_MAX) {
                 byte[] msgBuffer = new byte[]{(byte) 0x70, 0, 4, 9, 0, 0, 0, 0};
-                mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_INV_ALG_PARM_1, false, msgBuffer);
+                sendHostRegRequest(HostRegRequests.HST_INV_ALG_PARM_1, false, msgBuffer);
             }
             return algoRetry;
         }
@@ -3423,7 +3413,7 @@ public class RfidReaderChipE710 {
             byte[] msgBuffer = new byte[]{(byte) 0x70, 1, 4, 9, 0, 0, 0, 0};
             msgBuffer[4] = (byte) algoRetry;
             this.algoRetry = algoRetry;
-            return mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_INV_ALG_PARM_1, true, msgBuffer);
+            return sendHostRegRequest(HostRegRequests.HST_INV_ALG_PARM_1, true, msgBuffer);
         }
 
         final int ALGOABFLIP_INVALID = -1; final int ALGOABFLIP_MIN = 0; final int ALGOABFLIP_MAX = 1;
@@ -3448,7 +3438,7 @@ public class RfidReaderChipE710 {
 
         private boolean getHST_INV_ALG_PARM_2() {
             byte[] msgBuffer = new byte[]{(byte) 0x70, 0, 5, 9, 0, 0, 0, 0};
-            return mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_INV_ALG_PARM_2, false, msgBuffer);
+            return sendHostRegRequest(HostRegRequests.HST_INV_ALG_PARM_2, false, msgBuffer);
         }
         boolean setAlgoAbFlip(int algoAbFlip, int algoRunTilZero) {
             if (algoAbFlip < ALGOABFLIP_MIN || algoAbFlip > ALGOABFLIP_MAX)
@@ -3466,27 +3456,26 @@ public class RfidReaderChipE710 {
             }
             this.algoAbFlip = algoAbFlip;
             this.algoRunTilZero = algoRunTilZero;
-            return mRfidReaderChip.sendHostRegRequest(HostRegRequests.HST_INV_ALG_PARM_2, true, msgBuffer);
+            return sendHostRegRequest(HostRegRequests.HST_INV_ALG_PARM_2, true, msgBuffer);
         }
     }
-
     class Rx000EngSetting {
         int narrowRSSI = -1, wideRSSI = -1;
         int getwideRSSI() {
             if (wideRSSI < 0) {
-                mRfidReaderChip.setPwrManagementMode(false);
-                mRfidReaderChip.mRx000Setting.writeMAC(0x100, 0x05); //sub-command: 0x05, Arg0: reserved
-                mRfidReaderChip.mRx000Setting.writeMAC(0x101,  3 + 0x20000); //Arg1: 15-0: number of RSSI sample
-                mRfidReaderChip.sendHostRegRequestHST_CMD(RfidReaderChipData.HostCommands.CMD_ENGTEST);
+                setPwrManagementMode(false);
+                rx000Setting.writeMAC(0x100, 0x05); //sub-command: 0x05, Arg0: reserved
+                rx000Setting.writeMAC(0x101,  3 + 0x20000); //Arg1: 15-0: number of RSSI sample
+                sendHostRegRequestHST_CMD(RfidReaderChipData.HostCommands.CMD_ENGTEST);
             } else appendToLog("Hello123: wideRSSI = " + wideRSSI);
             return wideRSSI;
         }
         int getnarrowRSSI() {
             if (narrowRSSI < 0) {
-                mRfidReaderChip.setPwrManagementMode(false);
-                mRfidReaderChip.mRx000Setting.writeMAC(0x100, 0x05); //sub-command: 0x05, Arg0: reserved
-                mRfidReaderChip.mRx000Setting.writeMAC(0x101,  3 + 0x20000); //Arg1: 15-0: number of RSSI sample
-                mRfidReaderChip.sendHostRegRequestHST_CMD(RfidReaderChipData.HostCommands.CMD_ENGTEST);
+                setPwrManagementMode(false);
+                rx000Setting.writeMAC(0x100, 0x05); //sub-command: 0x05, Arg0: reserved
+                rx000Setting.writeMAC(0x101,  3 + 0x20000); //Arg1: 15-0: number of RSSI sample
+                sendHostRegRequestHST_CMD(RfidReaderChipData.HostCommands.CMD_ENGTEST);
             } else appendToLog("Hello123: narrowRSSI = " + wideRSSI);
             return wideRSSI;
         }
@@ -3494,52 +3483,51 @@ public class RfidReaderChipE710 {
             narrowRSSI = -1; wideRSSI = -1;
         }
     }
-
     class Rx000MbpSetting {
         final int RXGAIN_INVALID = -1; final int RXGAIN_MIN = 0; final int RXGAIN_MAX = 0x1FF;
         int rxGain = RXGAIN_INVALID;
         int getHighCompression() {
             int iRetValue = -1;
             if (rxGain < RXGAIN_MIN || rxGain > RXGAIN_MAX) {
-                mRfidReaderChip.setPwrManagementMode(false);
-                mRfidReaderChip.mRx000Setting.setMBPAddress(0x450); appendToLog("70010004: getHighCompression");
-                mRfidReaderChip.sendHostRegRequestHST_CMD(RfidReaderChipData.HostCommands.CMD_MBPRDREG);
+                setPwrManagementMode(false);
+                rx000Setting.setMBPAddress(0x450); appendToLog("70010004: getHighCompression");
+                sendHostRegRequestHST_CMD(RfidReaderChipData.HostCommands.CMD_MBPRDREG);
             } else iRetValue = (rxGain >> 8);
             return iRetValue;
         }
         int getRflnaGain() {
             int iRetValue = -1;
             if (rxGain < RXGAIN_MIN || rxGain > RXGAIN_MAX) {
-                mRfidReaderChip.setPwrManagementMode(false);
-                mRfidReaderChip.mRx000Setting.setMBPAddress(0x450); appendToLog("70010004: getRflnaGain");
-                mRfidReaderChip.sendHostRegRequestHST_CMD(RfidReaderChipData.HostCommands.CMD_MBPRDREG);
+                setPwrManagementMode(false);
+                rx000Setting.setMBPAddress(0x450); appendToLog("70010004: getRflnaGain");
+                sendHostRegRequestHST_CMD(RfidReaderChipData.HostCommands.CMD_MBPRDREG);
             } else iRetValue = ((rxGain & 0xC0) >> 6);
             return iRetValue;
         }
         int getIflnaGain() {
             int iRetValue = -1;
             if (rxGain < RXGAIN_MIN || rxGain > RXGAIN_MAX) {
-                mRfidReaderChip.setPwrManagementMode(false);
-                mRfidReaderChip.mRx000Setting.setMBPAddress(0x450); appendToLog("70010004: getIflnaGain");
-                mRfidReaderChip.sendHostRegRequestHST_CMD(RfidReaderChipData.HostCommands.CMD_MBPRDREG);
+                setPwrManagementMode(false);
+                rx000Setting.setMBPAddress(0x450); appendToLog("70010004: getIflnaGain");
+                sendHostRegRequestHST_CMD(RfidReaderChipData.HostCommands.CMD_MBPRDREG);
             } else iRetValue = ((rxGain & 0x38) >> 3);
             return iRetValue;
         }
         int getAgcGain() {
             int iRetValue = -1;
             if (rxGain < RXGAIN_MIN || rxGain > RXGAIN_MAX) {
-                mRfidReaderChip.setPwrManagementMode(false);
-                mRfidReaderChip.mRx000Setting.setMBPAddress(0x450); appendToLog("70010004: getAgcGain");
-                mRfidReaderChip.sendHostRegRequestHST_CMD(RfidReaderChipData.HostCommands.CMD_MBPRDREG);
+                setPwrManagementMode(false);
+                rx000Setting.setMBPAddress(0x450); appendToLog("70010004: getAgcGain");
+                sendHostRegRequestHST_CMD(RfidReaderChipData.HostCommands.CMD_MBPRDREG);
             } else iRetValue = (rxGain & 0x07);
             return iRetValue;
         }
         int getRxGain() {
             int iRetValue = -1;
             if (rxGain < RXGAIN_MIN || rxGain > RXGAIN_MAX) {
-                mRfidReaderChip.setPwrManagementMode(false);
-                mRfidReaderChip.mRx000Setting.setMBPAddress(0x450);
-                mRfidReaderChip.sendHostRegRequestHST_CMD(RfidReaderChipData.HostCommands.CMD_MBPRDREG);
+                setPwrManagementMode(false);
+                rx000Setting.setMBPAddress(0x450);
+                sendHostRegRequestHST_CMD(RfidReaderChipData.HostCommands.CMD_MBPRDREG);
             } else iRetValue = rxGain;
             return iRetValue;
         }
@@ -3550,25 +3538,24 @@ public class RfidReaderChipE710 {
         boolean setRxGain(int rxGain_new) {
             boolean bRetValue = true;
             if ((rxGain_new != rxGain) || (sameCheck == false)) {
-                mRfidReaderChip.setPwrManagementMode(false);
+                setPwrManagementMode(false);
                 appendToLog("2 setRxGain");
-                bRetValue = mRfidReaderChip.mRx000Setting.setMBPAddress(0x450); if (false) appendToLog("70010004: setRxGain");
-                if (bRetValue != false) bRetValue = mRfidReaderChip.mRx000Setting.setMBPData(rxGain_new);
-                if (bRetValue != false) bRetValue = mRfidReaderChip.sendHostRegRequestHST_CMD(RfidReaderChipData.HostCommands.CMD_MBPWRREG);
+                bRetValue = rx000Setting.setMBPAddress(0x450); if (false) appendToLog("70010004: setRxGain");
+                if (bRetValue != false) bRetValue = rx000Setting.setMBPData(rxGain_new);
+                if (bRetValue != false) bRetValue = sendHostRegRequestHST_CMD(RfidReaderChipData.HostCommands.CMD_MBPWRREG);
                 if (bRetValue != false) rxGain = rxGain_new;
             }
             return bRetValue;
         }
     }
-
     class Rx000OemSetting {
         final int COUNTRYCODE_INVALID = -1; final int COUNTRYCODE_MIN = 1; final int COUNTRYCODE_MAX = 9;
         int countryCode = COUNTRYCODE_INVALID;   // OemAddress = 0x02
         int getCountryCode() {
             if (countryCode < COUNTRYCODE_MIN || countryCode > COUNTRYCODE_MAX) {
-                mRfidReaderChip.setPwrManagementMode(false);
-                mRfidReaderChip.mRx000Setting.setOEMAddress(2);
-                mRfidReaderChip.sendHostRegRequestHST_CMD(RfidReaderChipData.HostCommands.CMD_RDOEM);
+                setPwrManagementMode(false);
+                rx000Setting.setOEMAddress(2);
+                sendHostRegRequestHST_CMD(RfidReaderChipData.HostCommands.CMD_RDOEM);
             }
             return countryCode;
         }
@@ -3582,9 +3569,9 @@ public class RfidReaderChipE710 {
             for (int i = 0; i < length; i++) {
                 if (serialNumber[4 * i] == SERIALCODE_INVALID) {    // OemAddress = 0x04 - 7
                     invalid = true;
-                    mRfidReaderChip.setPwrManagementMode(false);
-                    mRfidReaderChip.mRx000Setting.setOEMAddress(0x04 + i);
-                    mRfidReaderChip.sendHostRegRequestHST_CMD(RfidReaderChipData.HostCommands.CMD_RDOEM);
+                    setPwrManagementMode(false);
+                    rx000Setting.setOEMAddress(0x04 + i);
+                    sendHostRegRequestHST_CMD(RfidReaderChipData.HostCommands.CMD_RDOEM);
                 }
             }
             if (invalid)    return null;
@@ -3610,9 +3597,9 @@ public class RfidReaderChipE710 {
                 if (productserialNumber[4 * i] == PRODUCT_SERIALCODE_INVALID) {    // OemAddress = 0x04 - 7
                     invalid = true;
                     appendToLog(i + " start setOEMAddress");
-                    mRfidReaderChip.setPwrManagementMode(false);
-                    mRfidReaderChip.mRx000Setting.setOEMAddress(0x08 + i);
-                    mRfidReaderChip.sendHostRegRequestHST_CMD(RfidReaderChipData.HostCommands.CMD_RDOEM);
+                    setPwrManagementMode(false);
+                    rx000Setting.setOEMAddress(0x08 + i);
+                    sendHostRegRequestHST_CMD(RfidReaderChipData.HostCommands.CMD_RDOEM);
                 }
             }
             if (invalid)    return null;
@@ -3632,9 +3619,9 @@ public class RfidReaderChipE710 {
         int versionCode = VERSIONCODE_INVALID;   // OemAddress = 0x02
         int getVersionCode() {
             if (versionCode < VERSIONCODE_MIN || versionCode > VERSIONCODE_MAX) {
-                mRfidReaderChip.setPwrManagementMode(false);
-                mRfidReaderChip.mRx000Setting.setOEMAddress(0x0B);
-                mRfidReaderChip.sendHostRegRequestHST_CMD(RfidReaderChipData.HostCommands.CMD_RDOEM);
+                setPwrManagementMode(false);
+                rx000Setting.setOEMAddress(0x0B);
+                sendHostRegRequestHST_CMD(RfidReaderChipData.HostCommands.CMD_RDOEM);
             }
             return versionCode;
         }
@@ -3642,9 +3629,9 @@ public class RfidReaderChipE710 {
         String spcialCountryVersion = null;
         String getSpecialCountryVersion() {
             if (spcialCountryVersion == null) {
-                mRfidReaderChip.setPwrManagementMode(false);
-                mRfidReaderChip.mRx000Setting.setOEMAddress(0x8E);
-                mRfidReaderChip.sendHostRegRequestHST_CMD(RfidReaderChipData.HostCommands.CMD_RDOEM);
+                setPwrManagementMode(false);
+                rx000Setting.setOEMAddress(0x8E);
+                sendHostRegRequestHST_CMD(RfidReaderChipData.HostCommands.CMD_RDOEM);
                 return "";
             }
             return spcialCountryVersion.replaceAll("[^A-Za-z0-9]", "");
@@ -3654,32 +3641,31 @@ public class RfidReaderChipE710 {
         int freqModifyCode = FREQMODIFYCODE_INVALID;   // OemAddress = 0x8A
         int getFreqModifyCode() {
             if (freqModifyCode < FREQMODIFYCODE_MIN || freqModifyCode > FREQMODIFYCODE_MAX) {
-                mRfidReaderChip.setPwrManagementMode(false);
-                mRfidReaderChip.mRx000Setting.setOEMAddress(0x8F);
-                mRfidReaderChip.sendHostRegRequestHST_CMD(RfidReaderChipData.HostCommands.CMD_RDOEM);
+                setPwrManagementMode(false);
+                rx000Setting.setOEMAddress(0x8F);
+                sendHostRegRequestHST_CMD(RfidReaderChipData.HostCommands.CMD_RDOEM);
             }
             return freqModifyCode;
         }
 
         void writeOEM(int address, int value) {
-            mRfidReaderChip.setPwrManagementMode(false);
-            mRfidReaderChip.mRx000Setting.setOEMAddress(address);
-            mRfidReaderChip.mRx000Setting.setOEMData(value);
-            mRfidReaderChip.sendHostRegRequestHST_CMD(RfidReaderChipData.HostCommands.CMD_WROEM);
+            setPwrManagementMode(false);
+            rx000Setting.setOEMAddress(address);
+            rx000Setting.setOEMData(value);
+            sendHostRegRequestHST_CMD(RfidReaderChipData.HostCommands.CMD_WROEM);
         }
     }
-
     boolean bFirmware_reset_before = false;
     final int RFID_READING_BUFFERSIZE = 600; //1024;
-    class RfidReaderChip {
+//    class RfidReaderChip {
         byte[] mRfidToReading = new byte[RFID_READING_BUFFERSIZE];
         int mRfidToReadingOffset = 0;
         ArrayList<RfidConnector.CsReaderRfidData> mRx000ToWrite = new ArrayList<>();
 
-        Rx000Setting mRx000Setting = new Rx000Setting(true);
-        Rx000EngSetting mRx000EngSetting = new Rx000EngSetting();
-        Rx000MbpSetting mRx000MbpSetting = new Rx000MbpSetting();
-        Rx000OemSetting mRx000OemSetting = new Rx000OemSetting();
+        Rx000Setting rx000Setting = new Rx000Setting(true);
+        Rx000EngSetting rx000EngSetting = new Rx000EngSetting();
+        Rx000MbpSetting rx000MbpSetting = new Rx000MbpSetting();
+        Rx000OemSetting rx000OemSetting = new Rx000OemSetting();
 
         ArrayList<RfidReaderChipData.Rx000pkgData> mRx000ToRead = new ArrayList<>();
         private boolean clearTempDataIn_request = false;
@@ -3834,7 +3820,7 @@ public class RfidReaderChipE710 {
                                                 int iMbDataLength = dataA.dataValues.length - 18 - iEpcLength;
                                                 int iDataIndex = 0, iDataOffset = 0;
                                                 for (int i = 0; i < 3; i++) {
-                                                    int iValue = mRfidReaderChip.mRx000Setting.getMultibankReadLength(i);
+                                                    int iValue = rx000Setting.getMultibankReadLength(i);
                                                     if (DEBUG) appendToLog("i = " + i + ", getMultibankReadLength = " + iValue);
                                                     if (iValue != 0) {
                                                         int iBankLength = iValue * 2;
@@ -3925,16 +3911,16 @@ public class RfidReaderChipE710 {
                                     } else {
                                         switch (iCommand) {
                                             case 1:
-                                                mRx000Setting.keepAliveTime = new Date();
+                                                rx000Setting.keepAliveTime = new Date();
                                                 break;
                                             case 2:
-                                                mRx000Setting.inventoryRoundEndTime = new Date();
+                                                rx000Setting.inventoryRoundEndTime = new Date();
                                                 break;
                                             case 3:
-                                                mRx000Setting.crcErrorRate = ((dataA.dataValues[6] & 0xFF) << 8) + (dataA.dataValues[7] & 0xFF);
+                                                rx000Setting.crcErrorRate = ((dataA.dataValues[6] & 0xFF) << 8) + (dataA.dataValues[7] & 0xFF);
                                                 break;
                                             case 4:
-                                                mRx000Setting.tagRate = ((dataA.dataValues[6] & 0xFF) << 8) + (dataA.dataValues[7] & 0xFF);
+                                                rx000Setting.tagRate = ((dataA.dataValues[6] & 0xFF) << 8) + (dataA.dataValues[7] & 0xFF);
                                                 break;
                                             default:
                                                 appendToLog("!!! iCommand cannot be recognised for the uplink data " + byteArrayToString(dataA.dataValues));
@@ -4357,7 +4343,7 @@ public class RfidReaderChipE710 {
         int wideRSSI = -1;
         int getwideRSSI() {
             if (wideRSSI < 0) {
-                mRfidReaderChip.setPwrManagementMode(false);
+                setPwrManagementMode(false);
                 wideRSSI = 0; appendToLog("!!! Skip getwideRSSI with assumed value = 0");
             }
             return wideRSSI;
@@ -4368,7 +4354,7 @@ public class RfidReaderChipE710 {
         int getHighCompression() {
             int iRetValue = -1;
             if (rxGain < RXGAIN_MIN || rxGain > RXGAIN_MAX) {
-                mRfidReaderChip.setPwrManagementMode(false);
+                setPwrManagementMode(false);
                 rxGain = RXGAIN_DEFAULT; appendToLog(String.format("!!! Skip getHighCompression with assumed rxGain = 0x%X", RXGAIN_DEFAULT));
             } else iRetValue = (rxGain >> 8);
             return iRetValue;
@@ -4376,7 +4362,7 @@ public class RfidReaderChipE710 {
         int getRflnaGain() {
             int iRetValue = -1;
             if (rxGain < RXGAIN_MIN || rxGain > RXGAIN_MAX) {
-                mRfidReaderChip.setPwrManagementMode(false);
+                setPwrManagementMode(false);
                 rxGain = RXGAIN_DEFAULT; appendToLog(String.format("!!! Skip getRflnaGain with assumed rxGain = 0x%X", RXGAIN_DEFAULT));
             } else iRetValue = ((rxGain & 0xC0) >> 6);
             return iRetValue;
@@ -4384,7 +4370,7 @@ public class RfidReaderChipE710 {
         int getIflnaGain() {
             int iRetValue = -1;
             if (rxGain < RXGAIN_MIN || rxGain > RXGAIN_MAX) {
-                mRfidReaderChip.setPwrManagementMode(false);
+                setPwrManagementMode(false);
                 rxGain = RXGAIN_DEFAULT; appendToLog(String.format("!!! Skip getIflnaGain with assumed rxGain = 0x%X", RXGAIN_DEFAULT));
             } else iRetValue = ((rxGain & 0x38) >> 3);
             return iRetValue;
@@ -4392,7 +4378,7 @@ public class RfidReaderChipE710 {
         int getAgcGain() {
             int iRetValue = -1;
             if (rxGain < RXGAIN_MIN || rxGain > RXGAIN_MAX) {
-                mRfidReaderChip.setPwrManagementMode(false);
+                setPwrManagementMode(false);
                 rxGain = RXGAIN_DEFAULT; appendToLog(String.format("!!! Skip getAgcGain with assumed rxGain = 0x%X", RXGAIN_DEFAULT));
             } else iRetValue = (rxGain & 0x07);
             return iRetValue;
@@ -4400,7 +4386,7 @@ public class RfidReaderChipE710 {
         int getRxGain() {
             int iRetValue = -1;
             if (rxGain < RXGAIN_MIN || rxGain > RXGAIN_MAX) {
-                mRfidReaderChip.setPwrManagementMode(false);
+                setPwrManagementMode(false);
                 rxGain = RXGAIN_DEFAULT; appendToLog(String.format("!!! Skip getRxGain with assumed rxGain = 0x%X", RXGAIN_DEFAULT));
             } else iRetValue = rxGain;
             return iRetValue;
@@ -4412,7 +4398,7 @@ public class RfidReaderChipE710 {
         boolean setRxGain(int rxGain_new) {
             boolean bRetValue = true;
             if ((rxGain_new != rxGain) || (sameCheck == false)) {
-                mRfidReaderChip.setPwrManagementMode(false);
+                setPwrManagementMode(false);
                 rxGain = rxGain_new; appendToLog(String.format("!!! Skip setRxGain[0x%X]", rxGain_new));
             }
             return bRetValue;
@@ -4424,16 +4410,16 @@ public class RfidReaderChipE710 {
             switch (hostCommand) {
                 case CMD_18K6CINV:
                     hostCommandData = 0xA1;
-                    if (mRfidReaderChip.mRx000Setting.getQuerySelect() > 1 /*&& mRfidReaderChip.mRx000Setting.getImpinjExtension() == 0*/) hostCommandData = 0xA3;
+                    if (rx000Setting.getQuerySelect() > 1 /*&& mRfidReaderChip.mRx000Setting.getImpinjExtension() == 0*/) hostCommandData = 0xA3;
                     break;
                 case CMD_18K6CINV_COMPACT:
                     hostCommandData = 0xA2;
-                    if (mRfidReaderChip.mRx000Setting.getQuerySelect() > 1 /*&& mRfidReaderChip.mRx000Setting.getImpinjExtension() == 0*/) hostCommandData = 0xA6;
+                    if (rx000Setting.getQuerySelect() > 1 /*&& mRfidReaderChip.mRx000Setting.getImpinjExtension() == 0*/) hostCommandData = 0xA6;
                     break;
                 case CMD_18K6CINV_MB:
                     hostCommandData = 0xA4;
-                    appendToLog("getQuerySelect = " + mRfidReaderChip.mRx000Setting.getQuerySelect() + ", getImpinjExtension = " + mRfidReaderChip.mRx000Setting.getImpinjExtension());
-                    if (mRfidReaderChip.mRx000Setting.getQuerySelect() > 1 /*&& mRfidReaderChip.mRx000Setting.getImpinjExtension() == 0*/) hostCommandData = 0xA5;
+                    appendToLog("getQuerySelect = " + rx000Setting.getQuerySelect() + ", getImpinjExtension = " + rx000Setting.getImpinjExtension());
+                    if (rx000Setting.getQuerySelect() > 1 /*&& mRfidReaderChip.mRx000Setting.getImpinjExtension() == 0*/) hostCommandData = 0xA5;
                     break;
                 case NULL:
                     hostCommandData = 0xAE;
@@ -4523,6 +4509,7 @@ public class RfidReaderChipE710 {
                 commandOperating = true;
                 byte[] msgBuffer = new byte[]{(byte)0x80, (byte)0xb3, (byte)0x10, (byte)0xA1, 0, 0, 0};
                 msgBuffer[3] = (byte) (hostCommandData % 256);
+                if (true) appendToLog("3030 data = " + byteArrayToString(rx000Setting.antennaPortConfig[0]));
                 return sendHostRegRequest(HostRegRequests.HST_CMD, true, msgBuffer);
             }
         }
@@ -4714,12 +4701,10 @@ public class RfidReaderChipE710 {
                         + " to mRfidToWrite with length = " + csReaderConnector.rfidConnector.mRfidToWrite.size());
             } else if (DEBUG_PKDATA) appendToLog("!!! Skip repeated sending " + csReaderRfidData.rfidPayloadEvent + (csReaderRfidData.dataValues != null ? "." : "") + byteArrayToString(csReaderRfidData.dataValues));
         }
-    }
-
+//    }
     boolean inventoring = false;
     boolean isInventoring() { return  inventoring; }
     void setInventoring(boolean enable) { inventoring = enable; utility.debugFileEnable(false); if (true) appendToLog("isInventoring is set as " + inventoring);}
-
     boolean decode710Data(byte[] dataValues){
         if (DEBUG) appendToLog("mRfidToWrite.size = " + csReaderConnector.rfidConnector.mRfidToWrite.size());
         if (csReaderConnector.rfidConnector.mRfidToWrite.size() > 0) {
@@ -4806,10 +4791,10 @@ public class RfidReaderChipE710 {
                                 } else if (iRegAddr == 8) {
                                     if (DEBUG) appendToLog("2 iCommandCode");
                                     try {
-                                        mRfidReaderChip.mRx000Setting.macVer = new String(commandValue, StandardCharsets.UTF_8).trim();
+                                        rx000Setting.macVer = new String(commandValue, StandardCharsets.UTF_8).trim();
                                         bprocessed = true;
                                         if (false)
-                                            appendToLog("macVer = " + mRfidReaderChip.mRx000Setting.macVer);
+                                            appendToLog("macVer = " + rx000Setting.macVer);
                                     } catch (Exception e) {
                                         //throw new RuntimeException(e);
                                     }
@@ -4818,20 +4803,20 @@ public class RfidReaderChipE710 {
                                     for (int i = 0, increment = 1; i < commandValue.length; i++, increment *= 10) {
                                         iValue = commandValue[commandValue.length - 1 - i] * increment;
                                     }
-                                    mRfidReaderChip.mRx000Setting.macVerBuild = iValue;
+                                    rx000Setting.macVerBuild = iValue;
                                     bprocessed = true;
                                     if (false)
-                                        appendToLog("macVerBuild = " + mRfidReaderChip.mRx000Setting.macVerBuild);
+                                        appendToLog("macVerBuild = " + rx000Setting.macVerBuild);
                                 } else if (iRegAddr == 0x3014) {
-                                    mRfidReaderChip.mRx000Setting.countryEnum = commandValue;
+                                    rx000Setting.countryEnum = commandValue;
                                     bprocessed = true;
                                     if (true)
-                                        appendToLog("countryEnum = " + byteArrayToString(mRfidReaderChip.mRx000Setting.countryEnum));
+                                        appendToLog("countryEnum = " + byteArrayToString(rx000Setting.countryEnum));
                                 } else if (iRegAddr == 0x3018) {
-                                    mRfidReaderChip.mRx000Setting.frequencyChannelIndex = commandValue;
+                                    rx000Setting.frequencyChannelIndex = commandValue;
                                     bprocessed = true;
                                     if (true)
-                                        appendToLog("frequencyChannelIndex = " + byteArrayToString(mRfidReaderChip.mRx000Setting.frequencyChannelIndex));
+                                        appendToLog("frequencyChannelIndex = " + byteArrayToString(rx000Setting.frequencyChannelIndex));
                                 } else if (iRegAddr >= 0x3030 && iRegAddr < 0x3030 + 16 * 16) {
                                     int iPort = 0, iOffset = 0, iWidth = 0;
                                     for (iPort = 0; iPort < 16; iPort++) {
@@ -4846,10 +4831,10 @@ public class RfidReaderChipE710 {
                                     if (DEBUG)
                                         appendToLog("antennaPortConfig: iWidth = " + iWidth);
                                     if (iOffset == 0 && iWidth == 16) {
-                                        mRfidReaderChip.mRx000Setting.antennaPortConfig[iPort] = commandValue;
+                                        rx000Setting.antennaPortConfig[iPort] = commandValue;
                                         bprocessed = true;
                                         if (false)
-                                            appendToLog("antennaPortConfig[" + iPort + "] = " + byteArrayToString(mRfidReaderChip.mRx000Setting.antennaPortConfig[iPort]));
+                                            appendToLog("antennaPortConfig[" + iPort + "] = " + byteArrayToString(rx000Setting.antennaPortConfig[iPort]));
                                     } else
                                         appendToLog("!!! CANNOT handle with iPort = " + iPort + ", iOffset = " + iOffset + ", iWidth = " + iWidth);
                                 } else if (iRegAddr >= 0x3140 && iRegAddr < 0x3140 + 42 * 7) {
@@ -4866,10 +4851,10 @@ public class RfidReaderChipE710 {
                                     if (DEBUG)
                                         appendToLog("selectConfiguration: iWidth = " + iWidth);
                                     if (iOffset == 0 && iWidth == 42) {
-                                        mRfidReaderChip.mRx000Setting.selectConfiguration[index] = commandValue;
+                                        rx000Setting.selectConfiguration[index] = commandValue;
                                         bprocessed = true;
                                         if (false)
-                                            appendToLog("selectConfiguration[" + index + "] = " + byteArrayToString(mRfidReaderChip.mRx000Setting.selectConfiguration[index]));
+                                            appendToLog("selectConfiguration[" + index + "] = " + byteArrayToString(rx000Setting.selectConfiguration[index]));
                                     } else
                                         appendToLog("!!! CANNOT handle with index = " + index + ", iOffset = " + iOffset + ", iWidth = " + iWidth);
                                 } else if (iRegAddr >= 0x3270 && iRegAddr < 0x3270 + 7 * 3) {
@@ -4886,71 +4871,71 @@ public class RfidReaderChipE710 {
                                     if (DEBUG)
                                         appendToLog("multibankReadConfig: iWidth = " + iWidth);
                                     if (iOffset == 0 && iWidth == iPortSize) {
-                                        mRfidReaderChip.mRx000Setting.multibankReadConfig[index] = commandValue;
+                                        rx000Setting.multibankReadConfig[index] = commandValue;
                                         bprocessed = true;
                                         if (false)
-                                            appendToLog("multibankReadConfig[" + index + "] = " + byteArrayToString(mRfidReaderChip.mRx000Setting.multibankReadConfig[index]));
+                                            appendToLog("multibankReadConfig[" + index + "] = " + byteArrayToString(rx000Setting.multibankReadConfig[index]));
                                     } else
                                         appendToLog("!!! CANNOT handle with index = " + index + ", iOffset = " + iOffset + ", iWidth = " + iWidth);
                                 } else if (iRegAddr == 0x38A6) {
-                                    mRfidReaderChip.mRx000Setting.accessPassword = commandValue;
+                                    rx000Setting.accessPassword = commandValue;
                                     bprocessed = true;
-                                    if (false) appendToLog("accessPassword = " + byteArrayToString(mRfidReaderChip.mRx000Setting.accessPassword));
+                                    if (false) appendToLog("accessPassword = " + byteArrayToString(rx000Setting.accessPassword));
                                 } else if (iRegAddr == 0x38AA) {
-                                    mRfidReaderChip.mRx000Setting.killPassword = commandValue;
+                                    rx000Setting.killPassword = commandValue;
                                     bprocessed = true;
-                                    if (false) appendToLog("killPassword = " + byteArrayToString(mRfidReaderChip.mRx000Setting.killPassword));
+                                    if (false) appendToLog("killPassword = " + byteArrayToString(rx000Setting.killPassword));
                                 } else if (iRegAddr == 0x3900) {
-                                    mRfidReaderChip.mRx000Setting.dupElimRollWindow = commandValue;
+                                    rx000Setting.dupElimRollWindow = commandValue;
                                     bprocessed = true;
-                                    if (false) appendToLog("dupElimDelay = " + byteArrayToString(mRfidReaderChip.mRx000Setting.dupElimRollWindow));
+                                    if (false) appendToLog("dupElimDelay = " + byteArrayToString(rx000Setting.dupElimRollWindow));
                                 } else if (iRegAddr == 0x3906) {
-                                    mRfidReaderChip.mRx000Setting.eventPacketUplnkEnable = commandValue;
+                                    rx000Setting.eventPacketUplnkEnable = commandValue;
                                     bprocessed = true;
-                                    if (false) appendToLog("eventPacketUplnkEnable = " + byteArrayToString(mRfidReaderChip.mRx000Setting.eventPacketUplnkEnable));
+                                    if (false) appendToLog("eventPacketUplnkEnable = " + byteArrayToString(rx000Setting.eventPacketUplnkEnable));
                                 } else if (iRegAddr == 0x3908) {
-                                    mRfidReaderChip.mRx000Setting.intraPacketDelay = commandValue;
+                                    rx000Setting.intraPacketDelay = commandValue;
                                     bprocessed = true;
-                                    if (false) appendToLog("intraPacketDelay = " + byteArrayToString(mRfidReaderChip.mRx000Setting.intraPacketDelay));
+                                    if (false) appendToLog("intraPacketDelay = " + byteArrayToString(rx000Setting.intraPacketDelay));
                                 } else if (iRegAddr == 0x3948) {
-                                    mRfidReaderChip.mRx000Setting.currentPort = commandValue;
+                                    rx000Setting.currentPort = commandValue;
                                     bprocessed = true;
-                                    if (true) appendToLog("currentPort = " + byteArrayToString(mRfidReaderChip.mRx000Setting.currentPort));
+                                    if (true) appendToLog("currentPort = " + byteArrayToString(rx000Setting.currentPort));
                                 } else if (iRegAddr == 0x5000) {
-                                    mRfidReaderChip.mRx000Setting.modelCode = commandValue;
+                                    rx000Setting.modelCode = commandValue;
                                     bprocessed = true;
                                     if (false)
-                                        appendToLog("modelCode = " + byteArrayToString(mRfidReaderChip.mRx000Setting.modelCode));
+                                        appendToLog("modelCode = " + byteArrayToString(rx000Setting.modelCode));
                                 } else if (iRegAddr == 0x5020) {
-                                    mRfidReaderChip.mRx000Setting.productSerialNumber = commandValue;
+                                    rx000Setting.productSerialNumber = commandValue;
                                     bprocessed = true;
                                     if (false)
-                                        appendToLog("productSerialNumber = " + byteArrayToString(mRfidReaderChip.mRx000Setting.productSerialNumber));
+                                        appendToLog("productSerialNumber = " + byteArrayToString(rx000Setting.productSerialNumber));
                                 } else if (iRegAddr == 0x5040) {
-                                    mRfidReaderChip.mRx000Setting.countryEnumOem = commandValue;
+                                    rx000Setting.countryEnumOem = commandValue;
                                     bprocessed = true;
                                     if (true)
-                                        appendToLog("countryEnumOem = " + byteArrayToString(mRfidReaderChip.mRx000Setting.countryEnumOem));
+                                        appendToLog("countryEnumOem = " + byteArrayToString(rx000Setting.countryEnumOem));
                                 } else if (iRegAddr == 0xEF98) {
-                                    mRfidReaderChip.mRx000Setting.countryCodeOem = commandValue;
+                                    rx000Setting.countryCodeOem = commandValue;
                                     bprocessed = true;
                                     if (false)
-                                        appendToLog("countryCodeOem = " + byteArrayToString(mRfidReaderChip.mRx000Setting.countryCodeOem));
+                                        appendToLog("countryCodeOem = " + byteArrayToString(rx000Setting.countryCodeOem));
                                 } else if (iRegAddr == 0xEF9C) {
-                                    mRfidReaderChip.mRx000Setting.boardSerialNumber = commandValue;
+                                    rx000Setting.boardSerialNumber = commandValue;
                                     bprocessed = true;
                                     if (true)
-                                        appendToLog("boardSerialNumber = " + byteArrayToString(mRfidReaderChip.mRx000Setting.boardSerialNumber));
+                                        appendToLog("boardSerialNumber = " + byteArrayToString(rx000Setting.boardSerialNumber));
                                 } else if (iRegAddr == 0xEFAC) {
-                                    mRfidReaderChip.mRx000Setting.specialcountryCodeOem = commandValue;
+                                    rx000Setting.specialcountryCodeOem = commandValue;
                                     bprocessed = true;
                                     if (false)
-                                        appendToLog("specialcountryCodeOem = " + byteArrayToString(mRfidReaderChip.mRx000Setting.specialcountryCodeOem));
+                                        appendToLog("specialcountryCodeOem = " + byteArrayToString(rx000Setting.specialcountryCodeOem));
                                 } else if (iRegAddr == 0xEFB0) {
-                                    mRfidReaderChip.mRx000Setting.freqModifyCode = commandValue;
+                                    rx000Setting.freqModifyCode = commandValue;
                                     bprocessed = true;
                                     if (false)
-                                        appendToLog("freqModifyCode = " + byteArrayToString(mRfidReaderChip.mRx000Setting.freqModifyCode));
+                                        appendToLog("freqModifyCode = " + byteArrayToString(rx000Setting.freqModifyCode));
                                 }
                                 if (bprocessed) {
                                     if (DEBUG_PKDATA) {

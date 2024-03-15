@@ -9,17 +9,14 @@ import java.util.Arrays;
 
 public class BarcodeNewland {
     boolean DEBUG_PKDATA;
-    BarcodeConnector barcodeConnector;
-    Utility utility;
     public enum BarcodeCommandTypes {
         COMMAND_COMMON, COMMAND_SETTING, COMMAND_QUERY
     }
     BarcodeCommandTypes commandType;
 
-    Context context; TextView mLogView;
-    public BarcodeNewland(Context context, TextView mLogView, BarcodeConnector barcodeConnector, Utility utility) {
+    Context context; Utility utility; BarcodeConnector barcodeConnector;
+    public BarcodeNewland(Context context, Utility utility, BarcodeConnector barcodeConnector) {
         this.context = context;
-        this.mLogView = mLogView;
         this.barcodeConnector = barcodeConnector;
         this.utility = utility; DEBUG_PKDATA = utility.DEBUG_PKDATA;
     }

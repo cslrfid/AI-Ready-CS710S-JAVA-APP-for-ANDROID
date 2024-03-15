@@ -10,7 +10,6 @@ import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputConnection;
 
-import com.csl.cs710library4a.CsLibrary4A;
 import com.csl.cslibrary4a.RfidReaderChipData;
 
 import java.util.ArrayList;

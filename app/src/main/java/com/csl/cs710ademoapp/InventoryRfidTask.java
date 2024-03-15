@@ -8,7 +8,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.csl.cs710ademoapp.adapters.ReaderListAdapter;
-import com.csl.cs710library4a.CsLibrary4A;
 import com.csl.cslibrary4a.ReaderDevice;
 import com.csl.cslibrary4a.RfidReaderChipData;
 
@@ -491,16 +490,26 @@ public class InventoryRfidTask extends AsyncTask<Void, String, String> {
                     } else if (readerListAdapter.getSelectDupElim()) {
                         ReaderDevice readerDevice = null;
                         int iMatchItem = -1;
-                        if (true) {
+                        if (false) {
                             int index = Collections.binarySearch(MainActivity.sharedObjects.tagsIndexList, new SharedObjects.TagsIndex(strAddresss, 0));
                             if (index >= 0) {
                                 iMatchItem = MainActivity.sharedObjects.tagsIndexList.size() - 1 - MainActivity.sharedObjects.tagsIndexList.get(index).getPosition();
                             }
                         } else {
+                            String strCompare = null;
+                            if (extra1Bank == 2) {
+                                strCompare = strExtra1; //MainActivity.csLibrary4A.appendToLog("1strExtra = " + strExtra1 + ", " + readerDevice.getTid() + ", " + readerDevice.getTid().matches(strCompare));
+                            } else if (extra2Bank == 2) {
+                                strCompare = strExtra2; //MainActivity.csLibrary4A.appendToLog("2strExtra = " + strExtra2 + ", " + readerDevice.getTid() + ", " + readerDevice.getTid().matches(strCompare));
+                            }
                             for (int i = 0; i < tagsList.size(); i++) {
                                 if (strEpc.matches(tagsList.get(i).getAddress())) {
-                                    iMatchItem = i;
-                                    break;
+                                    boolean bTidMatched = true;
+                                    if (strCompare != null && tagsList.get(i).getTid() != null) bTidMatched = tagsList.get(i).getTid().matches(strCompare);
+                                    if (bTidMatched) {
+                                        iMatchItem = i;
+                                        break;
+                                    }
                                 }
                             }
                         }
