@@ -43,6 +43,7 @@
     <string name="title_activity_fdMicro">FM13DT160</string>
     <string name="title_activity_ctesisu">CTESIUS</string>
     <string name="title_activity_kiloway">KX2005X-BL</string>
+    <string name="title_activity_longjing">EL-N2ESL</string>
 
     <string name="title_activity_registertag">Register tag</string>
     <string name="title_activity_readWriteUser">Long Read / Write</string>
@@ -77,6 +78,19 @@
     <string-array name="write_memoryBank_options">
         <item>EPC</item>
         <item>User</item>
+    </string-array>
+
+    <string-array name="write_Epc_options">
+        <item>SGTIN - Serialized Global Trade Item Number</item>
+        <item>SSCC - Serial Shipping Container Code</item>
+        <item>SGLN - Serialized Global Location Number</item>
+        <item>GRAI - Global Returnable Asset Identifier</item>
+        <item>GIAI - Global Individual Asset Identifier</item>
+        <item>GSRN - Global Service Relation Number, Recipient</item>
+        <item>GSRNP - Global Service Relation Number, Provider</item>
+        <item>GDTI - Global Document Type Identifier</item>
+        <item>CPI - Component Part Identifier</item>
+        <item>SGCN - Serialized Globald Coupon Number</item>
     </string-array>
 
     <string-array name="write_data_options">
@@ -454,6 +468,9 @@
     <string name="home_filter710">Filters\n</string>
     <string name="home_access710">Security\n</string>
     <string name="home_activity_special710">Special Functions\n</string>
+
+    <string name="special_N2ESL">Longjing EL-N2ESL\nCS6861</string>
+    <string name="special_N2ESL_1">EL-N2ESL CS6861</string>
 
     <string name="error_bluetooth_connection_failed">Unable to connect device</string>
     <string name="colon">:</string>

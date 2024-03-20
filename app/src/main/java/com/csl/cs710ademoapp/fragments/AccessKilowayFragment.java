@@ -13,17 +13,18 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.csl.cs710ademoapp.AccessTask;
+import com.csl.cs710ademoapp.InventoryRfidTask;
 import com.csl.cs710ademoapp.MainActivity;
 import com.csl.cs710ademoapp.R;
-import com.csl.cs710library4a.CsLibrary4A;
 import com.csl.cslibrary4a.ReaderDevice;
+import com.csl.cslibrary4a.RfidReaderChipData;
 
 public class AccessKilowayFragment extends CommonFragment {
     final boolean DEBUG = true;
     EditText editTextRWTagID, editTextaccessRWAntennaPower;
 
     TextView textViewOk;
-    CheckBox checkBox;
+    CheckBox checkBoxRepeat, checkBox;
     TextView textView;
 
     private Button buttonRead;
@@ -47,6 +48,7 @@ public class AccessKilowayFragment extends CommonFragment {
         editTextRWTagID = (EditText) getActivity().findViewById(R.id.accessKilowayID);
         editTextaccessRWAntennaPower = (EditText) getActivity().findViewById(R.id.accessLEDAntennaPower);
 
+        checkBoxRepeat = (CheckBox) getActivity().findViewById(R.id.accessKilowayRepeat);
         textViewOk = (TextView) getActivity().findViewById(R.id.accessKilowayResultOK);
         checkBox = (CheckBox) getActivity().findViewById(R.id.accessKilowayResultTitle);
         textView = (TextView) getActivity().findViewById(R.id.accessKilowayResult);
@@ -88,11 +90,13 @@ public class AccessKilowayFragment extends CommonFragment {
         if (getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.RESUMED) == false) return;
         if(getUserVisibleHint()) {
             setupTagID();
-        }
+        } else checkBoxRepeat.setChecked(false);
     }
 
-    public AccessKilowayFragment() {
+    boolean isLongjing = false;
+    public AccessKilowayFragment(boolean isLongjing) {
         super("AccessLedTagFragment");
+        this.isLongjing = isLongjing;
     }
 
     void setupTagID() {
@@ -136,15 +140,14 @@ public class AccessKilowayFragment extends CommonFragment {
                     boolean invalid = processTickItems();
                     MainActivity.csLibrary4A.appendToLog("AccessLedTagFragment(): processTickItems with invalid = " + invalid + ", bankProcessing = " + bankProcessing + ", checkProcessing = " + checkProcessing); ///
                     if (bankProcessing++ != 0 && invalid == true)   {
-                        CheckBox checkBox = (CheckBox) getActivity().findViewById(R.id.accessKilowayRepeat);
                         rerunRequest = true;
-                        if (checkBox.isChecked()) { bankProcessing = 0; checkProcessing = 0; }
+                        if (checkBoxRepeat != null && checkBoxRepeat.isChecked()) { bankProcessing = 0; checkProcessing = 0; }
                         else rerunRequest = false;
                     } else {
                         accessTask = new AccessTask(
                                 buttonRead, invalid,
                                 editTextRWTagID.getText().toString(), 1, 32,
-                                "00000000", Integer.valueOf(editTextaccessRWAntennaPower.getText().toString()), CsLibrary4A.HostCommands.CMD_18K6CREAD,
+                                "00000000", Integer.valueOf(editTextaccessRWAntennaPower.getText().toString()), RfidReaderChipData.HostCommands.CMD_18K6CREAD,
                                 false, null);
                         accessTask.execute();
                         rerunRequest = true;
@@ -193,6 +196,10 @@ public class AccessKilowayFragment extends CommonFragment {
 
         if (checkBox.isChecked() == true && checkProcessing < 1) {
             accBank = 0; accSize = 1; accOffset = 4;
+            if (isLongjing) {
+                accBank = 3; accOffset = 112;
+            }
+
             readWriteTypes = ReadWriteTypes.READVALUE; checkProcessing = 1;
             textViewOk.setText(""); textView.setText("");
         } else {

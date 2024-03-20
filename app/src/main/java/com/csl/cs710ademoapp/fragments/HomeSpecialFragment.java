@@ -10,7 +10,6 @@ import android.widget.Button;
 
 import com.csl.cs710ademoapp.MainActivity;
 import com.csl.cs710ademoapp.R;
-import com.google.android.material.tabs.TabLayout;
 
 public class HomeSpecialFragment extends CommonFragment {
     final boolean DEBUG = false;

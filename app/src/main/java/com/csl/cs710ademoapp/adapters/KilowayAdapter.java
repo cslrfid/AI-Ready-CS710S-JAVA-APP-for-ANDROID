@@ -21,7 +21,7 @@ public class KilowayAdapter extends FragmentStatePagerAdapter {
                 fragment1 = fragment;
                 break;
             case 1:
-                fragment = new AccessKilowayFragment();
+                fragment = new AccessKilowayFragment(false);
                 fragment0 = fragment;
                 break;
             default:

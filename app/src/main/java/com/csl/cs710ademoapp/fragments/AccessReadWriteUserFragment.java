@@ -25,8 +25,8 @@ import com.csl.cs710ademoapp.GenericTextWatcher;
 import com.csl.cs710ademoapp.SelectTag;
 import com.csl.cs710ademoapp.MainActivity;
 import com.csl.cs710ademoapp.R;
-import com.csl.cs710library4a.CsLibrary4A;
 import com.csl.cslibrary4a.ReaderDevice;
+import com.csl.cslibrary4a.RfidReaderChipData;
 
 import static com.csl.cs710ademoapp.MainActivity.mContext;
 import static com.csl.cs710ademoapp.MainActivity.tagSelected;
@@ -304,7 +304,7 @@ public class AccessReadWriteUserFragment extends CommonFragment {
                             selectTag.editTextTagID.getText().toString(), spinnerSelectBank.getSelectedItemPosition() + 1, selectOffset,
                             editTextAccessRWAccPassword.getText().toString(),
                             Integer.valueOf(editTextaccessRWAntennaPower.getText().toString()),
-                            (operationRead ? CsLibrary4A.HostCommands.CMD_18K6CREAD: CsLibrary4A.HostCommands.CMD_18K6CWRITE), updateRunnable);
+                            (operationRead ? RfidReaderChipData.HostCommands.CMD_18K6CREAD: RfidReaderChipData.HostCommands.CMD_18K6CWRITE), updateRunnable);
                     accessTask.execute();
                     rerunRequest = true;
                 }

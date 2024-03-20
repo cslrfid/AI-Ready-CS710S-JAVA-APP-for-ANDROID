@@ -15,6 +15,10 @@ import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.epctagcoder.exception.EPCParseException;
+import org.epctagcoder.parse.SGTIN.ParseSGTIN;
+import org.epctagcoder.result.SGTIN;
+
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -33,7 +37,6 @@ public class Utility {
         mContext = context;
         this.mLogView = mLogView;
     }
-
     private static long mReferenceTimeMs;
     public void setReferenceTimeMs() {
         mReferenceTimeMs = System.currentTimeMillis();
@@ -387,4 +390,187 @@ public class Utility {
         }
         return temperature;
     } //4278
+    public float temperatureC2F(float fTemp) {
+        return (float) (32 + fTemp * 1.8);
+    }
+    public String temperatureC2F(String strValue) {
+        try {
+            float fValue = Float.parseFloat(strValue);
+
+            fValue = temperatureC2F(fValue);
+            return String.format("%.1f", fValue);
+        } catch (Exception ex) { }
+        return "";
+    }
+    float temperatureF2C(float fTemp) {
+        return (float) ((fTemp - 32) * 0.5556);
+    }
+    public String temperatureF2C(String strValue) {
+        try {
+            float fValue = Float.parseFloat(strValue);
+
+            fValue = temperatureF2C(fValue);
+            return String.format("%.1f", fValue);
+        } catch (Exception ex) { }
+        return "";
+    }
+
+    public enum EpcClass {
+        SGTIN, SSCC, SGLN, GRAI, GIAI, GSRN, GSRNP, GDTI, CPI, SGCN
+    }
+    public String getEpc4upcSerial(EpcClass epcClass, String filter, String companyPrefix, String itemReference, String serialNumber) {
+        String strValue = null;
+        ParseSGTIN parseSGTIN = null;
+        String strURI = "urn:epc:tag:";
+        appendToLog("epcClass is " + epcClass.toString());
+        switch (epcClass) {
+            default:
+                strURI += "sgtin-96:";
+                break;
+        }
+        strURI += (filter + "." + companyPrefix + "." + itemReference + "." + serialNumber);
+        try {
+            parseSGTIN = ParseSGTIN.Builder()
+                    .withEPCTagURI( strURI).build();
+            SGTIN sgtin = parseSGTIN.getSGTIN();
+            strValue = sgtin.getRfidTag();
+        } catch (EPCParseException e) {
+            //throw new RuntimeException(e);
+        }
+        return strValue;
+    }
+
+    public String getUpcSerial(String strEpc) {
+        ParseSGTIN parseSGTIN = null;
+        String strValue = null;
+        try {
+            parseSGTIN = ParseSGTIN.Builder()
+                    .withRFIDTag(strEpc)
+                    .build();
+            SGTIN sgtin = parseSGTIN.getSGTIN();
+            //strValue = sgtin.toString();
+            //strValue = sgtin.getEpcRawURI();
+            strValue = sgtin.getEpcTagURI();
+            String strHeader = "urn:epc:tag:";
+            if (strValue.indexOf(strHeader) == 0) strValue = strValue.substring(strHeader.length());
+        } catch (Exception e) {
+            appendToLog("parseSSCC exception: " + e.getMessage());
+            //throw new RuntimeException(e);
+        }
+        return strValue;
+    }
+    public String getUpcSerialDetail(String strUpcSerial) {
+        String strValue = null, strTmp, strCmp;
+        strCmp = ":"; strTmp = strUpcSerial.substring(0, strUpcSerial.indexOf(strCmp));
+        if (strTmp != null) {
+            if (strValue != null) strValue += "\n";
+            strValue = "Epc Class: " + strTmp;
+            strUpcSerial = strUpcSerial.substring(strUpcSerial.indexOf(strCmp) + 1);
+        }
+        strCmp = "."; strTmp = strUpcSerial.substring(0, strUpcSerial.indexOf(strCmp));
+        if (strTmp != null) {
+            if (strValue != null) strValue += "\n";
+            strValue += "Filter: " + strTmp;
+            strUpcSerial = strUpcSerial.substring(strUpcSerial.indexOf(strCmp) + 1);
+        }
+        strCmp = "."; strTmp = strUpcSerial.substring(0, strUpcSerial.indexOf(strCmp));
+        if (strTmp != null) {
+            if (strValue != null) strValue += "\n";
+            strValue += "Company Prefix: " + strTmp;
+            strUpcSerial = strUpcSerial.substring(strUpcSerial.indexOf(strCmp) + 1);
+        }
+        strCmp = "."; strTmp = strUpcSerial.substring(0, strUpcSerial.indexOf(strCmp));
+        if (strTmp != null) {
+            if (strValue != null) strValue += "\n";
+            strValue += "Item Reference: " + strTmp;
+            strUpcSerial = strUpcSerial.substring(strUpcSerial.indexOf(strCmp) + 1);
+        }
+        strTmp = strUpcSerial;
+        if (strTmp != null) {
+            if (strValue != null) strValue += ("\n");
+            strValue += "Serial Number: " + strTmp;
+        }
+        return strValue;
+    }
+
+    public boolean checkHostProcessorVersion(String version, int majorVersion, int minorVersion, int buildVersion) {
+        if (version == null) return false;
+        if (version.length() == 0) return false;
+        String[] versionPart = version.split("\\.");
+
+        if (versionPart == null) { appendToLog("NULL VersionPart"); return false; }
+        try {
+            int value = Integer.valueOf(versionPart[0]);
+            if (value < majorVersion) return false;
+            if (value > majorVersion) return true;
+
+            if (versionPart.length < 2) return true;
+            value = Integer.valueOf(versionPart[1]);
+            if (value < minorVersion) return false;
+            if (value > minorVersion) return true;
+
+            if (versionPart.length < 3) return true;
+            value = Integer.valueOf(versionPart[2]);
+            if (value < buildVersion) return false;
+            return true;
+        } catch (Exception ex) {
+            return false;
+        }
+    }
+
+    public float float16toFloat32(String strData) {
+        float fValue = -1;
+        if (strData.length() == 4) {
+            int iValue = Integer.parseInt(strData, 16);
+            int iSign = iValue & 0x8000; if (iSign != 0) iSign = 1;
+            int iExp = (iValue & 0x7C00) >> 10;
+            int iMant = (iValue & 0x3FF);
+            if (iExp == 15) {
+                if (iSign == 0) fValue = Float.POSITIVE_INFINITY;
+                else fValue = Float.NEGATIVE_INFINITY;
+            } else if (iExp == 0) {
+                fValue = (iMant / 1024) * 2^(-14);
+                if (iSign != 0) fValue *= -1;
+            } else {
+                fValue = (float) Math.pow(2, iExp - 15);
+                fValue *= (1 + ((float)iMant / 1024));
+                if (iSign != 0) fValue *= -1;
+            }
+            if (true) appendToLog("strData = " + strData + ", iValue = " + iValue + ", iSign = " + iSign + ", iExp = " + iExp + ", iMant = " + iMant + ", fValue = " + fValue);
+        }
+        return fValue;
+    }
+    public String strFloat16toFloat32(String strData) {
+        String strValue = null;
+        float fTemperature = float16toFloat32(strData);
+        if (fTemperature > -400) return String.format("%.1f", fTemperature);
+        return strValue;
+    }
+    public String str2float16(String strData) {
+        String strValue = "";
+        float fValue0 = (float) Math.pow(2, -14);
+        float fValueMax = 2 * (float) Math.pow(2, 30);
+        float fValue = Float.parseFloat(strData);
+        float fValuePos = (fValue > 0) ? fValue : -fValue;
+        boolean bSign = false; if (fValue < 0) bSign = true;
+        int iExp, iMant;
+        if (fValuePos < fValueMax) {
+            if (fValuePos < fValue0) {
+                iExp = 0;
+                iMant = (int)((fValuePos / fValue0) * 1024);
+            } else {
+                for (iExp = 1; iExp < 31; iExp++) {
+                    if (fValuePos < 2 * (float) Math.pow(2, iExp - 15)) break;
+                }
+                fValuePos /= ((float) Math.pow(2, iExp - 15));
+                fValuePos -= 1;
+                fValuePos *= 1024;
+                iMant = (int) fValuePos;
+            }
+            int iValue = (bSign ? 0x8000 : 0) + (iExp << 10) + iMant;
+            strValue = String.format("%04X", iValue);
+            if (true) appendToLog("bSign = " + bSign + ", iExp = " + iExp + ", iMant = " + iMant + ", iValue = " + iValue + ", strValue = " + strValue);
+        }
+        return strValue;
+    }
 }

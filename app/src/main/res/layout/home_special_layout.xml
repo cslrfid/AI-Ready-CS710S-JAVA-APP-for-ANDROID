@@ -108,6 +108,7 @@
 
             <Button
                 style="@style/DashboardButton"
+                android:visibility="gone"
                 android:layout_height="50dp"
                 android:layout_marginTop="@dimen/home_icon_margin_1"
                 android:background="@drawable/btn_back"
@@ -117,12 +118,22 @@
 
             <Button
                 style="@style/DashboardButton"
+                android:visibility="gone"
                 android:layout_height="50dp"
                 android:layout_marginTop="@dimen/home_icon_margin_1"
                 android:background="@drawable/btn_back"
                 android:gravity="center"
                 android:text="Kiloway KX2005X-BL"
                 android:onClick="kilowayClicked"/>
+
+            <Button
+                style="@style/DashboardButton"
+                android:layout_height="50dp"
+                android:layout_marginTop="@dimen/home_icon_margin_1"
+                android:background="@drawable/btn_back"
+                android:gravity="center"
+                android:text="@string/special_N2ESL_1"
+                android:onClick="longjingClicked"/>
 
             <Button
                 style="@style/DashboardButton"

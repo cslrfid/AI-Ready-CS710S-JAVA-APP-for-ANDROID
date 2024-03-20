@@ -2,7 +2,7 @@ package com.csl.cslibrary4a;
 
 public class ReaderDevice implements Comparable<ReaderDevice>  {
     private String name;
-    private String address;
+    private String address; private String upcSerial;
     boolean selected;
     private String details;
     int extra1Bank, extra2Bank, extra1Offset, extra2Offset;
@@ -99,6 +99,12 @@ public class ReaderDevice implements Comparable<ReaderDevice>  {
 
     public void setAddress(String address) {
         this.address = address;
+    }
+
+    public String getUpcSerial() { return upcSerial; }
+
+    public void setUpcSerial(String upcSerial) {
+        this.upcSerial = upcSerial;
     }
 
     public boolean getSelected() {

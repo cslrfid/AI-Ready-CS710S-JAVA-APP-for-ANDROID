@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
@@ -17,12 +16,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.csl.cs710ademoapp.AccessTask;
-import com.csl.cs710ademoapp.GenericTextWatcher;
 import com.csl.cs710ademoapp.MainActivity;
 import com.csl.cs710ademoapp.R;
 import com.csl.cs710ademoapp.SelectTag;
-import com.csl.cs710library4a.CsLibrary4A;
 import com.csl.cslibrary4a.ReaderDevice;
+import com.csl.cslibrary4a.RfidReaderChipData;
 
 public class UtraceFragment extends CommonFragment {
     final boolean DEBUG = true;
@@ -233,7 +231,7 @@ public class UtraceFragment extends CommonFragment {
                 accessTask = new AccessTask(
                         button, null, invalid,
                         selectTag.editTextTagID.getText().toString(), selectBank, (selectBank == 1 ? 32 : 0),
-                        selectTag.editTextAccessPassword.getText().toString(), Integer.valueOf(selectTag.editTextAccessAntennaPower.getText().toString()), CsLibrary4A.HostCommands.CMD_UNTRACEABLE,
+                        selectTag.editTextAccessPassword.getText().toString(), Integer.valueOf(selectTag.editTextAccessAntennaPower.getText().toString()), RfidReaderChipData.HostCommands.CMD_UNTRACEABLE,
                         0, 0, true, false,
                         null, null, null, null, null);
                 MainActivity.csLibrary4A.appendToLog("setSelectCriteria: going to execute accessTask");

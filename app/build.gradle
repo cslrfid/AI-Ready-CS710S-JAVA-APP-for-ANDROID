@@ -1,24 +1,24 @@
 apply plugin: 'com.android.application'
 
 android {
-    namespace "com.csl.cs710ademoapp"
-    compileSdk 34
+    namespace 'com.csl.cs710ademoapp'
     buildFeatures {
         buildConfig true
     }
+
+    compileSdk 34
     defaultConfig {
         applicationId "com.csl.cs710ademoapp"
         minSdk 21
         targetSdk 34
-        versionCode 5
-        versionName "4.9.16"
+        versionCode 6
+        versionName "4.10.10"
     }
 }
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
-    implementation 'com.google.android.material:material:1.10.0'
-    implementation project(path: ':cs710library4a')
-    implementation project(path: ':cs108library4a')
-    implementation project(path: ':cslibrary4a')
+    implementation 'com.google.android.material:material:1.11.0'
+    implementation project(':cs710library4a')
+    implementation project(':cslibrary4a')
 }

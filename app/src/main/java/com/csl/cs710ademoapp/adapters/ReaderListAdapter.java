@@ -67,6 +67,12 @@ public class ReaderListAdapter extends ArrayAdapter<ReaderDevice> {
                 text1 += reader.getAddress();
             }
         }
+        if (reader.getUpcSerial() != null) {
+            if (reader.getUpcSerial().length() != 0)  {
+                if (text1.length() != 0) text1 += "\n";
+                text1 += reader.getUpcSerial();
+            }
+        }
         if (MainActivity.csLibrary4A.isBleScanning()) {
             if (reader.getServiceUUID2p1() == 0) text1 += "\nCS108 Reader";
             else if (reader.getServiceUUID2p1() == 2) text1 += "\nCS710S Reader";
