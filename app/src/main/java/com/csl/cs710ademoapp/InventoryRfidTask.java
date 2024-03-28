@@ -94,9 +94,9 @@ public class InventoryRfidTask extends AsyncTask<Void, String, String> {
         MainActivity.mSensorConnector.mLocationDevice.turnOn(true);
         MainActivity.mSensorConnector.mSensorDevice.turnOn(true);
         if (ALLOW_RTSAVE) {
-            saveExternalTask = new SaveList2ExternalTask();
+            saveExternalTask = new SaveList2ExternalTask(false);
             try {
-                saveExternalTask.openServer();
+                saveExternalTask.openServer(false);
                 serverConnectValid = true;
                 MainActivity.csLibrary4A.appendToLog("openServer is done");
             } catch (Exception ex) {
@@ -554,11 +554,13 @@ public class InventoryRfidTask extends AsyncTask<Void, String, String> {
                         MainActivity.csLibrary4A.appendToLog("bSgtinOnly = " + bSgtinOnly + ", strValue = " + (strValue == null ? "null" : strValue));
                         if (strValue == null) bAddDevice = false;
                     } else if (bProtectOnly) {
-                        bAddDevice = false;
-                        strValue = strExtra1.substring(strExtra1.length()-1);
-                        int iValue = Integer.parseInt(strValue, 16);
-                        MainActivity.csLibrary4A.appendToLog("bProtectOnly = " + bProtectOnly + ", strExtra1 = " + (strExtra1 == null ? "null" : strExtra1) + ", iValue = " + iValue);
-                        if ((iValue & 0x02) != 0) bAddDevice = true;
+                        if (strExtra1 != null) {
+                            bAddDevice = false;
+                            strValue = strExtra1.substring(strExtra1.length() - 1);
+                            int iValue = Integer.parseInt(strValue, 16);
+                            MainActivity.csLibrary4A.appendToLog("bProtectOnly = " + bProtectOnly + ", strExtra1 = " + (strExtra1 == null ? "null" : strExtra1) + ", iValue = " + iValue);
+                            if ((iValue & 0x02) != 0) bAddDevice = true;
+                        } else MainActivity.csLibrary4A.appendToLog("NULL strExtra1");
                     }
                     if (bAddDevice == false) { }
                     else if (match == false) {

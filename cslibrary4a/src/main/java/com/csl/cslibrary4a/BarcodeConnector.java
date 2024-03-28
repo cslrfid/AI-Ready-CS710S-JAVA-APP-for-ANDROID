@@ -154,7 +154,7 @@ public class BarcodeConnector {
                     }
                     String string = "Up31 " + (bprocessed ? "" : "Unprocessed, ") + barcodeToWrite.get(0).barcodePayloadEvent.toString() + ", " + byteArrayToString(data1);
                     utility.writeDebug2File(string);
-                    barcodeToWrite.remove(0); sendDataToWriteSent = 0; mDataToWriteRemoved = true;
+                    barcodeToWrite.remove(0); sendDataToWriteSent = 0; mDataToWriteRemoved = true; appendToLog("barcodeToWrite remove0 with length = " + barcodeToWrite.size());
                     if (DEBUG_PKDATA) appendToLog("PkData: new mBarcodeToWrite size = " + barcodeToWrite.size());
                 }
             }
@@ -181,10 +181,10 @@ public class BarcodeConnector {
                 boolean isBarcodeData = false;
                 if (true || barcodePayloadEvents == BarcodePayloadEvents.BARCODE_SCAN_START || barcodePayloadEvents == BarcodePayloadEvents.BARCODE_COMMAND) isBarcodeData = true;
                 if (barcodeFailure && isBarcodeData) {
-                    barcodeToWrite.remove(0); sendDataToWriteSent = 0; mDataToWriteRemoved = true;
+                    barcodeToWrite.remove(0); sendDataToWriteSent = 0; mDataToWriteRemoved = true; appendToLog("barcodeToWrite remove0 with length = " + barcodeToWrite.size());
                 } else if (sendDataToWriteSent >= 5 && isBarcodeData) {
                     int oldSize = barcodeToWrite.size();
-                    barcodeToWrite.remove(0); sendDataToWriteSent = 0; mDataToWriteRemoved = true;
+                    barcodeToWrite.remove(0); sendDataToWriteSent = 0; mDataToWriteRemoved = true; appendToLog("barcodeToWrite remove0 with length = " + barcodeToWrite.size());
                     if (DEBUG) appendToLog("Removed after sending count-out with oldSize = " + oldSize + ", updated barcodeToWrite.size() = " + barcodeToWrite.size());
                     if (DEBUG) appendToLog("Removed after sending count-out.");
                     String string = "Problem in sending data to Barcode Module. Removed data sending after count-out";
@@ -201,7 +201,7 @@ public class BarcodeConnector {
                         mDataToWriteRemoved = false;
                     } else {
                         //if (DEBUG) appendToLogView("failure to send " + barcodeToWrite.get(0).barcodePayloadEvent.toString());
-                        barcodeToWrite.remove(0); sendDataToWriteSent = 0; mDataToWriteRemoved = true;
+                        barcodeToWrite.remove(0); sendDataToWriteSent = 0; mDataToWriteRemoved = true; appendToLog("barcodeToWrite remove0 with length = " + barcodeToWrite.size());
                     }
                     return true;*/
                 }

@@ -46,7 +46,7 @@ public class NotificationConnector {
             if (true || mAutoRfidAbortStatusUpdate == false) {
                 CsReaderNotificationData csReaderNotificationData = new CsReaderNotificationData();
                 csReaderNotificationData.notificationPayloadEvent = NotificationPayloadEvents.NOTIFICATION_GET_AUTO_RFIDINV_ABORT;
-                notificationToWrite.add(csReaderNotificationData);
+                notificationToWrite.add(csReaderNotificationData); appendToLog("notificationToWrite is added with length = " + notificationToWrite.size());
                 if (DEBUG_PKDATA) appendToLog("PkData: add NOTIFICATION_GET_AUTO_RFIDINV_ABORT to mNotificationToWrite with length = " + notificationToWrite.size());
             }
             return mAutoRfidAbortStatus;
@@ -58,7 +58,7 @@ public class NotificationConnector {
             if (mAutoBarStartStopStatusUpdated == false) {
                 CsReaderNotificationData csReaderNotificationData = new CsReaderNotificationData();
                 csReaderNotificationData.notificationPayloadEvent = NotificationPayloadEvents.NOTIFICATION_GET_AUTO_BARINV_STARTSTOP;
-                notificationToWrite.add(csReaderNotificationData);
+                notificationToWrite.add(csReaderNotificationData); appendToLog("notificationToWrite is added with length = " + notificationToWrite.size());
                 if (DEBUG_PKDATA) appendToLog("PkData: add NOTIFICATION_GET_AUTO_BARINV_STARTSTOP to mNotificationToWrite with length = " + notificationToWrite.size());
             }
             return mAutoBarStartStopStatus;
@@ -207,7 +207,7 @@ public class NotificationConnector {
                         }
                         String string = "Up31 " + (bprocessed ? "" : "Unprocessed, ") + notificationToWrite.get(0).notificationPayloadEvent.toString() + ", " + byteArrayToString(data1);
                         utility.writeDebug2File(string);
-                        notificationToWrite.remove(0); sendDataToWriteSent = 0;
+                        notificationToWrite.remove(0); sendDataToWriteSent = 0; appendToLog("notificationToWrite remove0 with length = " + notificationToWrite.size());
                         if (DEBUG_PKDATA) appendToLog("PkData: new mNotificationToWrite size = " + notificationToWrite.size());
                     }
                 }
@@ -220,11 +220,11 @@ public class NotificationConnector {
         public byte[] sendNotificationToWrite() {
             boolean DEBUG = false;
             if (notificationFailure) {
-                notificationToWrite.remove(0); sendDataToWriteSent = 0;
+                notificationToWrite.remove(0); sendDataToWriteSent = 0; appendToLog("notificationToWrite remove0 with length = " + notificationToWrite.size());
             } else if (sendDataToWriteSent >= 5) {
                 int oldSize = notificationToWrite.size();
                 CsReaderNotificationData csReaderNotificationData = notificationToWrite.get(0);
-                notificationToWrite.remove(0); sendDataToWriteSent = 0;
+                notificationToWrite.remove(0); sendDataToWriteSent = 0; appendToLog("notificationToWrite remove0 with length = " + notificationToWrite.size());
                 if (DEBUG) appendToLog("Removed after sending count-out with oldSize = " + oldSize + ", updated mNotificationToWrite.size() = " + notificationToWrite.size());
                 if (DEBUG) appendToLog("Removed after sending count-out.");
                 String string = "Problem in sending data to Notification Module. Removed data sending after count-out";
@@ -322,21 +322,21 @@ public class NotificationConnector {
     public boolean batteryLevelRequest() {
         CsReaderNotificationData csReaderNotificationData = new CsReaderNotificationData();
         csReaderNotificationData.notificationPayloadEvent = NotificationPayloadEvents.NOTIFICATION_GET_BATTERY_VOLTAGE;
-        boolean bValue = notificationToWrite.add(csReaderNotificationData);
+        boolean bValue = notificationToWrite.add(csReaderNotificationData); appendToLog("notificationToWrite is added with length = " + notificationToWrite.size());
         if (DEBUG_PKDATA) appendToLog("PkData: add NOTIFICATION_GET_BATTERY_VOLTAGE to mNotificationToWrite with length = " + notificationToWrite.size());
         return bValue;
     }
     public boolean triggerButtoneStatusRequest() {
         CsReaderNotificationData csReaderNotificationData = new CsReaderNotificationData();
         csReaderNotificationData.notificationPayloadEvent = NotificationPayloadEvents.NOTIFICATION_GET_TRIGGER_STATUS;
-        boolean bValue = notificationToWrite.add(csReaderNotificationData);
+        boolean bValue = notificationToWrite.add(csReaderNotificationData); appendToLog("notificationToWrite is added with length = " + notificationToWrite.size());
         if (DEBUG_PKDATA) appendToLog("PkData: add NOTIFICATION_GET_TRIGGER_STATUS to mNotificationToWrite with length = " + notificationToWrite.size());
         return bValue;
     }
     public boolean setBatteryAutoReport(boolean on) {
         CsReaderNotificationData csReaderNotificationData = new CsReaderNotificationData();
         csReaderNotificationData.notificationPayloadEvent = (on ? NotificationPayloadEvents.NOTIFICATION_AUTO_BATTERY_VOLTAGE: NotificationPayloadEvents.NOTIFICATION_STOPAUTO_BATTERY_VOLTAGE);
-        boolean bValue = notificationToWrite.add(csReaderNotificationData);
+        boolean bValue = notificationToWrite.add(csReaderNotificationData); appendToLog("notificationToWrite is added with length = " + notificationToWrite.size());
         if (DEBUG_PKDATA) appendToLog("PkData: add " + csReaderNotificationData.notificationPayloadEvent.toString() + " to mNotificationToWrite with length = " + notificationToWrite.size());
         return bValue;
     }
@@ -346,7 +346,7 @@ public class NotificationConnector {
         csReaderNotificationData.dataValues = new byte[1];
         setAutoRfidAbortStatus(enable);
         csReaderNotificationData.dataValues[0] = (enable ? (byte)1 : 0);
-        boolean bValue = notificationToWrite.add(csReaderNotificationData);
+        boolean bValue = notificationToWrite.add(csReaderNotificationData); appendToLog("notificationToWrite is added with length = " + notificationToWrite.size());
         if (DEBUG_PKDATA) appendToLog("PkData: add NOTIFICATION_AUTO_RFIDINV_ABORT." + byteArrayToString(csReaderNotificationData.dataValues) + " to mNotificationToWrite with length = " + notificationToWrite.size());
         return bValue;
     }
@@ -363,7 +363,7 @@ public class NotificationConnector {
         csReaderNotificationData.dataValues = new byte[1];
         setAutoBarStartStopStatus(enable);
         csReaderNotificationData.dataValues[0] = (enable ? (byte)1 :  0);
-        boolean bValue = notificationToWrite.add(csReaderNotificationData);
+        boolean bValue = notificationToWrite.add(csReaderNotificationData); appendToLog("notificationToWrite is added with length = " + notificationToWrite.size());
         if (DEBUG_PKDATA) appendToLog("PkData: add NOTIFICATION_AUTO_BARINV_STARTSTOP." + byteArrayToString(csReaderNotificationData.dataValues) + " to mNotificationToWrite with length = " + notificationToWrite.size());
         return bValue;
     }
@@ -375,6 +375,7 @@ public class NotificationConnector {
         boolean bValue = false;
         //if (this.triggerReporting == triggerReporting) return true;
         if (triggerReporting) {
+            appendToLog("setAutoTriggerReporting 3");
             bValue = setAutoTriggerReporting((byte) triggerReportingCountSetting);
         } else bValue = stopAutoTriggerReporting();
         if (bValue) this.triggerReporting = triggerReporting;
@@ -404,14 +405,14 @@ public class NotificationConnector {
         csReaderNotificationData.notificationPayloadEvent = NotificationPayloadEvents.NOTIFICATION_AUTO_TRIGGER_REPORT;
         csReaderNotificationData.dataValues = new byte[1];
         csReaderNotificationData.dataValues[0] = timeSecond;
-        boolean bValue = notificationToWrite.add(csReaderNotificationData);
+        boolean bValue = notificationToWrite.add(csReaderNotificationData); appendToLog("notificationToWrite is added with length = " + notificationToWrite.size());
         if (DEBUG_PKDATA) appendToLog("PkData: add NOTIFICATION_AUTO_TRIGGER_REPORT." + byteArrayToString(csReaderNotificationData.dataValues) + " to mNotificationToWrite with length = " + notificationToWrite.size());
         return bValue;
     }
     public boolean stopAutoTriggerReporting() {
         CsReaderNotificationData csReaderNotificationData = new CsReaderNotificationData();
         csReaderNotificationData.notificationPayloadEvent = NotificationPayloadEvents.NOTIFICATION_STOP_TRIGGER_REPORT;
-        boolean bValue = notificationToWrite.add(csReaderNotificationData);
+        boolean bValue = notificationToWrite.add(csReaderNotificationData); appendToLog("notificationToWrite is added with length = " + notificationToWrite.size());
         if (DEBUG_PKDATA) appendToLog("PkData: add NOTIFICATION_STOP_TRIGGER_REPORT to mNotificationToWrite with length = " + notificationToWrite.size());
         return bValue;
     }

@@ -15,7 +15,7 @@ import java.util.List;
 
 public class CsLibrary4A {
     boolean DEBUG = false, DEBUG2 = false;
-    String stringVersion = "4.11.0";
+    String stringVersion = "4.11.2";
     Utility utility;
     Cs710Library4A cs710Library4A;
     com.csl.cs108library4a.Cs108Library4A cs108Library4A;
@@ -68,13 +68,13 @@ public class CsLibrary4A {
         return utility.str2float16(strData);
     }
     public float decodeCtesiusTemperature(String strActData, String strCalData) {
-    	return utility.decodeCtesiusTemperature(strActData, strCalData);
+        return utility.decodeCtesiusTemperature(strActData, strCalData);
     }
     public float decodeMicronTemperature(int iTag35, String strActData, String strCalData) {
         return utility.decodeMicronTemperature(iTag35, strActData, strCalData);
     }
     public float decodeAsygnTemperature(String string) {
-    	return utility.decodeAsygnTemperature(string);
+        return utility.decodeAsygnTemperature(string);
     }
     public String temperatureC2F(String strValue) {
         if (DEBUG) Log.i("Hello2", "temperatureC2F");
@@ -85,13 +85,13 @@ public class CsLibrary4A {
         return utility.temperatureF2C(strValue);
     }
     public String getUpcSerial(String strEpc) {
-    	return utility.getUpcSerial(strEpc);
+        return utility.getUpcSerial(strEpc);
     }
     public String getUpcSerialDetail(String strUpcSerial) {
-    	return utility.getUpcSerialDetail(strUpcSerial);
+        return utility.getUpcSerialDetail(strUpcSerial);
     }
     public String getEpc4upcSerial(Utility.EpcClass epcClass, String filter, String companyPrefix, String itemReference, String serialNumber) {
-    	return utility.getEpc4upcSerial(epcClass, filter, companyPrefix, itemReference, serialNumber);
+        return utility.getEpc4upcSerial(epcClass, filter, companyPrefix, itemReference, serialNumber);
     }
     public boolean checkHostProcessorVersion(String version, int majorVersion, int minorVersion, int buildVersion) {
         if (DEBUG) Log.i("Hello2", "checkHostProcessorVersion");
@@ -1679,6 +1679,49 @@ public class CsLibrary4A {
         else Log.i("Hello2", "setServerTimeout" + stringNOTCONNECT);
         return false;
     }
+    public String getServerImpinjLocation() {
+        if (DEBUG) Log.i("Hello2", "getServerImpinjLocation");
+        if (isCs108Connected()) return cs108Library4A.getServerImpinjLocation();
+        else if (isCs710Connected()) return cs710Library4A.getServerImpinjLocation();
+        else Log.i("Hello2", "getServerImpinjLocation" + stringNOTCONNECT);
+        return null;
+    }
+    public boolean setServerImpinjLocation(String serverImpinjLocation) {
+        if (DEBUG) Log.i("Hello2", "setServerImpinjLocation");
+        if (isCs108Connected()) return cs108Library4A.setServerImpinjLocation(serverImpinjLocation);
+        else if (isCs710Connected()) return cs710Library4A.setServerImpinjLocation(serverImpinjLocation);
+        else Log.i("Hello2", "setServerImpinjLocation" + stringNOTCONNECT);
+        return false;
+    }
+    public String getServerImpinjName() {
+        if (DEBUG) Log.i("Hello2", "getServerImpinjName");
+        if (isCs108Connected()) return cs108Library4A.getServerImpinjName();
+        else if (isCs710Connected()) return cs710Library4A.getServerImpinjName();
+        else Log.i("Hello2", "getServerImpinjName" + stringNOTCONNECT);
+        return null;
+    }
+    public boolean setServerImpinjName(String serverImpinjName) {
+        if (DEBUG) Log.i("Hello2", "setServerImpinjName");
+        if (isCs108Connected()) return cs108Library4A.setServerImpinjName(serverImpinjName);
+        else if (isCs710Connected()) return cs710Library4A.setServerImpinjName(serverImpinjName);
+        else Log.i("Hello2", "setServerImpinjName" + stringNOTCONNECT);
+        return false;
+    }
+    public String getServerImpinjPassword() {
+        if (DEBUG) Log.i("Hello2", "getServerImpinjPassword");
+        if (isCs108Connected()) return cs108Library4A.getServerImpinjPassword();
+        else if (isCs710Connected()) return cs710Library4A.getServerImpinjPassword();
+        else Log.i("Hello2", "getServerImpinjPassword" + stringNOTCONNECT);
+        return null;
+    }
+    public boolean setServerImpinjPassword(String serverImpinjPassword) {
+        if (DEBUG) Log.i("Hello2", "setServerImpinjPassword");
+        if (isCs108Connected()) return cs108Library4A.setServerImpinjPassword(serverImpinjPassword);
+        else if (isCs710Connected()) return cs710Library4A.setServerImpinjPassword(serverImpinjPassword);
+        else Log.i("Hello2", "setServerImpinjPassword" + stringNOTCONNECT);
+        return false;
+    }
+
     public int getBatteryDisplaySetting() {
         if (DEBUG) Log.i("Hello2", "getBatteryDisplaySetting");
         if (isCs108Connected()) return cs108Library4A.getBatteryDisplaySetting();

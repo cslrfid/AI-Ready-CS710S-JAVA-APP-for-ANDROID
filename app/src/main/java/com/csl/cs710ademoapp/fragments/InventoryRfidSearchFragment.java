@@ -320,7 +320,7 @@ public class InventoryRfidSearchFragment extends CommonFragment {
         if (tagSelected != null) {
             if (tagSelected.getTid() != null) {
                 if (tagSelected.getTid().indexOf("E201E") == 0) {
-                    MainActivity.csLibrary4A.setTagRead(0);
+                    MainActivity.csLibrary4A.setTagRead(1);
                     MainActivity.csLibrary4A.setAccessBank(3);
                     MainActivity.csLibrary4A.setAccessOffset(112);
                     MainActivity.csLibrary4A.setAccessCount(1);

@@ -439,10 +439,12 @@ public class InventoryRfidiMultiFragment extends CommonFragment {
             extra2Bank = 2;
             extra2Offset = 0;
             extra2Count = 2;
+            MainActivity.csLibrary4A.appendToLog("mDid = " + mDid);
             if (mDid.matches("E2801101") || mDid.matches("E2801102") || mDid.matches("E2801103") || mDid.matches("E2801104") || mDid.matches("E2801105")) {
                 extra1Bank = 0;
                 extra1Offset = 4;
                 extra1Count = 1;
+                if (mDid.matches("E2801101")) extra2Count = 6;
             } else if (mDid.matches("E200B0")) {
                 extra1Bank = 2;
                 extra1Offset = 0;
