@@ -9,7 +9,7 @@ android {
     defaultConfig {
         minSdk 21
         targetSdk 34
-        buildConfigField 'String', 'VERSION_NAME', "\"4.11.3\""
+        buildConfigField 'String', 'VERSION_NAME', "\"4.11.4\""
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
     }
     buildTypes {

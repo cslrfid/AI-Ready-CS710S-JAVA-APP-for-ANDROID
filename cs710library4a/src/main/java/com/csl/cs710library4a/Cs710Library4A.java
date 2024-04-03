@@ -3857,7 +3857,8 @@ public class Cs710Library4A {
         this.serverTimeout = serverTimeout;
         return true;
     }
-    String serverImpinjLocationDefault = "https://h9tqczg9-7275.asse.devtunnels.ms", serverImpinjLocation = serverImpinjLocationDefault;
+    //String serverImpinjLocationDefault = "https://h9tqczg9-7275.asse.devtunnels.ms", serverImpinjLocation = serverImpinjLocationDefault;
+    String serverImpinjLocationDefault = "https://www.democloud.convergence.com.hk/ias", serverImpinjLocation = serverImpinjLocationDefault;
     public String getServerImpinjLocation() {
         return serverImpinjLocation;
     }
@@ -3865,7 +3866,8 @@ public class Cs710Library4A {
         this.serverImpinjLocation = serverImpinjLocation;
         return true;
     }
-    String serverImpinjNameDefault = "wallace.sit@cne.com.hk", serverImpinjName = serverImpinjNameDefault;
+    //String serverImpinjNameDefault = "wallace.sit@cne.com.hk", serverImpinjName = serverImpinjNameDefault;
+    String serverImpinjNameDefault = "", serverImpinjName = serverImpinjNameDefault;
     public String getServerImpinjName() {
         return serverImpinjName;
     }
@@ -3873,7 +3875,8 @@ public class Cs710Library4A {
         this.serverImpinjName = serverImpinjName;
         return true;
     }
-    String serverImpinjPasswordDefault = "Cne12345678?", serverImpinjPassword = serverImpinjPasswordDefault;
+    //String serverImpinjPasswordDefault = "Cne12345678?", serverImpinjPassword = serverImpinjPasswordDefault;
+    String serverImpinjPasswordDefault = "", serverImpinjPassword = serverImpinjPasswordDefault;
     public String getServerImpinjPassword() {
         return serverImpinjPassword;
     }
