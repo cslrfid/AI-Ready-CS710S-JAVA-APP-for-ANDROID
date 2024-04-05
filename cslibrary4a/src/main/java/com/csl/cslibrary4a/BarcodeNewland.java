@@ -29,10 +29,10 @@ public class BarcodeNewland {
         csReaderBarcodeData.barcodePayloadEvent = BarcodeConnector.BarcodePayloadEvents.BARCODE_COMMAND;
         csReaderBarcodeData.waitUplinkResponse = true;
         csReaderBarcodeData.dataValues = barcodeCommandData;
-        barcodeConnector.barcodeToWrite.add(csReaderBarcodeData);
+        barcodeConnector.barcodeToWrite.add(csReaderBarcodeData); appendToLog("barcodeToWrite added with size = " + barcodeConnector.barcodeToWrite.size());
         if (DEBUG_PKDATA) {
             //if (barcodeCommandData[0] == 'n')
-            appendToLog("PkData: add " + csReaderBarcodeData.barcodePayloadEvent.toString() + "." + byteArrayToString(csReaderBarcodeData.dataValues) + " to mBarcodeToWrite with length = " + barcodeConnector.barcodeToWrite.size());
+            appendToLog("PkData: add " + csReaderBarcodeData.barcodePayloadEvent.toString() + "." + byteArrayToString(csReaderBarcodeData.dataValues) + " to barcodeToWrite with length = " + barcodeConnector.barcodeToWrite.size());
         }
         return true;
     }
@@ -44,8 +44,8 @@ public class BarcodeNewland {
         csReaderBarcodeData.barcodePayloadEvent = BarcodeConnector.BarcodePayloadEvents.BARCODE_SCAN_START;
         csReaderBarcodeData.waitUplinkResponse = false;
         barcode2TriggerMode = false;
-        boolean bValue = barcodeConnector.barcodeToWrite.add(csReaderBarcodeData);
-        appendToLog("add " + csReaderBarcodeData.barcodePayloadEvent.toString() + " to mBarcodeToWrite with length = " + barcodeConnector.barcodeToWrite.size());
+        boolean bValue = barcodeConnector.barcodeToWrite.add(csReaderBarcodeData); appendToLog("barcodeToWrite added with size = " + barcodeConnector.barcodeToWrite.size());
+        appendToLog("add " + csReaderBarcodeData.barcodePayloadEvent.toString() + " to barcodeToWrite with length = " + barcodeConnector.barcodeToWrite.size());
         return bValue;
     }
     public boolean barcodeSendCommandTrigger() {
@@ -402,7 +402,7 @@ public class BarcodeNewland {
         }
         if (matched) {
             found = true;
-            barcodeConnector.barcodeToWrite.remove(0); barcodeConnector.sendDataToWriteSent = 0; barcodeConnector.mDataToWriteRemoved = true;
+            barcodeConnector.barcodeToWrite.remove(0); barcodeConnector.sendDataToWriteSent = 0; barcodeConnector.mDataToWriteRemoved = true; appendToLog("barcodeToWrite remove0 with length = " + barcodeConnector.barcodeToWrite.size());
             if (DEBUG_PKDATA) appendToLog("PkData: new mBarcodeToWrite size = " + barcodeConnector.barcodeToWrite.size());
         }
         appendToLog("decodeBarcodeUplinkData found = " + found);
