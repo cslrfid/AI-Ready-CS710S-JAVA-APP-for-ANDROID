@@ -3910,7 +3910,7 @@ public class Cs108Library4A {
         return true;
     }
     //String serverImpinjLocationDefault = "https://h9tqczg9-7275.asse.devtunnels.ms", serverImpinjLocation = serverImpinjLocationDefault;
-    String serverImpinjLocationDefault = "https://www.democloud.convergence.com.hk/ias", serverImpinjLocation = serverImpinjLocationDefault;
+    String serverImpinjLocationDefault = "https://democloud.convergence.com.hk/ias", serverImpinjLocation = serverImpinjLocationDefault;
     public String getServerImpinjLocation() {
         return serverImpinjLocation;
     }
