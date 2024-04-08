@@ -20,7 +20,7 @@ public class RfidReaderChipE710 {
     //RfidReaderChip mRfidReaderChip;
     boolean DEBUGTHREAD = false, DEBUG_APDATA = false;
     int intervalRx000UplinkHandler;
-    public int invalidata, invalidUpdata; //invalidata, invalidUpdata, validata;
+    //public int invalidata, invalidUpdata; //invalidata, invalidUpdata, validata;
     boolean aborting = false;
     Context context; Utility utility; CsReaderConnector csReaderConnector;
     public RfidReaderChipE710(Context context, Utility utility, CsReaderConnector csReaderConnector) {
@@ -3744,11 +3744,11 @@ public class RfidReaderChipE710 {
                             byte[] mRfidToReadingNew = new byte[RFID_READING_BUFFERSIZE];
                             mRfidToReading = mRfidToReadingNew;
                             mRfidToReadingOffset = 0;
-                            invalidUpdata++;
+                            csReaderConnector.invalidUpdata++;
                         }
                         if (dataIn.length >= mRfidToReading.length - mRfidToReadingOffset) {
                             appendToLogView("!!! ERROR insufficient buffer, mRfidToReading.length=" + mRfidToReading.length + ", dataIn.length=" + dataIn.length + ", clear mRfidToReading: " + byteArrayToString(dataIn));
-                            invalidata++;
+                            csReaderConnector.invalidata++;
                             break;
                         }
                     }
@@ -4131,7 +4131,7 @@ public class RfidReaderChipE710 {
                                 byte[] unhandledBytes = new byte[startIndex];
                                 System.arraycopy(mRfidToReading, 0, unhandledBytes, 0, unhandledBytes.length);
                                 appendToLog("!!! packageFound with invalid unused data: " + unhandledBytes.length + ", " + byteArrayToString(unhandledBytes));
-                                invalidUpdata++;
+                                csReaderConnector.invalidUpdata++;
                             }
                             if (DEBUG) {
                                 byte[] usedBytes = new byte[startIndexNew - startIndex];
@@ -4169,7 +4169,7 @@ public class RfidReaderChipE710 {
                             mRfidToReadingOffset = mRfidToReadingOffset - startIndex;
                             startIndex = 0;
                             startIndexNew = 0;
-                            invalidUpdata++;
+                            csReaderConnector.invalidUpdata++;
                         }
                     }
                 }
@@ -4704,7 +4704,7 @@ public class RfidReaderChipE710 {
 //    }
     boolean inventoring = false;
     public boolean isInventoring() { return  inventoring; }
-    public void setInventoring(boolean enable) { inventoring = enable; utility.debugFileEnable(false); if (true) appendToLog("isInventoring is set as " + inventoring);}
+    void setInventoring(boolean enable) { inventoring = enable; utility.debugFileEnable(false); if (true) appendToLog("setInventoring E710 is set as " + inventoring);}
     boolean decode710Data(byte[] dataValues){
         if (DEBUG) appendToLog("mRfidToWrite.size = " + csReaderConnector.rfidConnector.mRfidToWrite.size());
         if (csReaderConnector.rfidConnector.mRfidToWrite.size() > 0) {

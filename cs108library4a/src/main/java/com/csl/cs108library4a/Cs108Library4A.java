@@ -2415,6 +2415,7 @@ public class Cs108Library4A {
         return csReaderConnector108.rfidReader.getRfidOnStatus();
     }
     public boolean isRfidFailure() {
+        if (csReaderConnector108.rfidReader == null) return false;
         return csReaderConnector108.rfidReader.isRfidFailure();
     }
     public void setReaderDefault() {
@@ -3141,7 +3142,7 @@ public class Cs108Library4A {
         if (rfidReaderChip != null) {
             bRetValue = rfidReaderChip.sendControlCommand(RfidReaderChipR2000.ControlCommands.ABORT);
         }
-        rfidReaderChip.setInventoring(false);
+        csReaderConnector108.rfidReader.setInventoring(false);
         return bRetValue;
     }
     public void restoreAfterTagSelect() {
@@ -4517,5 +4518,20 @@ public class Cs108Library4A {
     }
     public boolean setAntennaInvCount(long antennaInvCount) {
         return rfidReaderChip.rx000Setting.setAntennaInvCount(antennaInvCount);
+    }
+
+    public void clearInvalidata() {
+        csReaderConnector108.invalidata = 0;
+        csReaderConnector108.invalidUpdata = 0;
+        csReaderConnector108.validata = 0;
+    }
+    public int getInvalidata() {
+        return csReaderConnector108.invalidata;
+    }
+    public int getInvalidUpdata() {
+        return csReaderConnector108.invalidUpdata;
+    }
+    public int getValidata() {
+        return csReaderConnector108.validata;
     }
 }

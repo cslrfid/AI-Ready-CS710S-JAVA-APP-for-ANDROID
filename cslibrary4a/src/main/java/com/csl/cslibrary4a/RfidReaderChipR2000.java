@@ -4505,5 +4505,5 @@ public class RfidReaderChipR2000 {
 
     boolean inventoring = false;
     public boolean isInventoring() { return  inventoring; }
-    public void setInventoring(boolean enable) { inventoring = enable; utility.debugFileEnable(false); if (true) appendToLog("isInventoring is set as " + inventoring);}
+    void setInventoring(boolean enable) { inventoring = enable; utility.debugFileEnable(false); if (true) appendToLog("setInventoring R2000 is set as " + inventoring);}
 }

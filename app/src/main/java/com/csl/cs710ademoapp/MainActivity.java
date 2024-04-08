@@ -20,10 +20,10 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.csl.cs710library4a.CsLibrary4A;
 import com.csl.cs710ademoapp.DrawerListContent.DrawerPositions;
 import com.csl.cs710ademoapp.adapters.DrawerListAdapter;
 import com.csl.cs710ademoapp.fragments.*;
-import com.csl.cs710library4a.CsLibrary4A;
 import com.csl.cslibrary4a.ReaderDevice;
 
 import java.io.BufferedReader;

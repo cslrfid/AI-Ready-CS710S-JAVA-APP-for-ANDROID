@@ -15,7 +15,7 @@ import java.util.List;
 
 public class CsLibrary4A {
     boolean DEBUG = false, DEBUG2 = false;
-    String stringVersion = "4.12.0";
+    String stringVersion = "4.12.1";
     Utility utility;
     Cs710Library4A cs710Library4A;
     com.csl.cs108library4a.Cs108Library4A cs108Library4A;
@@ -2035,8 +2035,33 @@ public class CsLibrary4A {
         else Log.i("Hello2", "setAntennaInvCount" + stringNOTCONNECT);
         return false;
     }
-
-    public int invalidata, invalidUpdata, validata; //123
+    public void clearInvalidata() {
+        if (DEBUG2) Log.i("Hello2", "clearInvalidata");
+        if (isCs108Connected()) cs108Library4A.clearInvalidata();
+        else if (isCs710Connected()) cs710Library4A.clearInvalidata();
+        else Log.i("Hello2", "clearInvalidata" + stringNOTCONNECT);
+    }
+    public int getInvalidata() {
+        if (DEBUG2) Log.i("Hello2", "getInvalidata");
+        if (isCs108Connected()) return cs108Library4A.getInvalidata();
+        else if (isCs710Connected()) return cs710Library4A.getInvalidata();
+        else Log.i("Hello2", "getInvalidata" + stringNOTCONNECT);
+        return -1;
+    }
+    public int getInvalidUpdata() {
+        if (DEBUG2) Log.i("Hello2", "getInvalidUpdata");
+        if (isCs108Connected()) return cs108Library4A.getInvalidUpdata();
+        else if (isCs710Connected()) return cs710Library4A.getInvalidUpdata();
+        else Log.i("Hello2", "getInvalidUpdata" + stringNOTCONNECT);
+        return -1;
+    }
+    public int getValidata() {
+        if (DEBUG2) Log.i("Hello2", "getValidata");
+        if (isCs108Connected()) return cs108Library4A.getValidata();
+        else if (isCs710Connected()) return cs710Library4A.getValidata();
+        else Log.i("Hello2", "getValidata" + stringNOTCONNECT);
+        return -1;
+    }
     //============ not public ============
     int bConnectStatus = 0;
     int iServiceUuidConnectedBefore = -1;

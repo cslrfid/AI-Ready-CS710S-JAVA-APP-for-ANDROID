@@ -72,9 +72,7 @@ public class InventoryRfidTask extends AsyncTask<Void, String, String> {
             }
             MainActivity.csLibrary4A.appendToLog("yield = " + yield + ", allTotal = " + allTotal);
         }
-        MainActivity.csLibrary4A.invalidata = 0;
-        MainActivity.csLibrary4A.invalidUpdata = 0;
-        MainActivity.csLibrary4A.validata = 0;
+        MainActivity.csLibrary4A.clearInvalidata();
 
         timeMillis = System.currentTimeMillis(); startTimeMillis = System.currentTimeMillis(); runTimeMillis = startTimeMillis;
         firstTime = 0;
@@ -503,7 +501,9 @@ public class InventoryRfidTask extends AsyncTask<Void, String, String> {
                                 strCompare = strExtra2; //MainActivity.csLibrary4A.appendToLog("2strExtra = " + strExtra2 + ", " + readerDevice.getTid() + ", " + readerDevice.getTid().matches(strCompare));
                             }
                             for (int i = 0; i < tagsList.size(); i++) {
-                                if (strEpc.matches(tagsList.get(i).getAddress())) {
+                                //MainActivity.csLibrary4A.appendToLog("strEpc = " + strEpc + ", tagsList.get(" + i + ").getAdddress = " + tagsList.get(i).getAddress());
+                                if (strEpc == null || tagsList.get(i).getAddress() == null) { }
+                                else if (strEpc.matches(tagsList.get(i).getAddress())) {
                                     boolean bTidMatched = true;
                                     if (strCompare != null && tagsList.get(i).getTid() != null) bTidMatched = tagsList.get(i).getTid().matches(strCompare);
                                     if (bTidMatched) {
@@ -616,15 +616,15 @@ public class InventoryRfidTask extends AsyncTask<Void, String, String> {
             if (requestSound && requestNewSound) requestSoundCount = 0;
             if (readerListAdapter != null) readerListAdapter.notifyDataSetChanged();
             if (invalidDisplay) {
-                if (rfidYieldView != null) rfidYieldView.setText(String.valueOf(total) + "," + String.valueOf(MainActivity.csLibrary4A.validata));
-                if (rfidRateView != null) rfidRateView.setText(String.valueOf(MainActivity.csLibrary4A.invalidata) + "," + String.valueOf(MainActivity.csLibrary4A.invalidUpdata));
+                if (rfidYieldView != null) rfidYieldView.setText(String.valueOf(total) + "," + String.valueOf(MainActivity.csLibrary4A.getValidata()));
+                if (rfidRateView != null) rfidRateView.setText(String.valueOf(MainActivity.csLibrary4A.getInvalidata()) + "," + String.valueOf(MainActivity.csLibrary4A.getInvalidUpdata()));
             } else {
                 String stringTemp = "Unique:" + String.valueOf(yield);
                 if (true) {
-                    float fErrorRate = (float) MainActivity.csLibrary4A.invalidata / ((float) MainActivity.csLibrary4A.validata + (float) MainActivity.csLibrary4A.invalidata) * 100;
-                    stringTemp += "\nE" + String.valueOf(MainActivity.csLibrary4A.invalidata) + "/" + String.valueOf(MainActivity.csLibrary4A.validata) + "/" + String.valueOf((int) fErrorRate);
+                    float fErrorRate = (float) MainActivity.csLibrary4A.getInvalidata() / ((float) MainActivity.csLibrary4A.getValidata() + (float) MainActivity.csLibrary4A.getInvalidata()) * 100;
+                    stringTemp += "\nE" + String.valueOf(MainActivity.csLibrary4A.getInvalidata()) + "/" + String.valueOf(MainActivity.csLibrary4A.getValidata()) + "/" + String.valueOf((int) fErrorRate);
                 } else if (true) {
-                    stringTemp += "\nE" + String.valueOf(MainActivity.csLibrary4A.invalidata) + "," + String.valueOf(MainActivity.csLibrary4A.invalidUpdata) + "/" + String.valueOf(MainActivity.csLibrary4A.validata);
+                    stringTemp += "\nE" + String.valueOf(MainActivity.csLibrary4A.getInvalidata()) + "," + String.valueOf(MainActivity.csLibrary4A.getInvalidUpdata()) + "/" + String.valueOf(MainActivity.csLibrary4A.getValidata());
                 }
                 if (rfidYieldView != null) rfidYieldView.setText(stringTemp);
                 if (total != 0 && currentTime - firstTimeOld > 500) {

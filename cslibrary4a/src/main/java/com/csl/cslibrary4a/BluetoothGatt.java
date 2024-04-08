@@ -482,6 +482,7 @@ public class BluetoothGatt extends BluetoothGattCallback {
                     streamInAddTime = utility.getReferencedCurrentTimeMs();
                     if (streamInRequest == false) {
                         streamInRequest = true;
+                        //appendToLog("post runnableProcessBleStreamInData after onCharacteristicChanged");
                         mHandler.removeCallbacks(runnableProcessBleStreamInData); mHandler.post(runnableProcessBleStreamInData);
                     }
                 }
@@ -508,6 +509,7 @@ public class BluetoothGatt extends BluetoothGattCallback {
         public void run() {
             streamInRequest = false;
             processBleStreamInData();
+            //appendToLog("post runnableProcessBleStreamInData within runnableProcessBleStreamInData");
             mHandler.postDelayed(runnableProcessBleStreamInData, intervalProcessBleStreamInData);
         }
     };
@@ -649,7 +651,7 @@ public class BluetoothGatt extends BluetoothGattCallback {
                 }
             }
         }
-        isBLUETOOTH_CONNECTinvalid();
+        if (isBLUETOOTH_CONNECTinvalid()) return false;
 
         if (locationReady == false) {
             if (DEBUG) appendToLog("AccessCoarseLocatin is NOT granted");
@@ -684,7 +686,7 @@ public class BluetoothGatt extends BluetoothGattCallback {
             } else {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                     if (DEBUG) appendToLog("scanLeDevice(" + enable + "): START with mleScanner. ActivityCompat.checkSelfPermission(activity, Manifest.permission.BLUETOOTH_SCAN) = " + ActivityCompat.checkSelfPermission(mContext, Manifest.permission.BLUETOOTH_SCAN));
-                    if (isBLUETOOTH_CONNECTinvalid()) return true;
+                    if (isBLUETOOTH_CONNECTinvalid()) return false;
                     else bluetoothLeScanner.startScan(mScanCallBack);
                 } else {
                     if (DEBUG) appendToLog("scanLeDevice(" + enable + "): START with mBluetoothAdapter");
@@ -791,6 +793,8 @@ public class BluetoothGatt extends BluetoothGattCallback {
                 }
                 mBluetoothDevice = readerDevice;
                 characteristicListRead = true; //skip in case there is problem in completing reading characteristic features, causing endless reading 0706 and 0C02
+                appendToLog("post runnableProcessBleStreamInData after connectBle");
+                mHandler.removeCallbacks(runnableProcessBleStreamInData); mHandler.post(runnableProcessBleStreamInData);
                 return true;
             }
         }
@@ -807,6 +811,8 @@ public class BluetoothGatt extends BluetoothGattCallback {
             mHandler.removeCallbacks(mDisconnectRunnable);
             mHandler.post(mDisconnectRunnable); disconnectRunning = true;
             if (DEBUG) appendToLog("abcc done and start mDisconnectRunnable");
+            appendToLog("post runnableProcessBleStreamInData after disconnect");
+            mHandler.removeCallbacks(runnableProcessBleStreamInData);
         }
     }
     boolean mBluetoothGattActive = false;
@@ -947,7 +953,7 @@ public class BluetoothGatt extends BluetoothGattCallback {
             if (totalTemp > 17 && timeDifference > 1000) {
                 totalReceived = totalTemp;
                 totalTime = timeDifference;
-                appendToLog("BtDataIn: totalReceived = " + totalReceived + ", totalTime = " + totalTime);
+                //appendToLog("BtDataIn: totalReceived = " + totalReceived + ", totalTime = " + totalTime);
                 firstTime = System.currentTimeMillis();
                 totalTemp = 0;
             }
@@ -981,6 +987,7 @@ public class BluetoothGatt extends BluetoothGattCallback {
             if (false) Toast.makeText(mContext, R.string.toast_permission_not_granted, Toast.LENGTH_SHORT).show();
             bValue = true;
         }
+        //appendToLog("isBLUETOOTH_CONNECTinvalid returns " + bValue);
         return bValue;
     }
     String byteArray2DisplayString(byte[] byteData) { return utility.byteArray2DisplayString(byteData); }

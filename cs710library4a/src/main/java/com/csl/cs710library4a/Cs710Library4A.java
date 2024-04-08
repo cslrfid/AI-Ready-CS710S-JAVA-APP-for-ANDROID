@@ -10,7 +10,6 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Handler;
-import android.util.Log;
 import android.widget.TextView;
 
 import androidx.annotation.Keep;
@@ -24,7 +23,6 @@ import com.csl.cslibrary4a.ControllerConnector;
 import com.csl.cslibrary4a.CsReaderConnector;
 import com.csl.cslibrary4a.NotificationConnector;
 import com.csl.cslibrary4a.ReaderDevice;
-import com.csl.cslibrary4a.RfidConnector;
 import com.csl.cslibrary4a.RfidReaderChipData;
 import com.csl.cslibrary4a.RfidReaderChipE710;
 import com.csl.cslibrary4a.Utility;
@@ -51,7 +49,7 @@ public class Cs710Library4A {
     File file;
 
     Context context;
-    CsReaderConnector csReaderConnector; Utility utility;
+    public CsReaderConnector csReaderConnector; Utility utility;
     boolean DEBUG_CONNECT, DEBUG_SCAN;
     BluetoothGatt bluetoothGatt;
     RfidReaderChipE710 rfidReaderChip; //RfidConnector rfidConnector;
@@ -383,9 +381,8 @@ public class Cs710Library4A {
             if (bleConnection == false) {
                 bleConnection = bleConnectionNew;
                 if (DEBUG_CONNECT) appendToLog("Newly connected");
-
                 csReaderConnector.cs108ConnectorDataInit();
-                rfidReaderChip = csReaderConnector.rfidReaderChip; //rfidConnector = csReaderConnector.rfidConnector;
+                rfidReaderChip = csReaderConnector.rfidReaderChipE710; //rfidConnector = csReaderConnector.rfidConnector;
                 barcodeNewland = csReaderConnector.barcodeNewland; barcodeConnector = csReaderConnector.barcodeConnector;
                 notificationConnector = csReaderConnector.notificationConnector;
                 controllerConnector = csReaderConnector.controllerConnector;
@@ -441,6 +438,11 @@ public class Cs710Library4A {
                 mHandler.postDelayed(reinitaliseDataRunnable, 500);
             }
         } else if (bleConnection) {
+            rfidReaderChip = null;
+            barcodeNewland = null; barcodeConnector = null;
+            notificationConnector = null;
+            controllerConnector = null;
+            bluetoothConnector = null;
             bleConnection = bleConnectionNew;
             if (DEBUG) appendToLog("Newly disconnected");
         }
@@ -2329,6 +2331,7 @@ public class Cs710Library4A {
         return csReaderConnector.rfidReader.getRfidOnStatus();
     }
     public boolean isRfidFailure() {
+        if (csReaderConnector.rfidReader == null) return false;
         return  csReaderConnector.rfidReader.isRfidFailure();
     }
     public void setReaderDefault() {
@@ -3075,7 +3078,7 @@ public class Cs710Library4A {
         if (rfidReaderChip != null) {
             bRetValue = rfidReaderChip.sendHostRegRequestHST_CMD(RfidReaderChipData.HostCommands.NULL);
         }
-        rfidReaderChip.setInventoring(false);
+        csReaderConnector.rfidReader.setInventoring(false);
         return bRetValue;
     }
     public void restoreAfterTagSelect() {
@@ -3416,6 +3419,10 @@ public class Cs710Library4A {
         return rfidReaderChip.sendHostRegRequestHST_CMD(hostCommand);
     }
     public boolean setPwrManagementMode(boolean bLowPowerStandby) {
+        if (rfidReaderChip == null) {
+            appendToLog("rfidReaderChip is null");
+            return false;
+        }
     	return rfidReaderChip.setPwrManagementMode(bLowPowerStandby);
     }
     public void macWrite(int address, long value) {
@@ -4197,6 +4204,10 @@ public class Cs710Library4A {
     }
     public byte[] onNotificationEvent() {
         byte[] notificationData = null;
+        if (notificationConnector == null) {
+            appendToLog("notificationConnector is null");
+            return null;
+        }
         if (notificationConnector.notificationToRead.size() != 0) {
             NotificationConnector.CsReaderNotificationData csReaderNotificationData = notificationConnector.notificationToRead.get(0);
             notificationConnector.notificationToRead.remove(0);
@@ -4484,5 +4495,20 @@ public class Cs710Library4A {
     }
     public boolean setAntennaInvCount(long antennaInvCount) {
         return rfidReaderChip.rx000Setting.setAntennaInvCount(antennaInvCount);
+    }
+
+    public void clearInvalidata() {
+        csReaderConnector.invalidata = 0;
+        csReaderConnector.invalidUpdata = 0;
+        csReaderConnector.validata = 0;
+    }
+    public int getInvalidata() {
+        return csReaderConnector.invalidata;
+    }
+    public int getInvalidUpdata() {
+        return csReaderConnector.invalidUpdata;
+    }
+    public int getValidata() {
+        return csReaderConnector.validata;
     }
 }

@@ -97,12 +97,13 @@ public class CsReaderConnector108 {
         int cs108DataReadStart = 0;
         boolean validHeader = false;
 
+        if (cs108DataLeft == null) return;
         if (dataInBufferResetting) {
             if (DEBUG) appendToLog("RESET.");
             dataInBufferResetting = false;
             /*cs108DataLeft = new byte[CS108DATALEFT_SIZE];*/
             cs108DataLeftOffset = 0;
-            connectorData.clear();
+            connectorDataList.clear();
         }
         if (DEBUG) appendToLog("START, cs108DataLeftOffset=" + cs108DataLeftOffset + ", streamInBufferSize=" + bluetoothGatt.getStreamInBufferSize());
         boolean bFirst = true; long lTime = System.currentTimeMillis();
@@ -203,53 +204,43 @@ public class CsReaderConnector108 {
                             }
                             switch (dataIn[cs108DataReadStart + 3]) {
                                 case (byte) 0xC2:
-                                    connectorData.connectorTypes = ConnectorData.ConnectorTypes.RFID;
-                                    if (dataIn[cs108DataReadStart + 8] == (byte) 0x81) {
+                                case (byte) 0x6A:
+                                    if (dataIn[cs108DataReadStart + 3] == (byte) 0xC2) connectorData.connectorTypes = ConnectorData.ConnectorTypes.RFID;
+                                    else {
+                                        if (true) {
+                                            appendToLog("BarStreamIn: " + byteArrayToString(connectorData.dataValues));
+                                            utility.appendToLogView("BIn: " + byteArrayToString(connectorData.dataValues));
+                                        }
+                                        connectorData.connectorTypes = ConnectorData.ConnectorTypes.BARCODE;
+                                    }
+                                    appendToLog("dataIn = " + byteArrayToString(dataIn) + ", with start = " + cs108DataReadStart);
+                                    if (dataIn[cs108DataReadStart + 8] == (byte) 0x81 || (bis108 == false && dataIn[cs108DataReadStart + 8] == (byte) 0x91)) {
                                         int iSequenceNumber = (int) (dataIn[cs108DataReadStart + 4] & 0xFF);
                                         int itemp = iSequenceNumber;
                                         if (itemp < this.iSequenceNumber) {
                                             itemp += 256;
                                         }
                                         itemp -= (this.iSequenceNumber + 1);
-                                        boolean bRecdOldSequence = false;
+                                        appendToLog("iSequenceNumber = " + iSequenceNumber + ", old iSequenceNumber = " + this.iSequenceNumber + ", difference = " + itemp);
                                         if (itemp != 0) {
+                                            appendToLog("Non-zero iSequenceNumber difference = " + itemp);
                                             connectorData.invalidSequence = true;
                                             if (bFirstSequence == false) {
-                                                if (itemp > 128) {
-                                                    bRecdOldSequence = true;
-                                                    if (DEBUG) utility.appendToLogView(String.format("processCs108DataIn_ERROR: invalidata = %d, %X - %X = %d. Assume old package.", invalidata, iSequenceNumber, this.iSequenceNumber, itemp));
+                                                invalidata += itemp;
+                                                String stringSequenceList = "";
+                                                for (int i = 0; i < itemp; i++) {
+                                                    int iMissedNumber = (iSequenceNumber - i - 1);
+                                                    if (iMissedNumber < 0) iMissedNumber += 256;
+                                                    stringSequenceList += (i != 0 ? ", " : "") + String.format("%X", iMissedNumber);
                                                 }
-                                                else {
-                                                    invalidata += itemp;
-                                                    if (true) {
-                                                        String stringSequenceList = "";
-                                                        for (int i = 0; i < itemp; i++) {
-                                                            int iMissedNumber = (iSequenceNumber - i - 1);
-                                                            if (iMissedNumber < 0)
-                                                                iMissedNumber += 256;
-                                                            stringSequenceList += (i != 0 ? ", " : "") + String.format("%X", iMissedNumber);
-                                                        }
-                                                        if (DEBUG) utility.appendToLogView(String.format("processCs108DataIn_ERROR: invalidata = %d, %X - %X, miss %d: ", invalidata, iSequenceNumber, this.iSequenceNumber, itemp) + stringSequenceList);
-                                                    }
-                                                    if (DEBUG) appendToLog("New 1 sequence = " + iSequenceNumber + ", old = " + this.iSequenceNumber); this.iSequenceNumber = iSequenceNumber;
-                                                }
+                                                utility.appendToLogView(String.format("ERROR !!!: invalidata = %d, %X - %X, miss %d: ", invalidata, iSequenceNumber, this.iSequenceNumber, itemp) + stringSequenceList);
                                             }
                                         }
                                         bFirstSequence = false;
-                                        if (bRecdOldSequence == false) {
-                                            if (DEBUG) appendToLog("New 2 sequence = " + iSequenceNumber + ", old = " + this.iSequenceNumber);
-                                            this.iSequenceNumber = iSequenceNumber;
-                                        }
+                                        this.iSequenceNumber = iSequenceNumber;
                                     }
-                                    if (DEBUG) utility.appendToLogView("writeRfid, Rin: " + (connectorData.invalidSequence ? "invalid sequence" : "ok") + "," + byteArrayToString(connectorData.dataValues));
+                                    if (false) utility.appendToLogView("Rin: " + (connectorData.invalidSequence ? "invalid sequence" : "ok") + "," + byteArrayToString(connectorData.dataValues));
                                     validata++;
-                                    break;
-                                case (byte) 0x6A:
-                                    if (DEBUG) {
-                                        appendToLog("BarStreamIn: " + byteArrayToString(connectorData.dataValues));
-                                        utility.appendToLogView("BIn: " + byteArrayToString(connectorData.dataValues));
-                                    }
-                                    connectorData.connectorTypes = ConnectorData.ConnectorTypes.BARCODE;
                                     break;
                                 case (byte) 0xD9:
                                     if (DEBUG)
@@ -263,7 +254,7 @@ public class CsReaderConnector108 {
                                     connectorData.connectorTypes = ConnectorData.ConnectorTypes.BLUETOOTH;
                                     break;
                             }
-                            this.connectorData.add(connectorData);
+                            this.connectorDataList.add(connectorData);
                             utility.writeDebug2File("Up2  " + connectorData.connectorTypes.toString() + ", " + byteArrayToString(connectorData.dataValues));
                             cs108DataReadStart += ((8 + iPayloadLength));
 
@@ -280,6 +271,7 @@ public class CsReaderConnector108 {
                             if (mCs108DataReadRequest == false) {
                                 mCs108DataReadRequest = true;
                                 if (DEBUGTHREAD) appendToLog("ready2Write: start immediate mReadWriteRunnable");
+                                //appendToLog("post mReadWriteRunnable within processBleStreamInData");
                                 mHandler.removeCallbacks(mReadWriteRunnable); mHandler.post(mReadWriteRunnable);
                             }
                         }
@@ -336,7 +328,7 @@ public class CsReaderConnector108 {
     private Handler mHandler = new Handler();
 
     public void cs108ConnectorDataInit() {
-        connectorData = new ArrayList<>();
+        connectorDataList = new ArrayList<>();
         cs108DataLeft = new byte[CS108DATALEFT_SIZE];
         cs108DataLeftOffset = 0;
         zeroLenDisplayed = false;
@@ -349,12 +341,8 @@ public class CsReaderConnector108 {
 
         mCs108ConnectorData = new Cs108ConnectorData();
 
-        //rfidConnector = new RfidConnector(context, utility);
-        //rfidReaderChip = new RfidReaderChipR2000(context, utility, this);
-        rfidReader = new RfidReader(context, utility, this, null);
+        rfidReader = new RfidReader(context, utility, this, null, bis108);
         rfidConnector = rfidReader.rfidConnector; rfidReaderChip = rfidReader.rfidReaderChipR2000;
-
-        //mRfidDevice = new RfidDevice(context, mLogView, this);
         barcodeConnector = new BarcodeConnector(context, utility);
         barcodeNewland = new BarcodeNewland(context, utility, barcodeConnector);
         barcodeConnector.barcodeConnectorCallback = new BarcodeConnector.BarcodeConnectorCallback(){
@@ -367,11 +355,12 @@ public class CsReaderConnector108 {
         notificationConnector = new NotificationConnector(context, utility);
         controllerConnector = new ControllerConnector(context, utility);
         bluetoothConnector = new BluetoothConnector(context, utility);
+        mHandler.removeCallbacks(mReadWriteRunnable); mHandler.post(mReadWriteRunnable);
         appendToLog("!!! all major classes are initialised");
     }
 
     final int CS108DATALEFT_SIZE = 300; //4000;    //100;
-    private ArrayList<ConnectorData> connectorData;
+    private ArrayList<ConnectorData> connectorDataList;
     byte[] cs108DataLeft;
     int cs108DataLeftOffset;
     boolean zeroLenDisplayed;
@@ -389,16 +378,17 @@ public class CsReaderConnector108 {
         bluetoothGatt.bluetoothGattConnectorCallback = new BluetoothGatt.BluetoothGattConnectorCallback(){
             @Override
             public void callbackMethod() {
+                //appendToLog("going to processBleStreamInData with bis108 " + bis108 + " and connected " + isBleConnected());
                 processBleStreamInData();
             }
         };
         DEBUG_CONNECT = bluetoothGatt.DEBUG_CONNECT; DEBUG_SCAN = bluetoothGatt.DEBUG_SCAN;
 
-        cs108ConnectorDataInit();
-        mHandler.removeCallbacks(bluetoothGatt.runnableProcessBleStreamInData); mHandler.post(bluetoothGatt.runnableProcessBleStreamInData);
-        if (DEBUGTHREAD) appendToLog("start immediate mReadWriteRunnable");
-        mHandler.removeCallbacks(mReadWriteRunnable); mHandler.post(mReadWriteRunnable);
-        mHandler.removeCallbacks(runnableRx000UplinkHandler); mHandler.post(runnableRx000UplinkHandler);
+        //cs108ConnectorDataInit();
+        //mHandler.removeCallbacks(bluetoothGatt.runnableProcessBleStreamInData); mHandler.post(bluetoothGatt.runnableProcessBleStreamInData);
+        //if (DEBUGTHREAD) appendToLog("start immediate mReadWriteRunnable");
+        //mHandler.removeCallbacks(mReadWriteRunnable); mHandler.post(mReadWriteRunnable);
+        //mHandler.removeCallbacks(runnableRx000UplinkHandler); mHandler.post(runnableRx000UplinkHandler);
     }
 
     long timeReady; boolean aborting = false, sendFailure = false;
@@ -432,23 +422,24 @@ public class CsReaderConnector108 {
 
             long lTime = System.currentTimeMillis();
             if (DEBUGTHREAD) appendToLog("start new mReadWriteRunnable after " + intervalReadWrite + " ms");
-            mHandler.postDelayed(mReadWriteRunnable, intervalReadWrite);
+            //appendToLog("postDelayed mReadWriteRunnable within mReadWriteRunnable");
+            mHandler.removeCallbacks(mReadWriteRunnable); mHandler.postDelayed(mReadWriteRunnable, intervalReadWrite);
             if (rfidReaderChip == null) return;
 
             boolean bFirst = true;
             mCs108DataReadRequest = false;
-            while (connectorData.size() != 0) {
+            while (connectorDataList.size() != 0) {
                 if (isBleConnected() == false) {
-                    connectorData.clear();
+                    connectorDataList.clear();
                 } else if (System.currentTimeMillis() - lTime > (intervalRx000UplinkHandler / 2)) {
                     utility.writeDebug2File("Up3  " + "Timeout");
-                    utility.appendToLogView("mReadWriteRunnable: TIMEOUT !!! mCs108DataRead.size() = " + connectorData.size());
+                    utility.appendToLogView("mReadWriteRunnable: TIMEOUT !!! mCs108DataRead.size() = " + connectorDataList.size());
                     break;
                 } else {
                     if (bFirst) { bFirst = false; } //writeDebug2File("C" + String.valueOf(intervalReadWrite) + ", " + System.currentTimeMillis()); }
                     try {
-                        ConnectorData connectorData = CsReaderConnector108.this.connectorData.get(0);
-                        CsReaderConnector108.this.connectorData.remove(0);
+                        ConnectorData connectorData = CsReaderConnector108.this.connectorDataList.get(0);
+                        CsReaderConnector108.this.connectorDataList.remove(0);
                         boolean bValid = true;
                         if (DEBUG) appendToLog("mReadWriteRunnable(): mCs108DataRead.dataValues = " + byteArrayToString(connectorData.dataValues));
                         if (rfidConnector.isMatchRfidToWrite(connectorData)) {
@@ -460,9 +451,9 @@ public class CsReaderConnector108 {
                                 if (DEBUG) appendToLog("mRx000ToRead.clear !!!");
                             }
                             rfidReaderChip.mRx000ToRead.clear(); if (DEBUG) appendToLog("mRx000ToRead.clear !!!");
-                            if (writeDataCount > 0) writeDataCount--; ready2Write = true; //btSendTime = 0; aborting = false;
+                            if (writeDataCount > 0) writeDataCount--; if (bis108) ready2Write = true; //btSendTime = 0; aborting = false;
                         } else if (barcodeConnector.isMatchBarcodeToWrite(connectorData)) {
-                            if (writeDataCount > 0) writeDataCount--; ready2Write = true; //btSendTime = 0;
+                            if (writeDataCount > 0) writeDataCount--; if (bis108) ready2Write = true; //btSendTime = 0;
                         } else if (notificationConnector.isMatchNotificationToWrite(connectorData)) {
                             if (writeDataCount > 0) writeDataCount--; ready2Write = true; appendToLog("ready2Write is set true after true isMatchNotificationToWrite "); btSendTime = 0; if (DEBUG_PKDATA) appendToLog("PkData: mReadWriteRunnable: matched notification. btSendTime is set to 0 to allow new sending.");
                         } else if (controllerConnector.isMatchControllerToWrite(connectorData)) {
@@ -496,13 +487,26 @@ public class CsReaderConnector108 {
                     }
                 }
             }
+
+            lTime = System.currentTimeMillis();
             if (rfidConnector.mRfidToWriteRemoved)  {
                 rfidConnector.mRfidToWriteRemoved = false; ready2Write = true; btSendTime = 0; appendToLog("ready2Write is set true after true mRfidDevice.mRfidToWriteRemoved ");
-                if (DEBUG_PKDATA) appendToLog("PkData: mReadWriteRunnable: processed Rfidcode. btSendTime is set to 0 to allow new sending.");
+                btSendTime = (lTime - btSendTimeOut + 60);
+                if (DEBUGTHREAD) appendToLog("ready2Write: start new mReadWriteRunnable after " + 60 + " ms");
+                //appendToLog("postDelayed mReadWriteRunnable within mReadWriteRunnable 2");
+                mHandler.removeCallbacks(mReadWriteRunnable); mHandler.postDelayed(mReadWriteRunnable, 60 + 2);
+                if (DEBUG_PKDATA) appendToLog("PkData: mReadWriteRunnable: processed Rfidcode. btSendTime is set to 0 to allow new sending with systime = " + lTime);
             }
-            int timeout2Ready = 2000; if (aborting || sendFailure) timeout2Ready = 200;
-            if (System.currentTimeMillis() > timeReady + timeout2Ready) ready2Write = true;
-            if (barcodeConnector.barcodeToWrite.size() != 0 && DEBUG) appendToLog("mBarcodeToWrite.size = " + barcodeConnector.barcodeToWrite.size() + ", ready2write = " + ready2Write);
+            if (bis108) {
+                int timeout2Ready = 2000;
+                if (aborting || sendFailure) timeout2Ready = 200;
+                if (System.currentTimeMillis() > timeReady + timeout2Ready) ready2Write = true;
+            } else {
+                if (ready2Write == false && lTime - btSendTime > btSendTimeOut) {
+                    appendToLog("ready2Write is set to true from false with difference = " + (lTime - btSendTime) + ", systime = " + lTime + ", btSendTime = " + btSendTime + ", btSendTimeOut = " + btSendTime);
+                    ready2Write = true;
+                }
+            }
             if (ready2Write) {
                 timeReady = System.currentTimeMillis();
                 timer2Write = 0;
@@ -511,7 +515,7 @@ public class CsReaderConnector108 {
                 if (rfidReaderChip.mRx000ToWrite.size() != 0 && rfidConnector.mRfidToWrite.size() == 0) {
                     if (DEBUG)
                         appendToLog("mReadWriteRunnable(): mRx000ToWrite.size=" + rfidReaderChip.mRx000ToWrite.size() + ", mRfidToWrite.size=" + rfidConnector.mRfidToWrite.size());
-                    rfidReaderChip.addRfidToWrite(rfidReaderChip.mRx000ToWrite.get(0));
+                    rfidReader.addRfidToWrite(rfidReaderChip.mRx000ToWrite.get(0));
                 }
                 boolean bisRfidCommandStop = false, bisRfidCommandExecute = false;
                 if (rfidConnector.mRfidToWrite.size() != 0 && DEBUG)
@@ -725,7 +729,7 @@ public class CsReaderConnector108 {
             //appendToLog("mRfidDevice is " + (mRfidDevice == null ? "null" : "valid"));
             //appendToLog("mRfidDevice.mRfidReaderChip is " + (mRfidDevice.mRfidReaderChip == null ? "null" : "valid"));
             //appendToLog("mRfidDevice.mRfidReaderChip.mRfidReaderChip is " + (mRfidDevice.mRfidReaderChip.mRfidReaderChip == null ? "null" : "valid"));
-            if (rfidReaderChip != null) rfidReaderChip.mRx000UplinkHandler();
+            if (rfidReaderChip != null) rfidReader.mRx000UplinkHandler();
             if (DEBUGTHREAD) appendToLog("mReadWriteRunnable: mReadWriteRunnable ends");
         }
     };
