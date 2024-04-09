@@ -11,8 +11,8 @@ android {
         applicationId "com.csl.cs710ademoapp"
         minSdk 21
         targetSdk 34
-        versionCode 8
-        versionName "4.12.1"
+        versionCode 9
+        versionName "4.13.0"
     }
 }
 
