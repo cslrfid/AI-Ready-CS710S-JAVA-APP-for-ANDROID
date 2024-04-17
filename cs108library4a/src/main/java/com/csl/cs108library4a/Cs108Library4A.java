@@ -2237,14 +2237,14 @@ public class Cs108Library4A {
                     break;
             }
         }
-        countryInList = 0; if (DEBUG) appendToLog("saveSetting2File testpoint 1");
+        csReaderConnector.settingData.countryInList = 0; if (DEBUG) appendToLog("saveSetting2File testpoint 1");
         for (int i = 0; i < regionList.length; i++) {
             if (regionCode == regionList[i]) {
-                countryInList = i; if (DEBUG) appendToLog("saveSetting2File testpoint 2"); break;
+                csReaderConnector.settingData.countryInList = i; if (DEBUG) appendToLog("saveSetting2File testpoint 2"); break;
             }
         }
-        if (countryInListDefault < 0) countryInListDefault = countryInList;
-        appendToLog("countryInListDefault = " + countryInListDefault);
+        if (csReaderConnector.settingData.countryInListDefault < 0) csReaderConnector.settingData.countryInListDefault = csReaderConnector.settingData.countryInList;
+        appendToLog("countryInListDefault = " + csReaderConnector.settingData.countryInListDefault);
         return regionList;
     }
     boolean toggledConnection = false;
@@ -2459,7 +2459,7 @@ public class Cs108Library4A {
         setBluetoothICFirmwareName("CS108Reader" + string);
 
         //getlibraryVersion()
-        setCountryInList(countryInListDefault);
+        setCountryInList(csReaderConnector.settingData.countryInListDefault);
         setChannel(0);
 
         //getAntennaPower(0)
@@ -3238,14 +3238,14 @@ public class Cs108Library4A {
         }
         return strCountryList;
     }
-    int countryInList = -1, countryInListDefault = -1;
+    //int countryInList = -1, countryInListDefault = -1;
     public int getCountryNumberInList() {
-        return countryInList;
+        return csReaderConnector.settingData.countryInList;
     }
     public boolean setCountryInList(int countryInList) {
         boolean DEBUG = true;
-        if (DEBUG) appendToLog("this.countryInList =" + this.countryInList + ", countryInList = " + countryInList);
-        if (this.countryInList == countryInList)    return true;
+        if (DEBUG) appendToLog("this.countryInList =" + csReaderConnector.settingData.countryInList + ", countryInList = " + countryInList);
+        if (csReaderConnector.settingData.countryInList == countryInList)    return true;
 
         RegionCodes[] regionList = getRegionList();
         if (DEBUG) appendToLog("regionList length =" + (regionList == null ? "NULL" : regionList.length));
@@ -3261,7 +3261,7 @@ public class Cs108Library4A {
         if (DEBUG) appendToLog("regionCodeNew =" + regionCodeNew + ", freqDataTable length = " + (freqDataTable == null ? "NULL" : freqDataTable.length));
         if (freqDataTable == null) return false;
 
-        this.countryInList = countryInList; appendToLog("saveSetting2File testpoint 4");
+        csReaderConnector.settingData.countryInList = countryInList; appendToLog("saveSetting2File testpoint 4");
         regionCode = regionCodeNew;
         if (DEBUG) appendToLog("getChannel =" + getChannel() + ", FreqChnCnt = " + FreqChnCnt());
         appendToLog("X channel = ");
@@ -3353,6 +3353,7 @@ public class Cs108Library4A {
         return strChannnelFrequencyList;
     }
     public int getChannel() {
+        if (true) return csReaderConnector.settingData.channel;
         int channel = -1;
         appendToLog("loadSetting1File: getChannel");
         if (rfidReaderChip.rx000Setting.getFreqChannelConfig() != 0) {
@@ -3372,6 +3373,7 @@ public class Cs108Library4A {
         if (result == true)    result = rfidReaderChip.rx000Setting.setFreqChannelConfig(false);
         if (result == true)    result = rfidReaderChip.rx000Setting.setFreqChannelSelect(channelSelect);
         if (result == true)    result = rfidReaderChip.rx000Setting.setFreqChannelConfig(true);
+        if (result) csReaderConnector.settingData.channel = channelSelect;
         return result;
     }
     public byte getPopulation2Q(int population) {
@@ -3382,14 +3384,14 @@ public class Cs108Library4A {
         if (false) appendToLog("getPopulation2Q(" + population + "): log dValue = " + dValue + ", iValue = " + iValue);
         return iValue;
     }
-    int population = 30;
+    //int population = 30;
     public int getPopulation() {
-        return population;
+        return csReaderConnector.settingData.population;
     }
     public boolean setPopulation(int population) {
         if (false) appendToLog("Stream population = " + population);
         byte iValue = getPopulation2Q(population);
-        this.population = population;
+        csReaderConnector.settingData.population = population;
         return setQValue(iValue);
     }
     byte qValueSetting = -1;
@@ -4387,7 +4389,7 @@ public class Cs108Library4A {
                             } else if (dataArray[0].matches("countryInList")) {
                                 getRegionList();
                                 int countryInListNew = Integer.valueOf(dataArray[1]);
-                                if (countryInList != countryInListNew && countryInListNew >= 0) setCountryInList(countryInListNew);
+                                if (csReaderConnector.settingData.countryInList != countryInListNew && countryInListNew >= 0) setCountryInList(countryInListNew);
                                 channelOrderType = -1;
                             } else if (dataArray[0].matches("channel")) {
                                 int channelNew = Integer.valueOf(dataArray[1]);

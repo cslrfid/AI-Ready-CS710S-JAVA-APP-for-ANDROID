@@ -318,6 +318,7 @@ public class CsReaderConnector {
 
     }
     public Cs108ConnectorData mCs108ConnectorData;
+    public SettingData settingData;
 
     RfidConnector rfidConnector; public RfidReader rfidReader;
     public BarcodeConnector barcodeConnector; public BarcodeNewland barcodeNewland;
@@ -340,6 +341,7 @@ public class CsReaderConnector {
         writeDataCount = 0;
 
         mCs108ConnectorData = new Cs108ConnectorData();
+        settingData = new SettingData();
 
         rfidReader = new RfidReader(context, utility, null, this, bis108);
         rfidConnector = rfidReader.rfidConnector;
