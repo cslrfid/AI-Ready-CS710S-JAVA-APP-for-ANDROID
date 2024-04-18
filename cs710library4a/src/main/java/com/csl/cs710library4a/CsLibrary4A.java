@@ -15,7 +15,7 @@ import java.util.List;
 
 public class CsLibrary4A {
     boolean DEBUG = false, DEBUG2 = false;
-    String stringVersion = "4.12.0";
+    String stringVersion = "4.14.0";
     Utility utility;
     Cs710Library4A cs710Library4A;
     com.csl.cs108library4a.Cs108Library4A cs108Library4A;
@@ -48,23 +48,18 @@ public class CsLibrary4A {
 
     //============ utility ============
     public String byteArrayToString(byte[] packet) {
-        if (DEBUG) Log.i("Hello2", "byteArrayToString");
         return utility.byteArrayToString(packet);
     }
     public void appendToLog(String s) {
-        if (DEBUG) Log.i("Hello2", "appendToLog");
         utility.appendToLog(s);
     }
     public void appendToLogView(String s) {
-        if (DEBUG) Log.i("Hello2", "appendToLogView");
         utility.appendToLogView(s);
     }
     public String strFloat16toFloat32(String strData) {
-        if (DEBUG) Log.i("Hello2", "strFloat16toFloat32");
         return utility.strFloat16toFloat32(strData);
     }
     public String str2float16(String strData) {
-        if (DEBUG) Log.i("Hello2", "str2float16");
         return utility.str2float16(strData);
     }
     public float decodeCtesiusTemperature(String strActData, String strCalData) {
@@ -77,11 +72,9 @@ public class CsLibrary4A {
         return utility.decodeAsygnTemperature(string);
     }
     public String temperatureC2F(String strValue) {
-        if (DEBUG) Log.i("Hello2", "temperatureC2F");
         return utility.temperatureC2F(strValue);
     }
     public String temperatureF2C(String strValue) {
-        if (DEBUG) Log.i("Hello2", "temperatureF2C");
         return utility.temperatureF2C(strValue);
     }
     public String getUpcSerial(String strEpc) {
@@ -94,7 +87,6 @@ public class CsLibrary4A {
         return utility.getEpc4upcSerial(epcClass, filter, companyPrefix, itemReference, serialNumber);
     }
     public boolean checkHostProcessorVersion(String version, int majorVersion, int minorVersion, int buildVersion) {
-        if (DEBUG) Log.i("Hello2", "checkHostProcessorVersion");
         return utility.checkHostProcessorVersion(version, majorVersion, minorVersion, buildVersion);
     }
 
@@ -219,6 +211,9 @@ public class CsLibrary4A {
         else Log.i("Hello2", "get98XX" + stringNOTCONNECT);
         return -1;
     }
+
+
+    //============ Rfid ============
     public String getAuthMatchData() {
         if (DEBUG) Log.i("Hello2", "getAuthMatchData");
         if (isCs108Connected()) return cs108Library4A.getAuthMatchData();
@@ -289,8 +284,6 @@ public class CsLibrary4A {
         else Log.i("Hello2", "setFixedQParms" + stringNOTCONNECT);
         return false;
     }
-
-    //============ Rfid ============
     public boolean getChannelHoppingDefault() {
         if (DEBUG) Log.i("Hello2", "getChannelHoppingDefault");
         if (isCs108Connected()) return cs108Library4A.getChannelHoppingDefault();
@@ -2035,8 +2028,33 @@ public class CsLibrary4A {
         else Log.i("Hello2", "setAntennaInvCount" + stringNOTCONNECT);
         return false;
     }
-
-    public int invalidata, invalidUpdata, validata; //123
+    public void clearInvalidata() {
+        if (DEBUG2) Log.i("Hello2", "clearInvalidata");
+        if (isCs108Connected()) cs108Library4A.clearInvalidata();
+        else if (isCs710Connected()) cs710Library4A.clearInvalidata();
+        else Log.i("Hello2", "clearInvalidata" + stringNOTCONNECT);
+    }
+    public int getInvalidata() {
+        if (DEBUG2) Log.i("Hello2", "getInvalidata");
+        if (isCs108Connected()) return cs108Library4A.getInvalidata();
+        else if (isCs710Connected()) return cs710Library4A.getInvalidata();
+        else Log.i("Hello2", "getInvalidata" + stringNOTCONNECT);
+        return -1;
+    }
+    public int getInvalidUpdata() {
+        if (DEBUG2) Log.i("Hello2", "getInvalidUpdata");
+        if (isCs108Connected()) return cs108Library4A.getInvalidUpdata();
+        else if (isCs710Connected()) return cs710Library4A.getInvalidUpdata();
+        else Log.i("Hello2", "getInvalidUpdata" + stringNOTCONNECT);
+        return -1;
+    }
+    public int getValidata() {
+        if (DEBUG2) Log.i("Hello2", "getValidata");
+        if (isCs108Connected()) return cs108Library4A.getValidata();
+        else if (isCs710Connected()) return cs710Library4A.getValidata();
+        else Log.i("Hello2", "getValidata" + stringNOTCONNECT);
+        return -1;
+    }
     //============ not public ============
     int bConnectStatus = 0;
     int iServiceUuidConnectedBefore = -1;
