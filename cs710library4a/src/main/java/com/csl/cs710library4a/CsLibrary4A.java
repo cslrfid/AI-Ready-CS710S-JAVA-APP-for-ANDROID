@@ -8,6 +8,7 @@ import com.csl.cs108library4a.Cs108Library4A;
 import com.csl.cslibrary4a.BluetoothGatt;
 import com.csl.cslibrary4a.NotificationConnector;
 import com.csl.cslibrary4a.ReaderDevice;
+import com.csl.cslibrary4a.RfidReader;
 import com.csl.cslibrary4a.RfidReaderChipData;
 import com.csl.cslibrary4a.Utility;
 
@@ -15,7 +16,7 @@ import java.util.List;
 
 public class CsLibrary4A {
     boolean DEBUG = false, DEBUG2 = false;
-    String stringVersion = "4.14.0";
+    String stringVersion = "4.14.4";
     Utility utility;
     Cs710Library4A cs710Library4A;
     com.csl.cs108library4a.Cs108Library4A cs108Library4A;
@@ -25,7 +26,7 @@ public class CsLibrary4A {
         cs710Library4A = new Cs710Library4A(context, mLogView); utility = cs710Library4A.utility;
         cs108Library4A = new Cs108Library4A(context, mLogView);
         stringNOTCONNECT = " is called before Connection !!!";
-        dBuV_dBm_constant = cs108Library4A.dBuV_dBm_constant;
+        dBuV_dBm_constant = RfidReader.dBuV_dBm_constant;
         iNO_SUCH_SETTING = cs108Library4A.iNO_SUCH_SETTING;
     }
     public String getlibraryVersion() {
@@ -1025,7 +1026,7 @@ public class CsLibrary4A {
         return -1;
     } //3348
     public boolean setPopulation(int population) {
-        if (DEBUG) Log.i("Hello2", "setPopulation");
+        if (DEBUG || true) Log.i("Hello2", "setPopulation " + population);
         if (isCs108Connected()) return cs108Library4A.setPopulation(population);
         else if (isCs710Connected()) return cs710Library4A.setPopulation(population);
         else Log.i("Hello2", "setPopulation" + stringNOTCONNECT);
@@ -1087,8 +1088,7 @@ public class CsLibrary4A {
                 rx000pkgData.decodedError = rx000pkgData1.decodedError;
             }
             return rx000pkgData;
-        }
-        else if (isCs710Connected()) {
+        } else if (isCs710Connected()) {
             RfidReaderChipData.Rx000pkgData rx000pkgData = null;
             RfidReaderChipData.Rx000pkgData rx000pkgData1 = cs710Library4A.onRFIDEvent();
             if (rx000pkgData1 != null) {
@@ -1222,6 +1222,13 @@ public class CsLibrary4A {
         if (isCs108Connected()) return cs108Library4A.setAccessWriteData(dataInput);
         else if (isCs710Connected()) return cs710Library4A.setAccessWriteData(dataInput);
         else Log.i("Hello2", "setAccessWriteData" + stringNOTCONNECT);
+        return false;
+    }
+    public boolean setResReadNoReply(boolean resReadNoReply) {
+        if (DEBUG) Log.i("Hello2", "setResReadNoReply");
+        if (isCs108Connected()) return false;
+        else if (isCs710Connected()) return cs710Library4A.setResReadNoReply(resReadNoReply);
+        else Log.i("Hello2", "setResReadNoReply" + stringNOTCONNECT);
         return false;
     }
     public boolean setTagRead(int tagRead) {
@@ -1644,6 +1651,27 @@ public class CsLibrary4A {
         else Log.i("Hello2", "getUserDebugEnable" + stringNOTCONNECT);
         return false;
     }
+    public String getForegroundReader() {
+        String string108 = cs108Library4A.getForegroundReader().trim();
+        String string710 = cs710Library4A.getForegroundReader().trim();
+        appendToLog("string108 = " + string108 + ", string710 = " + string710);
+        if (string710.length() != 0) return string710;
+        else return string108;
+    }
+    public boolean getForegroundServiceEnable() {
+        if (DEBUG) Log.i("Hello2", "getForegroundEnable");
+        if (isCs108Connected()) return cs108Library4A.getForegroundServiceEnable();
+        else if (isCs710Connected()) return cs710Library4A.getForegroundServiceEnable();
+        else Log.i("Hello2", "getForegroundEnable" + stringNOTCONNECT);
+        return false;
+    }
+    public boolean setForegroundServiceEnable(boolean forgroundServiceEnable) {
+        if (DEBUG) Log.i("Hello2", "setForegroundServiceEnable");
+        if (isCs108Connected()) return cs108Library4A.setForegroundServiceEnable(forgroundServiceEnable);
+        else if (isCs710Connected()) return cs710Library4A.setForegroundServiceEnable(forgroundServiceEnable);
+        else Log.i("Hello2", "setForegroundServiceEnable" + stringNOTCONNECT);
+        return false;
+    }
     public String getServerLocation() {
         if (DEBUG) Log.i("Hello2", "getServerLocation");
         if (isCs108Connected()) return cs108Library4A.getServerLocation();
@@ -1670,6 +1698,62 @@ public class CsLibrary4A {
         if (isCs108Connected()) return cs108Library4A.setServerTimeout(serverTimeout);
         else if (isCs710Connected()) return cs710Library4A.setServerTimeout(serverTimeout);
         else Log.i("Hello2", "setServerTimeout" + stringNOTCONNECT);
+        return false;
+    }
+    public String getServerMqttLocation() {
+        if (DEBUG) Log.i("Hello2", "getServerMqttLocation");
+        if (isCs108Connected()) return cs108Library4A.getServerMqttLocation();
+        else if (isCs710Connected()) return cs710Library4A.getServerMqttLocation();
+        else Log.i("Hello2", "getServerMqttLocation" + stringNOTCONNECT);
+        return null;
+    }
+    public boolean setServerMqttLocation(String serverLocation) {
+        if (DEBUG) Log.i("Hello2", "setServerMqttLocation");
+        if (isCs108Connected()) return cs108Library4A.setServerMqttLocation(serverLocation);
+        else if (isCs710Connected()) return cs710Library4A.setServerMqttLocation(serverLocation);
+        else Log.i("Hello2", "setServerMqttLocation" + stringNOTCONNECT);
+        return false;
+    }
+    public String getTopicMqtt() {
+        if (DEBUG) Log.i("Hello2", "getServerTopicMqtt");
+        if (isCs108Connected()) return cs108Library4A.getTopicMqtt();
+        else if (isCs710Connected()) return cs710Library4A.getTopicMqtt();
+        else Log.i("Hello2", "getServerTopicMqtt" + stringNOTCONNECT);
+        return null;
+    }
+    public boolean setTopicMqtt(String topic) {
+        if (DEBUG) Log.i("Hello2", "setServerTopicMqtt");
+        if (isCs108Connected()) return cs108Library4A.setTopicMqtt(topic);
+        else if (isCs710Connected()) return cs710Library4A.setTopicMqtt(topic);
+        else Log.i("Hello2", "setServerTopicMqtt" + stringNOTCONNECT);
+        return false;
+    }
+    public int getForegroundDupElim() {
+        if (DEBUG) Log.i("Hello2", "getForegroundDupElim");
+        if (isCs108Connected()) return cs108Library4A.getForegroundDupElim();
+        else if (isCs710Connected()) return cs710Library4A.getForegroundDupElim();
+        else Log.i("Hello2", "getForegroundDupElim" + stringNOTCONNECT);
+        return -1;
+    }
+    public boolean setForegroundDupElim(int iForegroundDupElim) {
+        if (DEBUG) Log.i("Hello2", "setForegroundDupElim");
+        if (isCs108Connected()) return cs108Library4A.setForegroundDupElim(iForegroundDupElim);
+        else if (isCs710Connected()) return cs710Library4A.setForegroundDupElim(iForegroundDupElim);
+        else Log.i("Hello2", "setForegroundDupElim" + stringNOTCONNECT);
+        return false;
+    }
+    public int getInventoryCloudSave() {
+        if (DEBUG) Log.i("Hello2", "getInventoryCloudSave");
+        if (isCs108Connected()) return cs108Library4A.getInventoryCloudSave();
+        else if (isCs710Connected()) return cs710Library4A.getInventoryCloudSave();
+        else Log.i("Hello2", "getInventoryCloudSave" + stringNOTCONNECT);
+        return -1;
+    }
+    public boolean setInventoryCloudSave(int inventoryCloudSave) {
+        if (DEBUG) Log.i("Hello2", "setInventoryCloudSave");
+        if (isCs108Connected()) return cs108Library4A.setInventoryCloudSave(inventoryCloudSave);
+        else if (isCs710Connected()) return cs710Library4A.setInventoryCloudSave(inventoryCloudSave);
+        else Log.i("Hello2", "setInventoryCloudSave" + stringNOTCONNECT);
         return false;
     }
     public String getServerImpinjLocation() {
@@ -1729,7 +1813,7 @@ public class CsLibrary4A {
         else Log.i("Hello2", "setBatteryDisplaySetting" + stringNOTCONNECT);
         return false;
     }
-    public double dBuV_dBm_constant = -1;
+    public double dBuV_dBm_constant = RfidReader.dBuV_dBm_constant; //106.98;
     public int getRssiDisplaySetting() {
         if (DEBUG) Log.i("Hello2", "getRssiDisplaySetting");
         if (isCs108Connected()) return cs108Library4A.getRssiDisplaySetting();

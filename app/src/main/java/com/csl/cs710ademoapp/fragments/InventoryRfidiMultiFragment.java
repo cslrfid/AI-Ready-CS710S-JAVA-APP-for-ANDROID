@@ -3,7 +3,6 @@ package com.csl.cs710ademoapp.fragments;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import androidx.appcompat.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -20,6 +19,8 @@ import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.csl.cs710ademoapp.CustomPopupWindow;
 import com.csl.cs710ademoapp.GenericTextWatcher;
@@ -480,14 +481,16 @@ public class InventoryRfidiMultiFragment extends CommonFragment {
                 //extra2Bank = 3;
                 //extra2Offset = 0x10d;
                 //extra2Count = 1;
-            } else if (mDid.indexOf("E281D") == 0) {
-                //extra1Bank = 0;
-                //extra1Offset = 4;
-                //extra1Count = 1;
+            } else if (mDid.indexOf("E281D") == 0) { //need atmel firmware 0.2.20
+                extra1Bank = 0;
+                extra1Offset = 4;
+                extra1Count = 1;
+                extra2Count = 6;
             } else if (mDid.indexOf("E201E") == 0) {
                 extra1Bank = 3;
                 extra1Offset = 112;
                 extra1Count = 1;
+                extra2Count = 6;
             } else if (mDid.matches("E282402")) {
                 extra1Bank = 0;
                 extra1Offset = 11;
@@ -649,6 +652,7 @@ public class InventoryRfidiMultiFragment extends CommonFragment {
                 if (extra1Bank == 1) extra1Offset += 2;
                 if (extra2Bank == 1) extra2Offset += 2;
                 MainActivity.csLibrary4A.appendToLog("HelloK: mDid = " + mDid + ", MainActivity.mDid = " + MainActivity.mDid + " with extra1Bank = " + extra1Bank + "," + extra1Offset + "," + extra1Count + ", extra2Bank = " + extra2Bank + "," + extra2Offset + "," + extra2Count);
+                if (mDid != null) MainActivity.csLibrary4A.setResReadNoReply(mDid.matches("E281D"));
                 if (inventoryUcode8_bc == false) {
                     MainActivity.csLibrary4A.appendToLog("BleStreamOut: Set Multibank");
                     MainActivity.csLibrary4A.setTagRead(extra2Count != 0 && extra2Count != 0 ? 2 : 1);

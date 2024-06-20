@@ -595,6 +595,13 @@ public class RfidReaderChipE710 {
         }
 
         byte[][] multibankReadConfig = new byte[3][];
+        int getMultibankEnable(int iSelectPort) {
+            int iValue = 0;
+            if (multibankReadConfig[iSelectPort] != null) {
+                if (multibankReadConfig[iSelectPort][0] != 0) iValue = multibankReadConfig[iSelectPort][0];
+            }
+            return iValue;
+        }
         int getMultibankReadLength(int iSelectPort) {
             int iValue = 0;
             if (multibankReadConfig[iSelectPort] != null) {
@@ -1464,6 +1471,18 @@ public class RfidReaderChipE710 {
             } else appendToLog("getTagRead = 0 as multibankReadConfig[0] = " + byteArrayToString(multibankReadConfig[0]) + ", [1] = " + byteArrayToString(multibankReadConfig[1]));
             return iValue;
         }
+        boolean isMultibankReplyNeed(int index) {
+            boolean bValue = false;
+            if (resReadNoReply) bValue = true;
+            appendToLog("multibankReadConfig[" + index + "] = " + byteArrayToString(rx000Setting.multibankReadConfig[index]) + ", bValue = " + bValue);
+            return bValue;
+        }
+        boolean resReadNoReply = false;
+        public boolean setResReadNoReply(boolean resReadNoReply) {
+            appendToLog("setResReadNoReply[" + resReadNoReply + "]");
+            this.resReadNoReply = resReadNoReply;
+            return true;
+        }
         public boolean setTagRead(int tagRead) {
             boolean bValue = false, DEBUG = false;
             if (DEBUG) appendToLog("0 setTagRead with tagRead = " + tagRead);
@@ -1472,12 +1491,15 @@ public class RfidReaderChipE710 {
             else if (rx000Setting.multibankReadConfig[1] == null)
                 appendToLog("!!! CANNOT continue as multibankReadConfig[1] is null !!!");
             else {
-                if (DEBUG)
+                if (DEBUG) {
                     appendToLog("0 multibankReadConfig[0] = " + byteArrayToString(rx000Setting.multibankReadConfig[0]));
+                    appendToLog("0 multibankReadConfig[1] = " + byteArrayToString(rx000Setting.multibankReadConfig[1]));
+                }
                 if ((tagRead == 0 && rx000Setting.multibankReadConfig[0][0] != 0)
                         || (tagRead != 0 && rx000Setting.multibankReadConfig[0][0] == 0)) {
                     byte[] bytes = new byte[1];
-                    if (tagRead != 0) bytes[0] = 1;
+                    if (tagRead == 2 && isMultibankReplyNeed(0)) bytes[0] = 2;
+                    else if (tagRead != 0) bytes[0] = 1;
                     else bytes[0] = 0;
                     bValue = writeMAC(0x3270 + 7 * 0, bytes, true);
                     if (bValue)
@@ -3826,7 +3848,8 @@ public class RfidReaderChipE710 {
                                                         if (DEBUG) appendToLog("Check iDataIndex = " + iDataIndex + ", iDataOffset = " + iDataOffset + ", iBankLength = " + iBankLength + ", iMbDataLength = " + iMbDataLength);
                                                         if (iDataOffset + iBankLength > iMbDataLength) appendToLog("!!! iBankLength " + iBankLength + " is too long for iDataOffset " + iDataOffset + ", iMbDataLength = " + iMbDataLength);
                                                         else {
-                                                            if (iDataIndex == 0) {
+                                                            if (rx000Setting.getMultibankEnable(i) == 2) iDataIndex++;
+                                                            else if (iDataIndex == 0) {
                                                                 dataA.decodedData1 = new byte[iBankLength];
                                                                 System.arraycopy(dataA.dataValues, iEpcLength + 18 + iDataOffset, dataA.decodedData1, 0, dataA.decodedData1.length);
                                                                 if (DEBUG) appendToLog("decodedData1 = " + byteArrayToString(dataA.decodedData1));
