@@ -156,7 +156,7 @@ public class ReaderListAdapter extends ArrayAdapter<ReaderDevice> {
 
         TextView readerDetailA = (TextView) convertView.findViewById(R.id.reader_detailA);
         TextView readerDetailB = (TextView) convertView.findViewById(R.id.reader_detailB);
-        if (reader.isConnected() || checkedTextView.isChecked() || select4detail == false) {
+        if (true || reader.isConnected() || checkedTextView.isChecked() || select4detail == false) {
             readerDetailA.setText(reader.getDetails());
             readerDetailB.setText("");
             if (reader.isConnected()) {

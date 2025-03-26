@@ -36,7 +36,7 @@ import com.csl.cs710ademoapp.MainActivity;
 import com.csl.cs710ademoapp.R;
 import com.csl.cslibrary4a.BluetoothGatt;
 import com.csl.cslibrary4a.ReaderDevice;
-import com.csl.cslibrary4a.CustomAlertDialog;
+import com.csl.cs710ademoapp.CustomAlertDialog;
 
 import java.util.ArrayList;
 import java.util.List;
