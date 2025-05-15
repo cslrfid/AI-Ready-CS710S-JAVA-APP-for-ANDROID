@@ -377,10 +377,6 @@ public class SettingAdminFragment extends CommonFragment {
         checkBoxDebugEnable = (CheckBox) getActivity().findViewById(R.id.settingAdminDebugEnable);
         checkBoxForegroundService = (CheckBox) getActivity().findViewById(R.id.settingAdminForegroundEnable);
 
-        if (!MainActivity.foregroundServiceEnable) {
-            LinearLayout linearLayout = (LinearLayout) getActivity().findViewById(R.id.settingAdminForegroundLayout);
-            linearLayout.setVisibility(View.GONE);
-        }
         if (sameCheck == false) MainActivity.csLibrary4A.setSameCheck(false);
         mHandler.post(updateRunnable);
     }
@@ -706,11 +702,10 @@ public class SettingAdminFragment extends CommonFragment {
                     invalidRequest = true;
             }
         }
-        if (invalidRequest == false && checkBoxForegroundService != null && MainActivity.foregroundServiceEnable) {
+        if (invalidRequest == false && checkBoxForegroundService != null) {
             MainActivity.csLibrary4A.appendToLog("getForegroundServiceEnable = " + MainActivity.csLibrary4A.getForegroundServiceEnable() + ", foregroundServiceEnable = " + foregroundServiceEnable);
             if (MainActivity.csLibrary4A.getForegroundServiceEnable() != foregroundServiceEnable || sameCheck == false) {
                 sameSetting = false;
-                MainActivity.csLibrary4A.appendToLog("foregroundReader108: updated 2C");
                 if (MainActivity.csLibrary4A.setForegroundServiceEnable(foregroundServiceEnable) == false)
                     invalidRequest = true;
             }

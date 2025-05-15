@@ -1,8 +1,6 @@
 package com.csl.cs710ademoapp.fragments;
 
 import android.os.Bundle;
-
-import com.csl.cslibrary4a.AdapterTab;
 import com.google.android.material.tabs.TabLayout;
 import androidx.viewpager.widget.ViewPager;
 import androidx.appcompat.app.ActionBar;
@@ -14,11 +12,12 @@ import android.view.ViewGroup;
 
 import com.csl.cs710ademoapp.MainActivity;
 import com.csl.cs710ademoapp.R;
+import com.csl.cs710ademoapp.adapters.MicronAdapter;
 
 public class MicronFragment extends CommonFragment {
     private ActionBar actionBar;
     private ViewPager viewPager;
-    AdapterTab adapter;
+    MicronAdapter mAdapter;
 
     private String[] tabs = { "Scan/Select", "Read" };
 
@@ -30,7 +29,7 @@ public class MicronFragment extends CommonFragment {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        InventoryRfidiMultiFragment fragment = (InventoryRfidiMultiFragment) adapter.fragment0;
+        InventoryRfidiMultiFragment fragment = (InventoryRfidiMultiFragment) mAdapter.fragment0;
         if (item.getItemId() == R.id.menuAction_clear) {
             fragment.clearTagsList();
             return true;
@@ -59,12 +58,9 @@ public class MicronFragment extends CommonFragment {
 
         TabLayout tabLayout = (TabLayout) getActivity().findViewById(R.id.OperationsTabLayout);
 
-        adapter = new AdapterTab(getActivity().getSupportFragmentManager(), tabs.length);
-        adapter.setFragment(0, InventoryRfidiMultiFragment.newInstance(true, null, ""));
-        adapter.setFragment(1, AccessMicronFragment.newInstance(false));
-
+        mAdapter = new MicronAdapter(getActivity().getSupportFragmentManager());
         viewPager = (ViewPager) getActivity().findViewById(R.id.OperationsPager);
-        viewPager.setAdapter(adapter);
+        viewPager.setAdapter(mAdapter);
         viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
 
         for (String tab_name : tabs) {
@@ -91,29 +87,29 @@ public class MicronFragment extends CommonFragment {
 
     @Override
     public void onPause() {
-        if (adapter.fragment0 != null) adapter.fragment0.onPause();
-        if (adapter.fragment1 != null) adapter.fragment1.onPause();
+        if (mAdapter.fragment0 != null) mAdapter.fragment0.onPause();
+        if (mAdapter.fragment1 != null) mAdapter.fragment1.onPause();
         super.onPause();
     }
 
     @Override
     public void onStop() {
-        if (adapter.fragment0 != null) adapter.fragment0.onStop();
-        if (adapter.fragment1 != null) adapter.fragment1.onStop();
+        if (mAdapter.fragment0 != null) mAdapter.fragment0.onStop();
+        if (mAdapter.fragment1 != null) mAdapter.fragment1.onStop();
         super.onStop();
     }
 
     @Override
     public void onDestroyView() {
-        if (adapter.fragment0 != null) adapter.fragment0.onDestroyView();
-        if (adapter.fragment1 != null) adapter.fragment1.onDestroyView();
+        if (mAdapter.fragment0 != null) mAdapter.fragment0.onDestroyView();
+        if (mAdapter.fragment1 != null) mAdapter.fragment1.onDestroyView();
         super.onDestroyView();
     }
 
     @Override
     public void onDestroy() {
-        if (adapter.fragment0 != null) adapter.fragment0.onDestroy();
-        if (adapter.fragment1 != null) adapter.fragment1.onDestroy();
+        if (mAdapter.fragment0 != null) mAdapter.fragment0.onDestroy();
+        if (mAdapter.fragment1 != null) mAdapter.fragment1.onDestroy();
         if (MainActivity.selectFor != -1) {
             MainActivity.csLibrary4A.setSelectCriteriaDisable(-1);
             MainActivity.selectFor = -1;
@@ -124,8 +120,8 @@ public class MicronFragment extends CommonFragment {
 
     @Override
     public void onDetach() {
-        if (adapter.fragment0 != null) adapter.fragment0.onDetach();
-        if (adapter.fragment1 != null) adapter.fragment1.onDetach();
+        if (mAdapter.fragment0 != null) mAdapter.fragment0.onDetach();
+        if (mAdapter.fragment1 != null) mAdapter.fragment1.onDetach();
         super.onDetach();
     }
 

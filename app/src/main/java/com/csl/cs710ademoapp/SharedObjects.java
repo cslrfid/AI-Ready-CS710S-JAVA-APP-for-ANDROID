@@ -37,7 +37,7 @@ public class SharedObjects {
 
     public ArrayList<ReaderDevice> readersList = new ArrayList<ReaderDevice>();
     public String connectedBleAddressOld = "";
-    public boolean versionWarningShown = false;
+    public boolean versioinWarningShown = false;
     public int batteryWarningShown = 0;
 
     public boolean runningInventoryRfidTask = false;

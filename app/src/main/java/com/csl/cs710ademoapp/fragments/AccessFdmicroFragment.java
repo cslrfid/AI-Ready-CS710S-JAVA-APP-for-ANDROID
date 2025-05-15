@@ -543,7 +543,9 @@ public class AccessFdmicroFragment extends CommonFragment {
         int selectBank = selectTag.spinnerSelectBank.getSelectedItemPosition() + 1;
         int selectOffset = Integer.valueOf(selectTag.editTextSelectOffset.getText().toString());
         boolean invalid = false;
-        accessTask = new AccessTask((operationRead ? buttonRead : buttonWrite), null, invalid, true,
+        accessTask = new AccessTask(
+                (operationRead ? buttonRead : buttonWrite), null,
+                invalid,
                 selectMask, selectBank, selectOffset,
                 selectTag.editTextAccessPassword.getText().toString(),
                 Integer.valueOf(selectTag.editTextAccessAntennaPower.getText().toString()),

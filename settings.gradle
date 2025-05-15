@@ -1,4 +1,4 @@
-include ':app'
+include ':app', 'cs108library4a', 'cs710library4a'
 include ':cslibrary4a'
 include ':epctagcoder'
 include ':MqttAndroidClient'

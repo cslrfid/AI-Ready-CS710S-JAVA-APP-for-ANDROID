@@ -24,7 +24,6 @@ import com.csl.cs710ademoapp.MainActivity;
 import com.csl.cs710ademoapp.R;
 import com.csl.cs710ademoapp.SaveList2ExternalTask;
 import com.csl.cs710ademoapp.SelectTag;
-import com.csl.cslibrary4a.AesCmac;
 import com.csl.cslibrary4a.ReaderDevice;
 import com.csl.cslibrary4a.RfidReaderChipData;
 
@@ -269,14 +268,13 @@ public class AccessUcodeFragment extends CommonFragment {
         EditText editText = (EditText) getActivity().findViewById(R.id.accessUCAuthKeyId);
         TableRow tableRow1 = (TableRow) getActivity().findViewById(R.id.accessUCAuthProfileRow);
         LinearLayout layout1 = (LinearLayout) getActivity().findViewById(R.id.accessUCKeyLayout);
-        LinearLayout layout = (LinearLayout) getActivity().findViewById(R.id.accessUCButtons);
+        LinearLayout layout = (LinearLayout) getActivity().findViewById(R.id.accessUCButtons); layout.setVisibility(View.GONE);
         if (bImpinJTag) {
             textView.setVisibility(View.GONE);
             editText.setVisibility(View.GONE);
             editTextAuthMsg.setText("049CA53E55EA");
             tableRow1.setVisibility(View.GONE);
             layout1.setVisibility(View.GONE);
-            layout.setVisibility(View.GONE);
         }
 
         Button buttonImpinjCheck = (Button) getActivity().findViewById(R.id.accessUCImpinjCheck);
@@ -684,7 +682,8 @@ public class AccessUcodeFragment extends CommonFragment {
                     else if (operationRead) hostCommand = RfidReaderChipData.HostCommands.CMD_18K6CREAD;
                     else hostCommand = RfidReaderChipData.HostCommands.CMD_18K6CWRITE;
 
-                    accessTask = new AccessTask(button, null, invalid, true,
+                    accessTask = new AccessTask(
+                            button, null, invalid,
                             selectTag.editTextTagID.getText().toString(), 1, 32,
                             selectTag.editTextAccessPassword.getText().toString(), Integer.valueOf(selectTag.editTextAccessAntennaPower.getText().toString()), hostCommand,
                             0, 0, true, false,

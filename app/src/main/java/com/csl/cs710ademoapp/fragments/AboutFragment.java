@@ -2,13 +2,12 @@ package com.csl.cs710ademoapp.fragments;
 
 import android.os.Bundle;
 import android.os.Handler;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
 
 import com.csl.cs710ademoapp.BuildConfig;
 import com.csl.cs710ademoapp.MainActivity;

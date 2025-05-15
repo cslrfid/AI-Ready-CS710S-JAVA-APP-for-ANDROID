@@ -25,7 +25,7 @@ public class AccessTask extends AsyncTask<Void, String, String> {
     Button button; String buttonText;
     TextView registerRunTime, registerTagGot, registerVoltageLevel;
     TextView registerYield, registerTotal;
-    boolean invalidRequest, selectOne = false;
+    boolean invalidRequest;
     String selectMask; int selectBank, selectOffset;
     String strPassword; int powerLevel;
     RfidReaderChipData.HostCommands hostCommand;
@@ -49,7 +49,7 @@ public class AccessTask extends AsyncTask<Void, String, String> {
     int batteryCountInventory_old;
     boolean bSkipClearFilter = false;
 
-    public AccessTask(Button button, boolean invalidRequest, boolean selectOne,
+    public AccessTask(Button button, boolean invalidRequest,
                       String selectMask, int selectBank, int selectOffset,
                       String strPassword, int powerLevel, RfidReaderChipData.HostCommands hostCommand,
                       boolean bEnableErrorPopWindow, Runnable updateRunnable) {
@@ -58,7 +58,6 @@ public class AccessTask extends AsyncTask<Void, String, String> {
         this.registerVoltageLevel = registerVoltageLevel;
 
         this.invalidRequest = invalidRequest; MainActivity.csLibrary4A.appendToLog("invalidRequest = " + invalidRequest);
-        this.selectOne = selectOne;
         this.selectMask = selectMask;
         this.selectBank = selectBank;
         this.selectOffset = selectOffset;
@@ -73,7 +72,7 @@ public class AccessTask extends AsyncTask<Void, String, String> {
         }
         preExecute();
     }
-    public AccessTask(Button button, TextView textViewWriteCount, boolean invalidRequest, boolean selectOne,
+    public AccessTask(Button button, TextView textViewWriteCount, boolean invalidRequest,
                       String selectMask, int selectBank, int selectOffset,
                       String strPassword, int powerLevel, RfidReaderChipData.HostCommands hostCommand,
                       int qValue, int repeat, boolean resetCount, boolean bSkipClearFilter,
@@ -87,7 +86,6 @@ public class AccessTask extends AsyncTask<Void, String, String> {
         this.registerTotal = registerTotalView;
 
         this.invalidRequest = invalidRequest; MainActivity.csLibrary4A.appendToLog("invalidRequest = " + invalidRequest);
-        this.selectOne = selectOne;
         this.selectMask = selectMask;
         this.selectBank = selectBank;
         this.selectOffset = selectOffset;
@@ -98,7 +96,6 @@ public class AccessTask extends AsyncTask<Void, String, String> {
         if (repeat > 255) repeat = 255;
         this.repeat = repeat;
         this.bSkipClearFilter = bSkipClearFilter;
-        if (bSkipClearFilter) this.selectOne = false;
         if (resetCount) {
             total = 0;
             tagList.clear();
@@ -154,18 +151,19 @@ public class AccessTask extends AsyncTask<Void, String, String> {
                 invalidRequest = true; MainActivity.csLibrary4A.appendToLog("setAccessRetry is failed");
             }
         }
+        MainActivity.csLibrary4A.appendToLog("setSelectCriteria: invalidRequest = " + invalidRequest + ", repeat = " + repeat + ", bSkipClearFilter = " + bSkipClearFilter + ", powerLevel = " + powerLevel + ", skipSelect = " + skipSelect);
         if (invalidRequest == false) {
             if (DEBUG) MainActivity.csLibrary4A.appendToLog("AccessTask(): powerLevel = " + powerLevel);
             int matchRep = 1;
             if (repeat > 1) matchRep = repeat;
-            if (false && bSkipClearFilter == false) {
+            if (bSkipClearFilter == false) {
                 MainActivity.csLibrary4A.appendToLog("Going to setSelectCriteria disable");
                 MainActivity.csLibrary4A.setSelectCriteriaDisable(-1);
             }
             if (powerLevel < 0 || powerLevel > 330) invalidRequest = true;
             else if (skipSelect == false) {
-                MainActivity.csLibrary4A.appendToLog("AccessTask.preExecute goes to setSelectTag");
-                if (MainActivity.csLibrary4A.setSelectedTag(selectOne, selectMask, selectBank, selectOffset, powerLevel, qValue, matchRep) == false) {
+                MainActivity.csLibrary4A.appendToLog("setSelectCriteria: Going to setSelectTag");
+                if (MainActivity.csLibrary4A.setSelectedTag(selectMask, selectBank, selectOffset, powerLevel, qValue, matchRep) == false) {
                     invalidRequest = true; MainActivity.csLibrary4A.appendToLog("setSelectedTag is failed with selectMask = " + selectMask + ", selectBank = " + selectBank + ", selectOffset = " + selectOffset + ", powerLevel = " + powerLevel);
                 }
             }
@@ -177,7 +175,9 @@ public class AccessTask extends AsyncTask<Void, String, String> {
             taskCancelReason = TaskCancelRReason.INVALD_REQUEST;
             MainActivity.csLibrary4A.appendToLog("invalidRequest A= " + invalidRequest);
         } else {
-            //MainActivity.csLibrary4A.setTagRead(0);
+            if (MainActivity.csLibrary4A.checkHostProcessorVersion(MainActivity.csLibrary4A.getMacVer(), 2, 6, 8)) {
+                MainActivity.csLibrary4A.setInvModeCompact(false);
+            }
             MainActivity.csLibrary4A.sendHostRegRequestHST_CMD(hostCommand);
         }
     }
@@ -226,7 +226,6 @@ public class AccessTask extends AsyncTask<Void, String, String> {
                     if (rx000pkgData.decodedError != null) { endingMessaage = rx000pkgData.decodedError; ending = true; }
                     else if (repeat > 0 && resultError.length() == 0) {
                         resultError = "";
-                        if (true) MainActivity.csLibrary4A.appendToLog("Debug_InvCfg: AccessTask.doInBackground goes to setMatchRep with repeat = " + repeat);
                         MainActivity.csLibrary4A.setMatchRep(repeat);
                         MainActivity.csLibrary4A.sendHostRegRequestHST_CMD(hostCommand);
                     } else {
@@ -320,7 +319,7 @@ public class AccessTask extends AsyncTask<Void, String, String> {
     }
 
     void DeviceConnectTask4RegisterEnding() {
-        //MainActivity.csLibrary4A.setAccessCount(0);
+        MainActivity.csLibrary4A.setAccessCount(0);
         String strErrorMessage = "";
         if (false) {
             boolean success = false;

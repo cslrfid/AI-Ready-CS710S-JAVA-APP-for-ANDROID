@@ -26,9 +26,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.FrameLayout;
-import android.widget.LinearLayout;
 
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
@@ -64,7 +61,7 @@ public class HomeFragment extends CommonFragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState, true);
         if (getActivity().getPackageName().contains("com.csl.cs710ademoapp")) return inflater.inflate(R.layout.home_layout710, container, false);
-        else return inflater.inflate(R.layout.home_layout108, container, false);
+        else return inflater.inflate(R.layout.home_layout, container, false);
     }
 
     @Override
@@ -74,37 +71,12 @@ public class HomeFragment extends CommonFragment {
         if (true && ((AppCompatActivity) getActivity()).getSupportActionBar() != null) {
             ActionBar actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
             actionBar.setIcon(android.R.drawable.ic_menu_save);
-            if (getActivity().getPackageName().contains("cs710ademoapp")) actionBar.setTitle(R.string.title_activity_home_cs710);
-            else actionBar.setTitle(R.string.title_activity_home_cs108);
+            if (getActivity().getPackageName().contains("cs710awedgeapp")) actionBar.setTitle(R.string.title_activity_newhome1);
+            else if (getActivity().getPackageName().contains("cs710ademoapp")) actionBar.setTitle(R.string.title_activity_newhome);
+            else actionBar.setTitle(R.string.title_activity_home);
         }
-        if (true) {
-            String strForegroundReader = MainActivity.csLibrary4A.getForegroundReader();
-            MainActivity.csLibrary4A.appendToLog("strForegroundReader = " + strForegroundReader + ", getForegroundServiceEnable = " + MainActivity.csLibrary4A.getForegroundServiceEnable());
-            if (!getActivity().getPackageName().contains("com.csl.cs710awedgeapp") && strForegroundReader != null && strForegroundReader.length() != 0) {
-                MainActivity.csLibrary4A.appendToLog("strForegroundReader = " + strForegroundReader + ", getForegroundServiceEnable = " + MainActivity.csLibrary4A.getForegroundServiceEnable());
-                LinearLayout linearLayout1, linearLayout2, linearLayout3, linearLayout4, linearLayout5;
-                linearLayout1 = (LinearLayout) getActivity().findViewById(R.id.mainRow1);
-                linearLayout2 = (LinearLayout) getActivity().findViewById(R.id.mainRow2);
-                linearLayout3 = (LinearLayout) getActivity().findViewById(R.id.mainRow3);
-                linearLayout4 = (LinearLayout) getActivity().findViewById(R.id.mainRow4);
-                linearLayout5 = (LinearLayout) getActivity().findViewById(R.id.mainRow5);
-                if (getActivity().getPackageName().contains("com.csl.cs710ademoapp")) {
-                    FrameLayout frameLayout = (FrameLayout) getActivity().findViewById(R.id.mainButton1);
-                    frameLayout.setVisibility(View.INVISIBLE);
-                } else {
-                    Button button = (Button) getActivity().findViewById(R.id.mainButton1);
-                    button.setVisibility(View.INVISIBLE);
-                }
-                linearLayout1.setVisibility(View.INVISIBLE);
-                linearLayout2.setVisibility(View.GONE);
-                linearLayout3.setVisibility(View.VISIBLE);
-                linearLayout4.setVisibility(View.INVISIBLE);
-                //linearLayout5.setVisibility(View.INVISIBLE);
-
-            }
-        }
-        MainActivity.tagType = null; MainActivity.mDid = null;
-        if (true || MainActivity.sharedObjects.versionWarningShown == false)
+        MainActivity.mDid = null;
+        if (true || MainActivity.sharedObjects.versioinWarningShown == false)
             mHandler.post(runnableConfiguring);
         mHandler.postDelayed(runnableStartService, 1000);
     }
@@ -119,7 +91,7 @@ public class HomeFragment extends CommonFragment {
     @Override
     public void onDestroyView() {
         isHomeFragment = false;
-        //MainActivity.csLibrary4A.appendToLog("isHomeFragment1 = " + isHomeFragment);
+        MainActivity.csLibrary4A.appendToLog("isHomeFragment1 = " + isHomeFragment);
         super.onDestroyView();
     }
 
@@ -135,10 +107,7 @@ public class HomeFragment extends CommonFragment {
         boolean DEBUG = false;
         @Override
         public void run() {
-            if (true) {
-                MainActivity.csLibrary4A.appendToLog("runnableConfiguring(): isBleConnected = " + MainActivity.csLibrary4A.isBleConnected() + ", isRfidFailure = " + MainActivity.csLibrary4A.isRfidFailure());
-                MainActivity.csLibrary4A.appendToLog("runnableConfiguring(): mrfidToWriteSize = " + MainActivity.csLibrary4A.mrfidToWriteSize());
-            }
+            if (true) MainActivity.csLibrary4A.appendToLog("runnableConfiguring(): mrfidToWriteSize = " + MainActivity.csLibrary4A.mrfidToWriteSize());
             boolean progressShown = false;
             if (progressDialog != null) { if (progressDialog.isShowing()) progressShown = true; }
             if (MainActivity.csLibrary4A.isBleConnected() == false || MainActivity.csLibrary4A.isRfidFailure()) {
@@ -157,14 +126,14 @@ public class HomeFragment extends CommonFragment {
                 }
             } else {
                 stopProgressDialog();
-                if (MainActivity.sharedObjects.versionWarningShown == false) {
+                if (MainActivity.sharedObjects.versioinWarningShown == false) {
                     String stringPopup = MainActivity.csLibrary4A.checkVersion();
-                    if (stringPopup != null && stringPopup.length() != 0) {
-                        if (stringPopup.indexOf("Unknown") != 0) stringPopup = "Firmware too old\nPlease upgrade firmware to at least:" + stringPopup;
+                    if (false && stringPopup != null && stringPopup.length() != 0) {
+                        stringPopup = "Firmware too old\nPlease upgrade firmware to at least:" + stringPopup;
                         CustomPopupWindow customPopupWindow = new CustomPopupWindow((Context)getActivity());
                         customPopupWindow.popupStart(stringPopup, false);
                     }
-                    MainActivity.sharedObjects.versionWarningShown = true;
+                    MainActivity.sharedObjects.versioinWarningShown = true;
                 }
             }
             MainActivity.csLibrary4A.setPwrManagementMode(true);
@@ -240,8 +209,7 @@ public class HomeFragment extends CommonFragment {
             MainActivity.csLibrary4A.appendToLog("runnableStartService: ActivityCompat.checkSelfPermission(activity, POST_NOTIFICATIONS) = " + ActivityCompat.checkSelfPermission(mContext, POST_NOTIFICATIONS));
             if (NotificationManagerCompat.from(getActivity()).areNotificationsEnabled()) MainActivity.csLibrary4A.appendToLog("Notification is enabled");
             else MainActivity.csLibrary4A.appendToLog("Notification is disabled");
-            if (!MainActivity.foregroundServiceEnable) { }
-            else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 if (ActivityCompat.checkSelfPermission(mContext, POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
                     MainActivity.csLibrary4A.appendToLog("runnableStartService: requestPermissions POST_NOTIFICATIONS");
                     requestPermissions(new String[] { POST_NOTIFICATIONS }, 10); //POST_NOTIFICATIONS, FOREGROUND_SERVICE_LOCATION
@@ -249,10 +217,7 @@ public class HomeFragment extends CommonFragment {
                     MainActivity.csLibrary4A.appendToLog("runnableStartService: handled POST_NOTIFICATIONS");
                     startService();
                 }
-            } else {
-                MainActivity.csLibrary4A.appendToLog("runnableStartService: no need to handle POST_NOTIFICATIONS");
-                startService();
-            }
+            } else MainActivity.csLibrary4A.appendToLog("runnableStartService: no need to handle POST_NOTIFICATIONS");
         }
     };
     Intent serviceIntent;

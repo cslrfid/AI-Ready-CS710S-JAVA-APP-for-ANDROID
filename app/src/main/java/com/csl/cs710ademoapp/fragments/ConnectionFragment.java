@@ -14,7 +14,6 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
-import android.os.ParcelUuid;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -39,7 +38,7 @@ public class ConnectionFragment extends CommonFragment {
     private ScanCallback mScanCallback;
     private ArrayList<ReaderDevice> readersList = MainActivity.sharedObjects.readersList;
 
-    private ArrayList<BluetoothGatt.CsScanData> mScanResultList = new ArrayList<>();
+    private ArrayList<BluetoothGatt.Cs108ScanData> mScanResultList = new ArrayList<>();
     private Handler mHandler = new Handler();
     private DeviceConnectTask deviceConnectTask;
 
@@ -79,7 +78,6 @@ public class ConnectionFragment extends CommonFragment {
                 boolean bSelectOld = readerDevice.getSelected();
 
                 if (MainActivity.csLibrary4A.isBleConnected() && readerDevice.isConnected() && (readerDevice.getSelected() || false)) {
-                    MainActivity.csLibrary4A.appendToLog("ConnectionFragment.onItemClick, Fragment: ");
                     MainActivity.csLibrary4A.disconnect(false); bleDisConnecting = true;
                     readersList.clear();
                 } else if (MainActivity.csLibrary4A.isBleConnected() == false && readerDevice.getSelected() == false) {
@@ -182,8 +180,8 @@ public class ConnectionFragment extends CommonFragment {
         protected String doInBackground(Void... a) {
             while (isCancelled() == false) {
                 if (wait4process == false) {
-                    BluetoothGatt.CsScanData csScanData = MainActivity.csLibrary4A.getNewDeviceScanned();
-                    if (csScanData != null) mScanResultList.add(csScanData);
+                    BluetoothGatt.Cs108ScanData cs108ScanData = MainActivity.csLibrary4A.getNewDeviceScanned();
+                    if (cs108ScanData != null) mScanResultList.add(cs108ScanData);
                     if (scanning == false || mScanResultList.size() != 0 || System.currentTimeMillis() - timeMillisUpdate > 10000) {
                         wait4process = true; publishProgress("");
                     }
@@ -201,45 +199,31 @@ public class ConnectionFragment extends CommonFragment {
             }
             boolean listUpdated = false;
             while (mScanResultList.size() != 0) {
-                BluetoothGatt.CsScanData scanResultA = mScanResultList.get(0);
+                BluetoothGatt.Cs108ScanData scanResultA = mScanResultList.get(0);
                 mScanResultList.remove(0);
                 if (getActivity() == null) continue;
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                     if (ActivityCompat.checkSelfPermission(getActivity().getApplicationContext(), Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) continue;
                 } else if (ActivityCompat.checkSelfPermission(getActivity().getApplicationContext(), Manifest.permission.BLUETOOTH) != PackageManager.PERMISSION_GRANTED) continue;
                 if (DEBUG) MainActivity.csLibrary4A.appendToLog("scanResultA.device.getType() = " + scanResultA.device.getType() + ". scanResultA.rssi = " + scanResultA.rssi);
-                if (/*scanResultA.device.getType() == BluetoothDevice.DEVICE_TYPE_LE &&*/(true || scanResultA.rssi < 0)) {
+                if (scanResultA.device.getType() == BluetoothDevice.DEVICE_TYPE_LE && (true || scanResultA.rssi < 0)) {
                     boolean match = false;
                     for (int i = 0; i < readersList.size(); i++) {
-                        String stringReaderAddress = readersList.get(i).getAddress();
-                        String stringDeviceAddress = (scanResultA.device == null ? scanResultA.getAddress() : scanResultA.device.getAddress());
-                        if (stringReaderAddress.matches(stringDeviceAddress)) {
+                        if (readersList.get(i).getAddress().matches(scanResultA.device.getAddress())) {
                             ReaderDevice readerDevice1 = readersList.get(i);
                             int count = readerDevice1.getCount();
                             count++;
                             readerDevice1.setCount(count);
                             readerDevice1.setRssi(scanResultA.rssi);
-                            readerDevice1.setServiceUUID2p1(scanResultA.serviceUUID2p2);
                             readersList.set(i, readerDevice1); listUpdated = true;
                             match = true;
                             break;
                         }
                     }
                     if (match == false) {
-                        String name = (scanResultA.device == null ? scanResultA.getName() : scanResultA.device.getName());
-                        if (false) {
-                            if (scanResultA.device != null && scanResultA.rssi == 0) {
-                                BluetoothDevice bluetoothDevice = scanResultA.device;
-                                ParcelUuid[] parcelUuids = bluetoothDevice.getUuids();
-                                for (int k = 0; parcelUuids != null && k < parcelUuids.length; k++) {
-                                    name += (", " + parcelUuids[k].toString());
-                                }
-                            }
-                        }
-                        String address = (scanResultA.device == null ? scanResultA.getAddress() : scanResultA.device.getAddress());
-                        ReaderDevice readerDevice = new ReaderDevice(name, address, false, "", 1, scanResultA.rssi, scanResultA.serviceUUID2p2);
+                        ReaderDevice readerDevice = new ReaderDevice(scanResultA.device.getName(), scanResultA.device.getAddress(), false, "", 1, scanResultA.rssi, scanResultA.serviceUUID2p2);
                         String strInfo = "";
-                        if (scanResultA.device != null && scanResultA.device.getBondState() == 12) {
+                        if (scanResultA.device.getBondState() == 12) {
                             strInfo += "BOND_BONDED\n";
                         }
                         readerDevice.setDetails(strInfo + "scanRecord=" + MainActivity.csLibrary4A.byteArrayToString(scanResultA.scanRecord));
@@ -353,7 +337,7 @@ public class ConnectionFragment extends CommonFragment {
 
         @Override
         protected void onCancelled(Integer result) {
-            if (DEBUG) MainActivity.csLibrary4A.appendToLog("ConnectionFragment.deviceConnectTask: onCancelled(): setting = " + setting + ", waitTime = " + waitTime);
+            if (DEBUG) MainActivity.csLibrary4A.appendToLog("onCancelled(): setting = " + setting + ", waitTime = " + waitTime);
             if (setting >= 0) {
                 Toast.makeText(getActivity().getApplicationContext(), getResources().getString(R.string.toast_ble_setup_problem), Toast.LENGTH_SHORT).show();
             } else {
@@ -367,14 +351,14 @@ public class ConnectionFragment extends CommonFragment {
         }
 
         protected void onPostExecute(Integer result) {
-            if (DEBUG) MainActivity.csLibrary4A.appendToLog("ConnectionFragment.deviceConnectTask: onPostExecute(): setting = " + setting + ", waitTime = " + waitTime);
+            if (DEBUG) MainActivity.csLibrary4A.appendToLog("onPostExecute(): setting = " + setting + ", waitTime = " + waitTime);
             ReaderDevice readerDevice = readersList.get(position);
             readerDevice.setConnected(true);
             readersList.set(position, readerDevice);
             readerListAdapter.notifyDataSetChanged();
 
             String connectedBleAddress = connectingDevice.getAddress();
-            if (connectedBleAddress.matches(MainActivity.sharedObjects.connectedBleAddressOld) == false)   MainActivity.sharedObjects.versionWarningShown = false;
+            if (connectedBleAddress.matches(MainActivity.sharedObjects.connectedBleAddressOld) == false)   MainActivity.sharedObjects.versioinWarningShown = false;
             MainActivity.sharedObjects.connectedBleAddressOld = connectedBleAddress;
             MainActivity.sharedObjects.barsList.clear();
             MainActivity.sharedObjects.tagsList.clear();

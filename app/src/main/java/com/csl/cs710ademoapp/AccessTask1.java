@@ -88,7 +88,7 @@ public class AccessTask1 {
         return strOut;
     }
 
-    boolean isResultReady = false; int tryCount = 0, tryCountMax = 8;
+    boolean isResultReady = false; int tryCount = 0, tryCountMax = 3;
     public boolean isResultReady() {
         boolean bValue = false;
         if (accessTask == null) { }
@@ -196,7 +196,7 @@ public class AccessTask1 {
         }
         MainActivity.csLibrary4A.appendToLog("HelloA: accOffset=" + accOffset + ", accSizeNow=" + accSizeNow + ", accSize=" + accSize);
         MainActivity.csLibrary4A.appendToLog("HelloK: invalidRequest=" + invalidRequest);
-        accessTask = new AccessTask(button, invalidRequest, true,
+        accessTask = new AccessTask(button, invalidRequest,
                 selectMask, selectBank, selectOffset,
                 strPassword, powerLevel, hostCommand, tryCount==tryCountMax, updateRunnable);
     }

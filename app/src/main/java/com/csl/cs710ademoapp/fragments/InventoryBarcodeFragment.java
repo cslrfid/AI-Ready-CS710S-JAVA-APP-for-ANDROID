@@ -136,8 +136,6 @@ public class InventoryBarcodeFragment extends CommonFragment {
         });
 
         barcodeTotal = (TextView) getActivity().findViewById(R.id.inventoryBarcodeTotal);
-
-        MainActivity.csLibrary4A.getBarcodePreSuffix();
     }
 
     @Override
@@ -151,20 +149,18 @@ public class InventoryBarcodeFragment extends CommonFragment {
 
     @Override
     public void onPause() {
-        if (MainActivity.csLibrary4A != null) MainActivity.csLibrary4A.setNotificationListener(null);
+        MainActivity.csLibrary4A.setNotificationListener(null);
         if (inventoryBarcodeTask != null) {
-            if (DEBUG && MainActivity.csLibrary4A != null) MainActivity.csLibrary4A.appendToLog("InventoryBarcodeFragment().onDestory(): VALID inventoryBarcodeTask");
+            if (DEBUG) MainActivity.csLibrary4A.appendToLog("InventoryBarcodeFragment().onDestory(): VALID inventoryBarcodeTask");
             inventoryBarcodeTask.taskCancelReason = InventoryBarcodeTask.TaskCancelRReason.DESTORY;
         }
+        if (DEBUG) MainActivity.csLibrary4A.appendToLog("InventoryBarcodeFragment().onDestory(): onDestory()");
         super.onPause();
     }
 
     @Override
     public void onDestroy() {
-        if (MainActivity.csLibrary4A != null) {
-            MainActivity.csLibrary4A.setAutoBarStartSTop(false);
-            MainActivity.csLibrary4A.setNotificationListener(null);
-        }
+        MainActivity.csLibrary4A.setAutoBarStartSTop(false); MainActivity.csLibrary4A.setNotificationListener(null);
         super.onDestroy();
     }
 

@@ -28,7 +28,7 @@ public class CustomAlertDialog {
                         ans_false.run();
                     }
                 });
-        dialog.setIcon(R.drawable.alert);
+        dialog.setIcon(android.R.drawable.ic_dialog_alert);
         dialog.show();
         return true;
     }

@@ -1,10 +1,6 @@
 package com.csl.cs710ademoapp.fragments;
 
-import static com.csl.cslibrary4a.RfidReader.TagType.TAG_FDMICRO;
-
 import android.os.Bundle;
-
-import com.csl.cslibrary4a.AdapterTab;
 import com.google.android.material.tabs.TabLayout;
 
 import androidx.viewpager.widget.ViewPager;
@@ -16,11 +12,12 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.csl.cs710ademoapp.R;
+import com.csl.cs710ademoapp.adapters.FdmicroAdapter;
 
 public class FdmicroFragment extends CommonFragment {
     private ActionBar actionBar;
     private ViewPager viewPager;
-    AdapterTab adapter;
+    FdmicroAdapter mAdapter;
 
     private String[] tabs = {"Scan", "Configuration"};
 
@@ -32,7 +29,7 @@ public class FdmicroFragment extends CommonFragment {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        InventoryRfidiMultiFragment fragment = (InventoryRfidiMultiFragment) adapter.fragment0;
+        InventoryRfidiMultiFragment fragment = (InventoryRfidiMultiFragment) mAdapter.fragment0;
         if (item.getItemId() == R.id.menuAction_clear) {
             fragment.clearTagsList();
             return true;
@@ -78,47 +75,44 @@ public class FdmicroFragment extends CommonFragment {
             }
         });
 
-        adapter = new AdapterTab(getActivity().getSupportFragmentManager(), tabs.length);
-        adapter.setFragment(0, InventoryRfidiMultiFragment.newInstance(true, TAG_FDMICRO, "E2827001"));
-        adapter.setFragment(1, new AccessFdmicroFragment());
-
+        mAdapter = new FdmicroAdapter(getActivity().getSupportFragmentManager());
         viewPager = (ViewPager) getActivity().findViewById(R.id.OperationsPager);
-        viewPager.setAdapter(adapter);
+        viewPager.setAdapter(mAdapter);
         viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
     }
 
     @Override
     public void onPause() {
-        adapter.fragment0.onPause();
-        adapter.fragment1.onPause();
+        mAdapter.fragment0.onPause();
+        mAdapter.fragment1.onPause();
         super.onPause();
     }
 
     @Override
     public void onStop() {
-        adapter.fragment0.onStop();
-        adapter.fragment1.onStop();
+        mAdapter.fragment0.onStop();
+        mAdapter.fragment1.onStop();
         super.onStop();
     }
 
     @Override
     public void onDestroyView() {
-        adapter.fragment0.onDestroyView();
-        adapter.fragment1.onDestroyView();
+        mAdapter.fragment0.onDestroyView();
+        mAdapter.fragment1.onDestroyView();
         super.onDestroyView();
     }
 
     @Override
     public void onDestroy() {
-        adapter.fragment0.onDestroy();
-        adapter.fragment1.onDestroy();
+        mAdapter.fragment0.onDestroy();
+        mAdapter.fragment1.onDestroy();
         super.onDestroy();
     }
 
     @Override
     public void onDetach() {
-        adapter.fragment0.onDetach();
-        adapter.fragment1.onDetach();
+        mAdapter.fragment0.onDetach();
+        mAdapter.fragment1.onDetach();
         super.onDetach();
     }
 
