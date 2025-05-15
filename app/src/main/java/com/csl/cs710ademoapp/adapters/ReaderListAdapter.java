@@ -74,8 +74,11 @@ public class ReaderListAdapter extends ArrayAdapter<ReaderDevice> {
             }
         }
         if (MainActivity.csLibrary4A.isBleScanning()) {
-            if (reader.getServiceUUID2p1() == 0) text1 += "\nCS108 Reader";
-            else if (reader.getServiceUUID2p1() == 2) text1 += "\nCS710S Reader";
+            if (reader.getServiceUUID2p1() == 0 || reader.getServiceUUID2p1() == 1) text1 += "\nCS108 Reader";
+            else if (reader.getServiceUUID2p1() == 2 || reader.getServiceUUID2p1() == 3) text1 += "\nCS710S Reader";
+            else if (reader.getServiceUUID2p1() == 4) text1 += "\nCS463 Reader";
+            else if (reader.getServiceUUID2p1() == 5) text1 += "\nCS203XL Reader";
+            else if (reader.getServiceUUID2p1() == 6) text1 += "\nConnected paired devices";
         }
         checkedTextView.setText(text1);
         if (reader.getSelected()) {
@@ -156,7 +159,7 @@ public class ReaderListAdapter extends ArrayAdapter<ReaderDevice> {
 
         TextView readerDetailA = (TextView) convertView.findViewById(R.id.reader_detailA);
         TextView readerDetailB = (TextView) convertView.findViewById(R.id.reader_detailB);
-        if (true || reader.isConnected() || checkedTextView.isChecked() || select4detail == false) {
+        if (reader.isConnected() || checkedTextView.isChecked() || select4detail == false) {
             readerDetailA.setText(reader.getDetails());
             readerDetailB.setText("");
             if (reader.isConnected()) {

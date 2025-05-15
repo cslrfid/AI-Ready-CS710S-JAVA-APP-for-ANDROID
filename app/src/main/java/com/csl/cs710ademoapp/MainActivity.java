@@ -1,5 +1,10 @@
 package com.csl.cs710ademoapp;
 
+import static com.csl.cslibrary4a.RfidReader.TagType.TAG_ALIEN;
+import static com.csl.cslibrary4a.RfidReader.TagType.TAG_ASYGN;
+import static com.csl.cslibrary4a.RfidReader.TagType.TAG_CTESIUS;
+import static com.csl.cslibrary4a.RfidReader.TagType.TAG_EM_BAP;
+
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -46,17 +51,13 @@ import com.csl.cs710ademoapp.fragments.SettingFragment;
 import com.csl.cs710ademoapp.fragments.TestFragment;
 import com.csl.cs710ademoapp.fragments.Ucode8Fragment;
 import com.csl.cs710ademoapp.fragments.UcodeFragment;
-import com.csl.cs710library4a.CsLibrary4A;
+import com.csl.cslibrary4a.CsLibrary4A;
 import com.csl.cslibrary4a.ReaderDevice;
-
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import com.csl.cslibrary4a.RfidReader;
 
 public class MainActivity extends AppCompatActivity {
     final boolean DEBUG = false; final String TAG = "Hello";
+    public static boolean foregroundServiceEnable = false;
     public static boolean activityActive = false;
     public static DrawerPositions drawerPositionsDefault = DrawerPositions.MAIN;
 
@@ -79,6 +80,7 @@ public class MainActivity extends AppCompatActivity {
     Handler mHandler = new Handler();
 
     public static String mDid; public static int selectHold; public static int selectFor;
+    public static RfidReader.TagType tagType;
     public static class Config {
         public String configPassword, configPower, config0, config1, config2, config3;
     };
@@ -90,8 +92,9 @@ public class MainActivity extends AppCompatActivity {
             if (savedInstanceState == null) Log.i(TAG, "MainActivity.onCreate: NULL savedInstanceState");
             else Log.i(TAG, "MainActivity.onCreate: VALID savedInstanceState");
         }
-
-        setContentView(R.layout.activity_main);
+        Log.i("Hello", "PackageName is " + getPackageName());
+        if (getPackageName().matches("com.csl.updwedgeservice")) setContentView(R.layout.activity_main1);
+        else setContentView(R.layout.activity_main);
 
         mTitle = getTitle();
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -110,8 +113,7 @@ public class MainActivity extends AppCompatActivity {
 
         super.onCreate(savedInstanceState);
         if (savedInstanceState == null) selectItem(drawerPositionsDefault);
-        if (DEBUG) Log.i(TAG, "MainActivity.onCreate.onCreate: END");
-        loadWedgeSettingFile();
+        if (true) Log.i(TAG, "MainActivity.onCreate.onCreate: END");
     }
 
     @Override
@@ -151,6 +153,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         if (DEBUG) csLibrary4A.appendToLog("MainActivity.onDestroy()");
         if (true) { csLibrary4A.disconnect(true); }
+        csLibrary4A = null;
         super.onDestroy();
     }
 
@@ -204,7 +207,7 @@ public class MainActivity extends AppCompatActivity {
                 fragment = new InventoryRfidSearchFragment(false);
                 break;
             case MULTIBANK:
-                fragment = InventoryRfidiMultiFragment.newInstance(true, null);
+                fragment = InventoryRfidiMultiFragment.newInstance(true, null, null);
                 break;
             case SIMINVENTORY:
                 fragment = InventoryRfidSimpleFragment.newInstance(false, null);
@@ -229,7 +232,7 @@ public class MainActivity extends AppCompatActivity {
                 fragment = new ImpinjM775Fragment();
                 break;
             case ALIEN:
-                fragment = InventoryRfidiMultiFragment.newInstance(true, "E2003");
+                fragment = InventoryRfidiMultiFragment.newInstance(true, TAG_ALIEN, "E2003");
                 break;
             case UCODE8:
                 fragment = new Ucode8Fragment();
@@ -238,7 +241,7 @@ public class MainActivity extends AppCompatActivity {
                 fragment = new UcodeFragment();
                 break;
             case BAPCARD:
-                fragment = InventoryRfidiMultiFragment.newInstance(true, "E200B0");
+                fragment = InventoryRfidiMultiFragment.newInstance(true, TAG_EM_BAP, "E200B0");
                 break;
             case COLDCHAIN:
                 fragment = new ColdChainFragment();
@@ -262,10 +265,10 @@ public class MainActivity extends AppCompatActivity {
                 fragment = new FdmicroFragment();
                 break;
             case CTESIUS:
-                fragment = InventoryRfidiMultiFragment.newInstance(true, "E203510");
+                fragment = InventoryRfidiMultiFragment.newInstance(true, TAG_CTESIUS, "E203510");
                 break;
             case ASYGNTAG:
-                fragment = InventoryRfidiMultiFragment.newInstance(true, "E283A");
+                fragment = InventoryRfidiMultiFragment.newInstance(true, TAG_ASYGN, "E283A");
                 break;
 
             case REGISTER:
@@ -335,7 +338,6 @@ public class MainActivity extends AppCompatActivity {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         permissionRequesting = false;
     }
-
 
     public void sfnClicked(View view) {
         selectItem(DrawerPositions.SPECIAL);
@@ -410,7 +412,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             if (DEBUG) Log.i(TAG, "MainActivity.onItemClick: position = " + position + ", id = " + id);
-            selectItem(DrawerListContent.DrawerPositions.toDrawerPosition(position));
+            selectItem(DrawerPositions.toDrawerPosition(position));
         }
     }
 
@@ -423,44 +425,5 @@ public class MainActivity extends AppCompatActivity {
     private void readFromIntent(Intent intent) {
         if (DEBUG) csLibrary4A.appendToLog("onNewIntent !!! readFromIntent entry");
         String action = intent.getAction();
-    }
-
-    public static String fileName = "SimpleWedgeSettings";
-    public static String wedgePrefix = null, wedgeSuffix = null;
-    public static int wedgeDelimiter = 0x0a, wedgePower = 300;
-    void loadWedgeSettingFile() {
-        File path = this.getFilesDir();
-        File file = new File(path, fileName);
-        boolean bNeedDefault = true, DEBUG = false;
-        if (file.exists()) {
-            int length = (int) file.length();
-            byte[] bytes = new byte[length];
-            try {
-                InputStream instream = new FileInputStream(file);
-                if (instream != null) {
-                    InputStreamReader inputStreamReader = new InputStreamReader(instream);
-                    BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-                    String line;
-                    while ((line = bufferedReader.readLine()) != null) {
-                        if (true) csLibrary4A.appendToLog("Data read = " + line);
-                        String[] dataArray = line.split(",");
-                        if (dataArray.length == 2) {
-                            if (dataArray[0].matches("wedgePower")) {
-                                wedgePower = Integer.valueOf(dataArray[1]);
-                            } else if (dataArray[0].matches("wedgePrefix")) {
-                                wedgePrefix = dataArray[1];
-                            } else if (dataArray[0].matches("wedgeSuffix")) {
-                                wedgeSuffix = dataArray[1];
-                            } else if (dataArray[0].matches("wedgeDelimiter")) {
-                                wedgeDelimiter = Integer.valueOf(dataArray[1]);
-                            }
-                        }
-                    }
-                }
-                instream.close();
-            } catch (Exception ex) {
-                //
-            }
-        }
     }
 }

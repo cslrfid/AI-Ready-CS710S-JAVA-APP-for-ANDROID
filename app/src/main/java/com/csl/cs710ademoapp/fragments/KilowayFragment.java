@@ -1,5 +1,7 @@
 package com.csl.cs710ademoapp.fragments;
 
+import static com.csl.cslibrary4a.RfidReader.TagType.TAG_KILOWAY;
+
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -12,13 +14,13 @@ import androidx.viewpager.widget.ViewPager;
 
 import com.csl.cs710ademoapp.MainActivity;
 import com.csl.cs710ademoapp.R;
-import com.csl.cs710ademoapp.adapters.KilowayAdapter;
+import com.csl.cslibrary4a.AdapterTab;
 import com.google.android.material.tabs.TabLayout;
 
 public class KilowayFragment extends CommonFragment {
     private ActionBar actionBar;
     private ViewPager viewPager;
-    KilowayAdapter mAdapter;
+    AdapterTab adapter;
 
     private String[] tabs = {"Scan", "Geiger"}; //, "Access"};
     int iTargetOld, iSessionOld;
@@ -31,21 +33,21 @@ public class KilowayFragment extends CommonFragment {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        InventoryRfidiMultiFragment fragment1 = (InventoryRfidiMultiFragment) mAdapter.fragment1;
+        InventoryRfidiMultiFragment fragment = (InventoryRfidiMultiFragment) adapter.getItem(0);
         if (item.getItemId() == R.id.menuAction_clear) {
-            fragment1.clearTagsList();
+            fragment.clearTagsList();
             return true;
         } else if (item.getItemId() == R.id.menuAction_sortRssi) {
-            fragment1.sortTagsListByRssi();
+            fragment.sortTagsListByRssi();
             return true;
         } else if (item.getItemId() == R.id.menuAction_sort) {
-            fragment1.sortTagsList();
+            fragment.sortTagsList();
             return true;
         } else if (item.getItemId() == R.id.menuAction_save) {
-            fragment1.saveTagsList();
+            fragment.saveTagsList();
             return true;
         } else if (item.getItemId() == R.id.menuAction_share) {
-            fragment1.shareTagsList();
+            fragment.shareTagsList();
             return true;
         } else return super.onOptionsItemSelected(item);
     }
@@ -60,9 +62,13 @@ public class KilowayFragment extends CommonFragment {
 
         TabLayout tabLayout = (TabLayout) getActivity().findViewById(R.id.OperationsTabLayout);
 
-        mAdapter = new KilowayAdapter(getActivity().getSupportFragmentManager());
+        adapter = new AdapterTab(getActivity().getSupportFragmentManager(), tabs.length);
+        adapter.setFragment(0, InventoryRfidiMultiFragment.newInstance(true, TAG_KILOWAY, "E281D"));
+        adapter.setFragment(1, new InventoryRfidSearchFragment(true));
+        adapter.setFragment(2, new AccessKilowayFragment(false));
+
         viewPager = (ViewPager) getActivity().findViewById(R.id.OperationsPager);
-        viewPager.setAdapter(mAdapter);
+        viewPager.setAdapter(adapter);
         viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
 
         for (String tab_name : tabs) {
@@ -91,29 +97,29 @@ public class KilowayFragment extends CommonFragment {
 
     @Override
     public void onPause() {
-        mAdapter.fragment0.onPause();
-        mAdapter.fragment1.onPause();
+        adapter.fragment0.onPause();
+        adapter.fragment1.onPause();
         super.onPause();
     }
 
     @Override
     public void onStop() {
-        mAdapter.fragment0.onStop();
-        mAdapter.fragment1.onStop();
+        adapter.fragment0.onStop();
+        adapter.fragment1.onStop();
         super.onStop();
     }
 
     @Override
     public void onDestroyView() {
-        mAdapter.fragment0.onDestroyView();
-        mAdapter.fragment1.onDestroyView();
+        adapter.fragment0.onDestroyView();
+        adapter.fragment1.onDestroyView();
         super.onDestroyView();
     }
 
     @Override
     public void onDestroy() {
-        mAdapter.fragment0.onDestroy();
-        mAdapter.fragment1.onDestroy();
+        adapter.fragment0.onDestroy();
+        adapter.fragment1.onDestroy();
         MainActivity.csLibrary4A.setTagGroup(MainActivity.csLibrary4A.getQuerySelect(), iSessionOld, iTargetOld);
         //MainActivity.mCs108Library4a.macWrite(0x203, 0);
         super.onDestroy();
@@ -121,8 +127,8 @@ public class KilowayFragment extends CommonFragment {
 
     @Override
     public void onDetach() {
-        mAdapter.fragment0.onDetach();
-        mAdapter.fragment1.onDetach();
+        adapter.fragment0.onDetach();
+        adapter.fragment1.onDetach();
         super.onDetach();
     }
 
