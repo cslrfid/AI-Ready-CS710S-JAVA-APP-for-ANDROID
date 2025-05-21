@@ -9,10 +9,10 @@ android {
     compileSdk 36
     defaultConfig {
         applicationId "com.csl.cs710ademoapp"
-        minSdk 23
+        minSdk 26
         targetSdk 36
-        versionCode 12
-        versionName "4.16.0"
+        versionCode 13
+        versionName "4.17.0"
     }
 }
 

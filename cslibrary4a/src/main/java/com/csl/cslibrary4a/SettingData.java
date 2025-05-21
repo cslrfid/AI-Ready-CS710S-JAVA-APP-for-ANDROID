@@ -153,7 +153,7 @@ public class SettingData {
         File path = context.getFilesDir();
         String fileName = stringMacAddress; //bluetoothGatt.getmBluetoothDevice().getAddress(); //stringMacAddress
 
-        fileName = "csReaderA_" + fileName.replaceAll(":", "");
+        fileName = "csReaderA_" + fileName.replaceAll(":", "").replaceAll(" ", "");
         fileSetting = new File(path, fileName);
         boolean bNeedDefault = true;
         if (DEBUG_FILE) utility.appendToLogView("FileName = " + fileName + ".exits = " + fileSetting.exists() + ", with beepEnable = " + inventoryBeep);

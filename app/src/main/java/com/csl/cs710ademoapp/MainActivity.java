@@ -18,6 +18,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
@@ -111,6 +112,7 @@ public class MainActivity extends AppCompatActivity {
         csLibrary4A = new CsLibrary4A(mContext, mLogView);
         mSensorConnector = new SensorConnector(mContext);
 
+        EdgeToEdge.enable(this);
         super.onCreate(savedInstanceState);
         if (savedInstanceState == null) selectItem(drawerPositionsDefault);
         if (true) Log.i(TAG, "MainActivity.onCreate.onCreate: END");

@@ -34,7 +34,7 @@ import java.util.Set;
 
 public class CsLibrary4A {
     boolean DEBUG = false, DEBUG2 = false;
-    String stringVersion = "16.0";
+    String stringVersion = "17.0";
     Utility utility;
     Cs710Library4A cs710Library4A;
     Cs108Library4A cs108Library4A;
@@ -222,7 +222,10 @@ public class CsLibrary4A {
                     appendToLog("CsLibrary.scanLeDevice: " + i + ", Uuids.size = " + (parcelUuids == null ? "null" : parcelUuids.length));
                     for (int k = 0; parcelUuids != null && k < parcelUuids.length; k++) {
                         String string0 = "", string1 = "", string2 = parcelUuids[k].toString();
-                        int iString2 = Integer.parseInt(string2.split("-")[0], 16);
+                        String string3 = string2.split("-")[0];
+                        appendToLog("CsLibrary.scanLeDevice: string3 = " + string3);
+                        int iString2 = 0;
+                        if (string3.substring(0, 4).matches("0000")) iString2 = Integer.parseInt(string3, 16);
                         if (iString2 >= 0x1000 && iString2 < 0x1410) string0 = "SDP ";
                         else if (iString2 >= 0x1800 && iString2 < 0x1860) string0 = "GATT ";
                         if (iString2 == 0x1101) string1 = "Serial Port, ";
@@ -507,6 +510,7 @@ public class CsLibrary4A {
     }
     public String getMacVer() {
         if (DEBUG) Log.i("Hello2", "getMacVer");
+        appendToLog("CsLibrary4A.getMacVer");
         if (isCs108Connected()) return cs108Library4A.getMacVer();
         else if (isCs710Connected()) return cs710Library4A.getMacVer();
         else Log.i("Hello2", "getMacVer" + stringNOTCONNECT);

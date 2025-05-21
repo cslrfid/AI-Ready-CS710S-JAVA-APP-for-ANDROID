@@ -1035,6 +1035,7 @@ public class CsReaderConnector {
     }
 
     public String checkVersion() {
+        appendToLog("CsReaderConnector.checkVersion, getMacVer");
         String macVersion = rfidReader.getMacVer();
         String hostVersion = controllerConnector.getVersion();
         String bluetoothVersion = bluetoothConnector.getBluetoothIcVersion();

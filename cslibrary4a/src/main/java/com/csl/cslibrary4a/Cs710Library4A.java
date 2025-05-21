@@ -586,6 +586,7 @@ public class Cs710Library4A {
         csReaderConnector.settingData.preFilterData = null;
     }
     public String getMacVer() {
+        appendToLog("Cs710Library4A.getMacVer");
         return csReaderConnector.rfidReader.getMacVer();
     }
     public String getRadioSerial() {
@@ -1812,6 +1813,7 @@ public class Cs710Library4A {
                 }
                 csReaderConnector.settingData.loadWedgeSettingFile();
                 if (loadSetting1File()) loadSetting1File();
+                appendToLog("Cs710Library4A.checkVersionRunnable, getMacVer");
                 if (DEBUG_CONNECT) appendToLog("Debug_Connect: Cs710Library4A.checkVersionRunnable with macVersion = " + getMacVer());
                 if (true) {
                     setTagDelay(csReaderConnector.rfidReader.tagDelaySetting);
@@ -1837,8 +1839,12 @@ public class Cs710Library4A {
         }
         if (stringMacAddress == null) {
             appendToLog("Cs710Library4A.loadSetting1File, loadSettingFile: starts with usbConnector is " + (csReaderConnector.usbConnector == null ? "null" : "valid"));
-            if (csReaderConnector.usbConnector != null) appendToLog("Cs710Library4A.loadSetting1File, loadSettingFile: usbConnectionState = " + csReaderConnector.usbConnector.usbConnectionState);
+            if (csReaderConnector.usbConnector != null) {
+                appendToLog("Cs710Library4A.loadSetting1File, loadSettingFile: usbConnectionState = " + csReaderConnector.usbConnector.usbConnectionState);
+                stringMacAddress = readerDeviceConnect.getAddress();
+            }
         }
+        appendToLog("Cs710Library4A.loadSetting1File, loadSettingFile: stringMacAddress = " + stringMacAddress);
         return csReaderConnector.settingData.loadSettingFile(stringMacAddress, getlibraryVersion(), getChannelHoppingStatus(), getCurrentProfile());
     }
     public void saveSetting2File() {

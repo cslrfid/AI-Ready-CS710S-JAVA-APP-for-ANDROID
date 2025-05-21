@@ -583,6 +583,7 @@ public class Cs108Library4A {
         csReaderConnector.settingData.preFilterData = null;
     }
     public String getMacVer() {
+        appendToLog("Cs108Library4A.getMacVer");
         return csReaderConnector.rfidReader.getMacVer();
     }
     public String getRadioSerial() {

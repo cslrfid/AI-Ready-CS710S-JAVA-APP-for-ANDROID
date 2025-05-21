@@ -2504,6 +2504,7 @@ public class RfidReader {
         }
     }
     public String getMacVer() {
+        appendToLog("RfidReader.getMacVersion: bis108 is " + bis108);
         return (bis108 ? rfidReaderChipR2000.rx000Setting.getMacVer() : rfidReaderChipE710.rx000Setting.getMacVer());
     }
     public String getRadioSerial() {

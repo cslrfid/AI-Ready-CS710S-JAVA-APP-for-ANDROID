@@ -280,6 +280,7 @@ public class RfidReaderChipE710 {
 
         String macVer = null; int macVerBuild = -1;
         public String getMacVer() {
+            appendToLog("macVerBuild = " + macVerBuild + ", macVer = " + (macVer == null ? "null" : macVer));
             if (macVerBuild < 0) readMAC(0x28, 4);
             if (macVer == null) readMAC(8, 0x20);
             if (macVerBuild < 0 || macVer == null) return null;

@@ -349,138 +349,185 @@ class UsbConnector {
         }
     };
 
+    boolean usbDataSending = false;
+    byte[] dataOutPending = null;
     boolean writeStreamOut(byte[] dataOutRaw) {
         boolean DEBUG = true;
 
-        appendToLog("UsbConnector.writeStreamOut, UsbData: raw dataOut " + byteArrayToString(dataOutRaw));
+        appendToLog("UsbConnector.writeStreamOut, UsbConnector.waitStreamInOut.Runnable: raw dataOut " + byteArrayToString(dataOutRaw) + ", dataOutPending as "  + (dataOutPending == null ? "null" : "valid"));
         dataOutRaw[1] = (byte)0xE6;
 
-        byte[] dataOut = new byte[dataOutRaw.length + 2];
-        dataOut[0] = 2;
-        dataOut[1] = (byte) dataOutRaw.length;
-        System.arraycopy(dataOutRaw, 0, dataOut, 2, dataOutRaw.length);
-        appendToLog("UsbConnector.writeStreamOut, UsbData: processed value: " + byteArrayToString(dataOut));
+        dataOutPending = new byte[dataOutRaw.length + 2];
+        dataOutPending[0] = 2;
+        dataOutPending[1] = (byte) dataOutRaw.length;
+        System.arraycopy(dataOutRaw, 0, dataOutPending, 2, dataOutRaw.length);
+        appendToLog("UsbConnector.writeStreamOut, UsbData: processed value: " + byteArrayToString(dataOutPending));
 
-        Thread thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                //byte[] dataOut = new byte[]{2, 10, (byte) 0xA7, (byte) 0xE6, 2, (byte) 0xC2, (byte) 0x82, (byte) 0x37, 0, 0, (byte) 0x80, 0};
-                byte[] dataIn = new byte[16];
-                if (DEBUG)
-                    appendToLog("UsbConnector.writeStreamOut.Runnable: " + (usbDeviceConnection == null ? "null" : "valid") + " usbDeviceConnection, "
-                            + (usbEndpointOut == null ? "null" : "valid") + " usbEndpointOut, "
-                            + (usbEndpointIn == null ? "null" : "valid") + " usbEndpointIn");
-                if (usbEndpointOut.getType() == USB_ENDPOINT_XFER_BULK) { //for sending, okay to use following even if endpoint type is INT
+        if (true) waitStreamInOut();
+        else {
+            Thread thread = new Thread(new Runnable() {
+                @Override
+                public void run() {
                     if (DEBUG)
-                        appendToLog("UsbConnector.writeStreamOut.Runnable: going to do bulkTransfer with dataOut as " + byteArrayToString(dataOut));
-                    int iLength = usbDeviceConnection.bulkTransfer(usbEndpointOut, dataOut, dataOut.length, 0);
-                    if (DEBUG)
-                        appendToLog("UsbConnector.writeStreamOut.Runnable: done bulkTransfer with length = " + iLength);
-                } else if (usbEndpointOut.getType() == USB_ENDPOINT_XFER_INT) {
-                    if (DEBUG)
-                        appendToLog("UsbConnector.writeStreamOut.Runnable: going to do interrrupt transfer with dataOut as " + byteArrayToString(dataOut));
-                    if (dataOut.length > usbEndpointOut.getMaxPacketSize()) appendToLog("UsbConnector.writeStreamOut.Runnable: cannot transfer as dataOut length is greater than MaxPacketSize " + usbEndpointOut.getMaxPacketSize());
-                    else {
-                        int bufferDataLength = dataOut.length;
-                        ByteBuffer buffer = ByteBuffer.allocate(bufferDataLength + 1);
-                        UsbRequest usbRequest = new UsbRequest();
-                        buffer.put(dataOut);
+                        appendToLog("UsbConnector.writeStreamOut.Runnable: " + (usbDeviceConnection == null ? "null" : "valid") + " usbDeviceConnection, "
+                                + (usbEndpointOut == null ? "null" : "valid") + " usbEndpointOut, "
+                                + (usbEndpointIn == null ? "null" : "valid") + " usbEndpointIn");
+                    if (usbEndpointOut.getType() == USB_ENDPOINT_XFER_BULK) { //for sending, okay to use following even if endpoint type is INT
                         if (DEBUG)
-                            appendToLog("UsbConnector.writeStreamOut.Runnable: going to usbRequest.queue with position = " + buffer.position());
-
-                        usbRequest.initialize(usbDeviceConnection, usbEndpointOut);
-                        usbRequest.queue(buffer, bufferDataLength);
-                        try {
-                            boolean bEqual = usbRequest.equals(usbDeviceConnection.requestWait());
+                            appendToLog("UsbConnector.writeStreamOut.Runnable: going to do bulkTransfer with dataOut as " + byteArrayToString(dataOutPending));
+                        int iLength = usbDeviceConnection.bulkTransfer(usbEndpointOut, dataOutPending, dataOutPending.length, 0);
+                        if (DEBUG)
+                            appendToLog("UsbConnector.writeStreamOut.Runnable: done bulkTransfer with length = " + iLength);
+                    } else if (usbEndpointOut.getType() == USB_ENDPOINT_XFER_INT) {
+                        if (DEBUG)
+                            appendToLog("UsbConnector.writeStreamOut.Runnable: going to do interrrupt transfer with dataOut as " + byteArrayToString(dataOutPending));
+                        if (dataOutPending.length > usbEndpointOut.getMaxPacketSize())
+                            appendToLog("UsbConnector.writeStreamOut.Runnable: cannot transfer as dataOut length is greater than MaxPacketSize " + usbEndpointOut.getMaxPacketSize());
+                        else {
+                            int bufferDataLength = dataOutPending.length;
+                            ByteBuffer buffer = ByteBuffer.allocate(bufferDataLength + 1);
+                            UsbRequest usbRequest = new UsbRequest();
+                            buffer.put(dataOutPending);
                             if (DEBUG)
-                                appendToLog("UsbConnector.writeStreamOut.Runnable: done transfer with usbRequest.equals[usbDeviceConnection.requestWait] is " + bEqual + ", position = " + buffer.position());
-                        } catch (Exception ex) {
-                            appendToLog("UsbConnector.writeStreamOut.Runnable: requestWait exception as " + ex.toString());
-                        }
-                    }
-                } else {
-                    if (DEBUG)
-                        appendToLog("UsbConnector.writeStreamOut.Runnable: cannot handle as usbEndpointOut type is " + usbEndpointOut.getType());
-                }
+                                appendToLog("UsbConnector.writeStreamOut.Runnable: going to usbRequest.queue with position = " + buffer.position());
 
-                if (DEBUG) appendToLog("UsbConnector.writeStreamOut.Runnable: going to do threadStreamIn.start");
-                waitStreamIn();
-            }
-        });
-        thread.start();
+                            usbDataSending = true;
+                            usbRequest.initialize(usbDeviceConnection, usbEndpointOut);
+                            usbRequest.queue(buffer, bufferDataLength);
+                            try {
+                                boolean bEqual = usbRequest.equals(usbDeviceConnection.requestWait());
+                                if (DEBUG)
+                                    appendToLog("UsbConnector.writeStreamOut.Runnable: done transfer with usbRequest.equals[usbDeviceConnection.requestWait] is " + bEqual + ", position = " + buffer.position());
+                            } catch (Exception ex) {
+                                appendToLog("UsbConnector.writeStreamOut.Runnable: requestWait exception as " + ex.toString());
+                            }
+                            usbDataSending = false;
+                        }
+                    } else {
+                        if (DEBUG)
+                            appendToLog("UsbConnector.writeStreamOut.Runnable: cannot handle as usbEndpointOut type is " + usbEndpointOut.getType());
+                    }
+
+                    if (DEBUG)
+                        appendToLog("UsbConnector.writeStreamOut.Runnable: going to do threadStreamIn.start");
+                    waitStreamInOut();
+                }
+            });
+            thread.start();
+        }
 
         return true;
     }
 
     private boolean disableUSBThread = false;
-    public void waitStreamIn() {
+    public void waitStreamInOut() {
         if (!disableUSBThread) {
             disableUSBThread = true;
-            appendToLog("UsbConnector.waitStreamIn, UsbData: starts");
+            appendToLog("UsbConnector.waitStreamInOut, UsbData: starts");
             Thread thread = new Thread(new Runnable() {
                 boolean DEBUG = true;
                 byte[] dataIn = new byte[16];
+
                 @Override
                 public void run() {
-                    appendToLog("UsbConnector.waitStreamIn.Runnable, UsbData: starts");
-                    if (usbEndpointIn.getType() == USB_ENDPOINT_XFER_BULK) {
-                        if (DEBUG)
-                            appendToLog("UsbConnector.waitStreamIn.Runnable: going to do bulkTransfer to dataIn");
-                        int iLength = usbDeviceConnection.bulkTransfer(usbEndpointIn, dataIn, dataIn.length, 0);
-                        if (DEBUG)
-                            appendToLog("UsbConnector.waitStreamIn.Runnable: done bulkTransfer to usbEndpointIn with length = " + iLength);
-                        if (DEBUG) appendToLog("UsbConnector.waitStreamIn.Runnable: buffer received is " + byteArrayToString(dataIn));
-
-                    } else if (usbEndpointIn.getType() == USB_ENDPOINT_XFER_INT) { //for receiving, must use following if endpoint type is INT
-                        if (DEBUG)
-                            appendToLog("UsbConnector.waitStreamIn.Runnable, UsbData: going to do interrupt transfer to dataIn");
-                        int bufferDataLength = usbEndpointIn.getMaxPacketSize();
-                        ByteBuffer buffer = ByteBuffer.allocate( bufferDataLength + 1);
-                        UsbRequest usbRequest = new UsbRequest();
-                        if (DEBUG)
-                            appendToLog("UsbConnector.waitStreamIn.Runnable, UsbData: going to usbRequest.queue with position = " + buffer.position());
-                        while (true) {
-                            usbRequest.initialize(usbDeviceConnection, usbEndpointIn);
-                            usbRequest.queue(buffer, bufferDataLength);
-                            try {
-                                //while (true) {
-                                boolean bEqual = usbRequest.equals(usbDeviceConnection.requestWait());
+                    appendToLog("UsbConnector.waitStreamInOut.Runnable, UsbData: starts");
+                    while (true) {
+                        appendToLog("UsbConnector.waitStreamInOut.Runnable: dataOutPending is " + (dataOutPending == null ? "null" : "valid"));
+                        if (dataOutPending != null) {
+                            if (DEBUG)
+                                appendToLog("UsbConnector.waitStreamInOut.Runnable: " + (usbDeviceConnection == null ? "null" : "valid") + " usbDeviceConnection, "
+                                        + (usbEndpointOut == null ? "null" : "valid") + " usbEndpointOut, "
+                                        + (usbEndpointIn == null ? "null" : "valid") + " usbEndpointIn");
+                            if (usbEndpointOut.getType() == USB_ENDPOINT_XFER_BULK) { //for sending, okay to use following even if endpoint type is INT
                                 if (DEBUG)
-                                    appendToLog("UsbConnector.waitStreamIn.Runnable, UsbData: done transfer with usbRequest.equals[usbDeviceConnection.requestWait] is " + bEqual + ", position = " + buffer.position());
-                                byte[] dataInRaw = buffer.array();
-                                if (DEBUG && dataInRaw[0] != 0)
-                                    appendToLog("UsbConnector.waitStreamIn.Runnable, UsbData: buffer received is " + byteArrayToString(dataInRaw));
-
-                                if (bEqual && dataInRaw[0] == 1 && dataInRaw.length > (dataInRaw[1] + 2)) {
-                                    dataIn = new byte[dataInRaw[1]];
-                                    System.arraycopy(dataInRaw, 2, dataIn, 0, dataIn.length);
+                                    appendToLog("UsbConnector.waitStreamInOut.Runnable: going to do bulkTransfer with dataOut as " + byteArrayToString(dataOutPending));
+                                int iLength = usbDeviceConnection.bulkTransfer(usbEndpointOut, dataOutPending, dataOutPending.length, 0);
+                                if (DEBUG)
+                                    appendToLog("UsbConnector.waitStreamInOut.Runnable: done bulkTransfer with length = " + iLength);
+                            } else if (usbEndpointOut.getType() == USB_ENDPOINT_XFER_INT) {
+                                if (DEBUG)
+                                    appendToLog("UsbConnector.waitStreamInOut.Runnable: going to do interrrupt transfer with dataOut as " + byteArrayToString(dataOutPending));
+                                if (dataOutPending.length > usbEndpointOut.getMaxPacketSize())
+                                    appendToLog("UsbConnector.waitStreamInOut.Runnable: cannot transfer as dataOut length is greater than MaxPacketSize " + usbEndpointOut.getMaxPacketSize());
+                                else {
+                                    int bufferDataLength = dataOutPending.length;
+                                    ByteBuffer buffer = ByteBuffer.allocate(bufferDataLength + 1);
+                                    UsbRequest usbRequest = new UsbRequest();
+                                    buffer.put(dataOutPending);
                                     if (DEBUG)
-                                        appendToLog("UsbConnector.waitStreamIn.Runnable, UsbData: dataIn " + dataIn.length + " is " + byteArrayToString(dataIn));
-                                    synchronized (arrayListStreamIn) {
-                                        //arrayListStreamIn.add(dataIn);
-                                        streamInBufferPush(dataIn, 0, dataIn.length);
-                                        streamInBufferSize += dataIn.length;
+                                        appendToLog("UsbConnector.waitStreamInOut.Runnable: going to usbRequest.queue with position = " + buffer.position());
+
+                                    usbDataSending = true;
+                                    usbRequest.initialize(usbDeviceConnection, usbEndpointOut);
+                                    usbRequest.queue(buffer, bufferDataLength);
+                                    try {
+                                        boolean bEqual = usbRequest.equals(usbDeviceConnection.requestWait());
                                         if (DEBUG)
-                                            appendToLog("UsbConnector.waitStreamIn.Runnable: done streamInBufferPush with streamInRequest as " + streamInRequest);
-                                        if (streamInRequest == false) {
-                                            streamInRequest = true;
+                                            appendToLog("UsbConnector.waitStreamInOut.Runnable: done transfer with usbRequest.equals[usbDeviceConnection.requestWait] is " + bEqual + ", position = " + buffer.position());
+                                        Thread.sleep(100);
+                                    } catch (Exception ex) {
+                                        appendToLog("UsbConnector.waitStreamInOut.Runnable: requestWait exception as " + ex.toString());
+                                    }
+                                    usbDataSending = false;
+                                }
+                            } else if (DEBUG) appendToLog("UsbConnector.waitStreamInOut.Runnable: cannot handle as usbEndpointOut type is " + usbEndpointOut.getType());
+                            dataOutPending = null;
+                        } else {
+                            if (usbEndpointIn.getType() == USB_ENDPOINT_XFER_BULK) {
+                                if (DEBUG)
+                                    appendToLog("UsbConnector.waitStreamInOut.Runnable: going to do bulkTransfer to dataIn");
+                                int iLength = usbDeviceConnection.bulkTransfer(usbEndpointIn, dataIn, dataIn.length, 0);
+                                if (DEBUG)
+                                    appendToLog("UsbConnector.waitStreamInOut.Runnable: done bulkTransfer to usbEndpointIn with length = " + iLength);
+                                if (DEBUG)
+                                    appendToLog("UsbConnector.waitStreamInOut.Runnable: buffer received is " + byteArrayToString(dataIn));
+
+                            } else if (usbEndpointIn.getType() == USB_ENDPOINT_XFER_INT) { //for receiving, must use following if endpoint type is INT
+                                if (DEBUG)
+                                    appendToLog("UsbConnector.waitStreamInOut.Runnable, UsbData: going to do interrupt transfer to dataIn");
+                                int bufferDataLength = usbEndpointIn.getMaxPacketSize();
+                                ByteBuffer buffer = ByteBuffer.allocate(bufferDataLength + 1);
+                                UsbRequest usbRequest = new UsbRequest();
+                                if (DEBUG)
+                                    appendToLog("UsbConnector.waitStreamInOut.Runnable, UsbData: going to usbRequest.queue with position = " + buffer.position());
+                                usbRequest.initialize(usbDeviceConnection, usbEndpointIn);
+                                usbRequest.queue(buffer, bufferDataLength);
+                                try {
+                                    boolean bEqual = usbRequest.equals(usbDeviceConnection.requestWait(50));
+                                    if (DEBUG)
+                                        appendToLog("UsbConnector.waitStreamInOut.Runnable, UsbData: done transfer with usbRequest.equals[usbDeviceConnection.requestWait] is " + bEqual + ", position = " + buffer.position());
+                                    byte[] dataInRaw = buffer.array();
+                                    if (DEBUG && dataInRaw[0] != 0)
+                                        appendToLog("UsbConnector.waitStreamInOut.Runnable, UsbData: buffer received is " + byteArrayToString(dataInRaw));
+
+                                    if (bEqual && (buffer.position() > 0) && (dataInRaw[0] == 1) && (dataInRaw.length > (dataInRaw[1] + 2))) {
+                                        dataIn = new byte[dataInRaw[1]];
+                                        System.arraycopy(dataInRaw, 2, dataIn, 0, dataIn.length);
+                                        if (DEBUG || true)
+                                            appendToLog("UsbConnector.waitStreamInOut.Runnable, UsbData: dataIn " + dataIn.length + " is " + byteArrayToString(dataIn));
+                                        synchronized (arrayListStreamIn) {
+                                            //arrayListStreamIn.add(dataIn);
+                                            streamInBufferPush(dataIn, 0, dataIn.length);
+                                            streamInBufferSize += dataIn.length;
                                             if (DEBUG)
-                                                appendToLog("UsbConnector.waitStreamIn.Runnable: going to do runnableProcessStreamInData");
-                                            mHandler.removeCallbacks(runnableProcessStreamInData);
-                                            mHandler.post(runnableProcessStreamInData);
-                                            if (DEBUG)
-                                                appendToLog("UsbConnector.waitStreamIn.Runnable: done post[runnableProcessStreamInData]");
+                                                appendToLog("UsbConnector.waitStreamInOut.Runnable: done streamInBufferPush with streamInRequest as " + streamInRequest);
+                                            if (streamInRequest == false) {
+                                                streamInRequest = true;
+                                                if (DEBUG)
+                                                    appendToLog("UsbConnector.waitStreamInOut.Runnable: going to do runnableProcessStreamInData");
+                                                mHandler.removeCallbacks(runnableProcessStreamInData);
+                                                mHandler.post(runnableProcessStreamInData);
+                                                if (DEBUG)
+                                                    appendToLog("UsbConnector.waitStreamInOut.Runnable: done post[runnableProcessStreamInData]");
+                                            }
                                         }
                                     }
+                                    //Thread.sleep(50);
+                                } catch (Exception ex) {
+                                    appendToLog("UsbConnector.waitStreamInOut.Runnable: Exception as " + ex.toString());
                                 }
-                                //}
-                            } catch (Exception ex) {
-                                appendToLog("UsbConnector.waitStreamIn.Runnable: Exception as " + ex.toString());
-                            }
+                            } else if (DEBUG) appendToLog("UsbConnector.waitStreamInOut.Runnable: cannot handle as usbEndpointIn type is " + usbEndpointIn.getType());
                         }
-                    } else {
-                        if (DEBUG)
-                            appendToLog("UsbConnector.waitStreamIn.Runnable: cannot handle as usbEndpointIn type is " + usbEndpointIn.getType());
                     }
                 }
             });
