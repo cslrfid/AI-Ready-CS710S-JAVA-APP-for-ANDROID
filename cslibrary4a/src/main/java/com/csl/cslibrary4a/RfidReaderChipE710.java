@@ -1561,18 +1561,18 @@ public class RfidReaderChipE710 {
         int invBrandId = BRAND_INVALID;
         boolean getInvBrandId() {
             if (invBrandId < BRANDID_MIN || invBrandId > BRANDID_MAX) { getHST_INV_CFG(); return false; }
-            return (invModeCompact == 1 ? true : false);
+            return (invModeCompact == 1);
         }
         public boolean setInvBrandId(boolean invBrandId) {
             if (invBrandId == getInvBrandId()) return true;
             this.invBrandId = (invBrandId ? 1 : 0); appendToLog("!!! Skip setInvBrandId[" + invBrandId + "]");
             return true;
         }
-
         private boolean getHST_INV_CFG() {
             byte[] msgBuffer = new byte[]{(byte) 0x70, 0, 1, 9, 0, 0, 0, 0};
             return sendHostRegRequest(HostRegRequests.HST_INV_CFG, false, msgBuffer);
         }
+
         final int ALGOSELECT_INVALID = -1; final int ALGOSELECT_MIN = 0; final int ALGOSELECT_MAX = 3;   //DataSheet says Max=1
         int algoSelect = ALGOSELECT_INVALID;
         public boolean setAlgoSelect(int algoSelect) {

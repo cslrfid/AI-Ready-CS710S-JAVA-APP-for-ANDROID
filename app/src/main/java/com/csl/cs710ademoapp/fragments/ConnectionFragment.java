@@ -226,7 +226,7 @@ public class ConnectionFragment extends CommonFragment {
                         }
                     }
                     if (match == false) {
-                        String name = (scanResultA.device == null ? scanResultA.getName() : scanResultA.device.getName());
+                        String name = scanResultA.getName(); //(scanResultA.device == null ? scanResultA.getName() : scanResultA.device.getName());
                         if (false) {
                             if (scanResultA.device != null && scanResultA.rssi == 0) {
                                 BluetoothDevice bluetoothDevice = scanResultA.device;

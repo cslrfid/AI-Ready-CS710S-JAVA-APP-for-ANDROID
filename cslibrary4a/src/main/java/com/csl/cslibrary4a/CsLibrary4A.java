@@ -34,7 +34,7 @@ import java.util.Set;
 
 public class CsLibrary4A {
     boolean DEBUG = false, DEBUG2 = false;
-    String stringVersion = "17.0";
+    String stringVersion = "18.0";
     Utility utility;
     Cs710Library4A cs710Library4A;
     Cs108Library4A cs108Library4A;
@@ -296,14 +296,16 @@ public class CsLibrary4A {
                 csScanData = new BluetoothGatt.CsScanData(csScanData1.getDevice(), csScanData1.rssi, csScanData1.getScanRecord());
                 csScanData.serviceUUID2p2 = csScanData1.serviceUUID2p2;
             }
-        } else if (true) csScanData = csScanData7;
-        else {
+        } else if (true) {
+            csScanData = csScanData7;
+        } else {
             csScanData = new BluetoothGatt.CsScanData(csScanData7.getDevice(), csScanData7.rssi, csScanData7.getScanRecord());
             csScanData.serviceUUID2p2 = csScanData7.serviceUUID2p2;
         }
         if (csScanData != null) {
             //appendToLog("DeviceFinder, CsLibrary4A.getNewDeviceScanned: csScanData.getAddress is " + csScanData.getAddress());
         }
+        if (csScanData != null) appendToLog("found982 with name = " + csScanData.name + ", device.name = " + csScanData.device.getName());
         return csScanData;
     }
     public String getBluetoothDeviceAddress() {
@@ -1411,6 +1413,13 @@ public class CsLibrary4A {
         if (isCs108Connected()) return cs108Library4A.setInvBrandId(invBrandId);
         else if (isCs710Connected()) return cs710Library4A.setInvBrandId(invBrandId);
         else Log.i("Hello2", "setInvBrandId" + stringNOTCONNECT);
+        return false;
+    }
+    public boolean setInvAuthenticate(boolean invAuthenticate) {
+        if (DEBUG) Log.i("Hello2", "setInvBrandId");
+        if (isCs108Connected()) return cs108Library4A.setInvAuthenticate(invAuthenticate);
+        else if (isCs710Connected()) return cs710Library4A.setInvAuthenticate(invAuthenticate);
+        else Log.i("Hello2", "setInvAuthenticate" + stringNOTCONNECT);
         return false;
     }
     public boolean sendHostRegRequestHST_CMD(RfidReaderChipData.HostCommands hostCommand) {

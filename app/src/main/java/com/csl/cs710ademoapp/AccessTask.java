@@ -162,7 +162,7 @@ public class AccessTask extends AsyncTask<Void, String, String> {
                 MainActivity.csLibrary4A.appendToLog("Going to setSelectCriteria disable");
                 MainActivity.csLibrary4A.setSelectCriteriaDisable(-1);
             }
-            if (powerLevel < 0 || powerLevel > 330) invalidRequest = true;
+            if (powerLevel < 0 || powerLevel > MainActivity.powerLevelMax) invalidRequest = true;
             else if (skipSelect == false) {
                 MainActivity.csLibrary4A.appendToLog("AccessTask.preExecute goes to setSelectTag");
                 if (MainActivity.csLibrary4A.setSelectedTag(selectOne, selectMask, selectBank, selectOffset, powerLevel, qValue, matchRep) == false) {

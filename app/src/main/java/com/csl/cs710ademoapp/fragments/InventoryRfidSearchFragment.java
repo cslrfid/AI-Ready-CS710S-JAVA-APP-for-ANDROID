@@ -345,7 +345,7 @@ public class InventoryRfidSearchFragment extends CommonFragment {
         }
         int memorybank = memoryBankSpinner.getSelectedItemPosition();
         int powerLevel = Integer.valueOf(editTextGeigerAntennaPower.getText().toString());
-        if (powerLevel < 0 || powerLevel > 330) {
+        if (powerLevel < 0 || powerLevel > MainActivity.powerLevelMax) {
             MainActivity.csLibrary4A.appendToLog("invalidRequest = " + invalidRequest + ", with powerLevel = " + powerLevel);
             invalidRequest = true;
         } else if (MainActivity.csLibrary4A.setSelectedTag(selectTag.editTextTagID.getText().toString(), memorybank+1, powerLevel) == false) {

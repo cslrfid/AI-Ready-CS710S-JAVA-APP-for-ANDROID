@@ -981,6 +981,9 @@ public class Cs108Library4A {
     public boolean setInvBrandId(boolean invBrandId) {
         return csReaderConnector.rfidReader.setInvBrandId(invBrandId);
     }
+    public boolean setInvAuthenticate(boolean invAuthenticate) {
+        return csReaderConnector.rfidReader.setInvAuthenticate(invAuthenticate);
+    }
     public boolean sendHostRegRequestHST_CMD(RfidReaderChipData.HostCommands hostCommand) {
         if (checkHostProcessorVersion(getMacVer(), 2, 6, 8)) setInvModeCompact(false);
         return csReaderConnector.rfidReader.sendHostRegRequestHST_CMD(hostCommand);

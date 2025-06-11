@@ -12,6 +12,9 @@ android {
         targetSdk 36
         buildConfigField 'String', 'VERSION_NAME', "\"0\""
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        ndk {
+            debugSymbolLevel = 'FULL'
+        }
     }
 
     buildTypes {

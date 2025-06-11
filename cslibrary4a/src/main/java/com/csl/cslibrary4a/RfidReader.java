@@ -2707,9 +2707,17 @@ public class RfidReader {
     }
     public List<String> getProfileList() {
         if (bis108) return Arrays.asList(context.getResources().getStringArray(R.array.profile1_options));
-        if (bluetoothGatt.isVersionGreaterEqual(rfidReaderChipE710.rx000Setting.getMacVer(), 1, 0, 250))
+        appendToLog("getMacVer = " + rfidReaderChipE710.rx000Setting.getMacVer());
+        if (bluetoothGatt.isVersionGreaterEqual(rfidReaderChipE710.rx000Setting.getMacVer(), 2, 1, 1)) {
+            appendToLog("equal or greater than 2.1.1");
+            return Arrays.asList(context.getResources().getStringArray(R.array.profile4_options));
+        } else if (bluetoothGatt.isVersionGreaterEqual(rfidReaderChipE710.rx000Setting.getMacVer(), 1, 0, 250)) {
+            appendToLog("equal or greater than 1.0.250");
             return Arrays.asList(context.getResources().getStringArray(R.array.profile3A_options));
-        else return Arrays.asList(context.getResources().getStringArray(R.array.profile2_options)); //for 1.0.12
+        } else {
+            appendToLog("matching less than 1.0.250");
+            return Arrays.asList(context.getResources().getStringArray(R.array.profile2_options)); //for 1.0.12
+        }
     }
     public int getCurrentProfile() {
         if (bis108) return rfidReaderChipR2000.rx000Setting.getCurrentProfile();
@@ -2739,8 +2747,9 @@ public class RfidReader {
     }
     public boolean setBasicCurrentLinkProfile() {
         if (bis108) return setCurrentLinkProfile(1);
-        int profile = 244;
-        if (getCountryCode() == 1) profile = 241;
+        boolean b211 = bluetoothGatt.isVersionGreaterEqual(rfidReaderChipE710.rx000Setting.getMacVer(), 2, 1, 1);
+        int profile = (b211 ? 343 : 244);
+        if (getCountryCode() == 1) profile = (b211 ? 342 : 241);
         appendToLog("profile is " + profile);
         return rfidReaderChipE710.rx000Setting.setCurrentProfile(profile);
     }
@@ -3484,6 +3493,11 @@ public class RfidReader {
             case TAG_INVENTORY:
             case TAG_SEARCHING:
                 //setInventoring(true);
+                if (false && operationTypes == RfidReaderChipData.OperationTypes.TAG_INVENTORY) {
+                    //setTam1Configuration(0, "FD5D8048F48DD09AAD22");
+                    setTam2Configuration(1, "FD5D8048F48DD09AAD22", 0, 0, 1, 1);
+                    setInvAuthenticate(true);
+                }
                 if (utility.DEBUG_COMPACT) appendToLog("Debug_Compact 0: RfidReadder.startOperation operationTypes is " + operationTypes.toString());
                 if (operationTypes == RfidReaderChipData.OperationTypes.TAG_INVENTORY_COMPACT) {
                     setTagDelay2RfidReader(0); setMatchRep(0);
@@ -4012,6 +4026,9 @@ public class RfidReader {
     }
     public boolean setInvBrandId(boolean invBrandId) {
         return (bis108 ? rfidReaderChipR2000.rx000Setting.setInvBrandId(invBrandId) : rfidReaderChipE710.rx000Setting.setInvBrandId(invBrandId));
+    }
+    public boolean setInvAuthenticate(boolean invAuthenticate) {
+        return (bis108 ? rfidReaderChipR2000.rx000Setting.setInvAuthenticate(invAuthenticate) : false);
     }
     public boolean sendHostRegRequestHST_CMD(RfidReaderChipData.HostCommands hostCommand) {
         if (bis108) {

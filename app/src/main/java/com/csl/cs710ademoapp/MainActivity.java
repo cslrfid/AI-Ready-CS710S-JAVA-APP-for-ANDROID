@@ -61,6 +61,7 @@ public class MainActivity extends AppCompatActivity {
     public static boolean foregroundServiceEnable = false;
     public static boolean activityActive = false;
     public static DrawerPositions drawerPositionsDefault = DrawerPositions.MAIN;
+    public static int powerLevelMax = 320;
 
     //Tag to identify the currently displayed fragment
     Fragment fragment = null;

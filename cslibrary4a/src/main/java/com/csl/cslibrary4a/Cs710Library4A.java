@@ -337,7 +337,7 @@ public class Cs710Library4A {
         return bluetoothGatt.getReaderDeviceConnected().getName();
     }
     public boolean isBleConnected() {
-        boolean DEBUG = true;
+        boolean DEBUG = false;
         boolean deviceConnectionNew = csReaderConnector.isConnected();
         if (DEBUG && false) appendToLog("Cs710Library4A.isBleConnected: ConnectionNew = " + deviceConnectionNew + ", connection = " + deviceConnection);
         if (DEBUG && false) appendToLog("Cs710Library4A.isBleConnected: rfidReader is " + (csReaderConnector.rfidReader == null ? "null" : "valid"));
@@ -983,6 +983,9 @@ public class Cs710Library4A {
     }
     public boolean setInvBrandId(boolean invBrandId) {
         return csReaderConnector.rfidReader.setInvBrandId(invBrandId);
+    }
+    public boolean setInvAuthenticate(boolean invAuthenticate) {
+        return csReaderConnector.rfidReader.setInvAuthenticate(invAuthenticate);
     }
     public boolean sendHostRegRequestHST_CMD(RfidReaderChipData.HostCommands hostCommand) {
         if (true) setInvModeCompact(false);

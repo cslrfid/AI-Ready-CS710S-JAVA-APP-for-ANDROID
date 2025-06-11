@@ -10,8 +10,10 @@ import android.os.Build;
 import android.os.Handler;
 import android.widget.TextView;
 
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -128,12 +130,12 @@ public class CsReaderConnector {
     //boolean dataInBufferResetting;
 
     void processStreamInData() {
-        final boolean DEBUG = true;
+        final boolean DEBUG = false;
         int cs108DataReadStartOld = 0;
         int cs108DataReadStart = 0;
         boolean validHeader = false;
 
-        appendToLog("CsReaderConnector.processStreamInData: starts with cs108DataLeft " + (cs108DataLeft == null ? "null" : "valid"));
+        if (DEBUG) appendToLog("CsReaderConnector.processStreamInData: starts with cs108DataLeft " + (cs108DataLeft == null ? "null" : "valid"));
         if (cs108DataLeft == null) return;
         /*if (false && dataInBufferResetting) {
             if (utility.DEBUG_FMDATA) appendToLog("FmData: RESET.");
@@ -141,14 +143,14 @@ public class CsReaderConnector {
             cs108DataLeftOffset = 0;
             connectorDataList.clear();
         }*/
-        appendToLog("CsReaderConnector.processStreamInData: " + (usbConnector == null ? "null" : (usbConnector.isConnected() ? "connected" : "not connected")) + " usbConnector");
+        if (DEBUG) appendToLog("CsReaderConnector.processStreamInData: " + (usbConnector == null ? "null" : (usbConnector.isConnected() ? "connected" : "not connected")) + " usbConnector");
         int iStreamInBufferSize = ((usbConnector == null || !usbConnector.isConnected()) ? bluetoothGatt.getStreamInBufferSize() : usbConnector.getStreamInBufferSize());
-        appendToLog("CsReaderConnector.processStreamInData: iStreamInBufferSize = " + iStreamInBufferSize);
+        if (DEBUG) appendToLog("CsReaderConnector.processStreamInData: iStreamInBufferSize = " + iStreamInBufferSize);
         //boolean bFirst = true;
         long lTime = System.currentTimeMillis();
         boolean bLooping = false;
         while (((usbConnector == null || !usbConnector.isConnected()) ? bluetoothGatt.getStreamInBufferSize() : usbConnector.getStreamInBufferSize()) != 0) {
-            appendToLog("CsReaderConnector.processStreamInData: while loop starts");
+            if (DEBUG) appendToLog("CsReaderConnector.processStreamInData: while loop starts");
             if (utility.DEBUG_FMDATA && bLooping == false) appendToLog("FmData: Enter loop with cs108DataLeftOffset=" + cs108DataLeftOffset + ", streamInBufferSize=" + iStreamInBufferSize);
             bLooping = true;
 
@@ -166,9 +168,9 @@ public class CsReaderConnector {
                 if (streamInMissing != 0)
                     utility.appendToLogView("FmData: processCs108DataIn(" + bluetoothGatt.getStreamInTotalCounter() + ", " + bluetoothGatt.getStreamInAddCounter() + "): len=0, getStreamInOverflowTime()=" + streamInOverflowTime + ", MissBytes=" + streamInMissing + ", Offset=" + cs108DataLeftOffset);
             }
-            appendToLog("CsReaderConnector.processStreamInData: going to readData");
+            if (DEBUG) appendToLog("CsReaderConnector.processStreamInData: going to readData");
             int len = readData(cs108DataLeft, cs108DataLeftOffset, cs108DataLeft.length);
-            appendToLog("CsReaderConnector.processStreamInData: readData len = " + len);
+            if (DEBUG) appendToLog("CsReaderConnector.processStreamInData: readData len = " + len);
             if (utility.DEBUG_FMDATA && len != 0) {
                 byte[] debugData = new byte[len];
                 System.arraycopy(cs108DataLeft, cs108DataLeftOffset, debugData, 0, len);
@@ -197,7 +199,7 @@ public class CsReaderConnector {
 
                 if (utility.DEBUG_FMDATA) appendToLog("FmData: cs108DataLeftOffset = " + cs108DataLeftOffset + ", cs108DataReadStart = " + cs108DataReadStart);
                 while (cs108DataLeftOffset >= cs108DataReadStart + 8) {
-                    appendToLog("FmData: while looping");
+                    if (DEBUG) appendToLog("FmData: while looping");
                     validHeader = false;
                     byte[] dataIn = cs108DataLeft;
                     int iPayloadLength = (dataIn[cs108DataReadStart + 2] & 0xFF);
@@ -210,7 +212,7 @@ public class CsReaderConnector {
                             || dataIn[cs108DataReadStart + 3] == (byte) 0x5F)
                             //&& ((dataIn[cs108DataReadStart + 4] == (byte) 0x82) || ((dataIn[cs108DataReadStart + 3] == (byte) 0xC2) && (dataIn[cs108DataReadStart + 8] == (byte) 0x81)))
                             && (dataIn[cs108DataReadStart + 5] == (byte) 0x9E)) {
-                        appendToLog("FmData: matched header with cs108DataLeftOffset = " + cs108DataLeftOffset + ", cs108DataReadStart = " + cs108DataReadStart + ", iPayloadLength = " + iPayloadLength);
+                        if (DEBUG) appendToLog("FmData: matched header with cs108DataLeftOffset = " + cs108DataLeftOffset + ", cs108DataReadStart = " + cs108DataReadStart + ", iPayloadLength = " + iPayloadLength);
                         if (cs108DataLeftOffset - cs108DataReadStart < (iPayloadLength + 8))
                             break;
 
@@ -225,9 +227,9 @@ public class CsReaderConnector {
                                     checksum2 = (checksum2 >> 8) ^ table_value;
                                 }
                             }
-                            if (true) appendToLog("FmData: checksum = " + String.format("%04X", checksum) + ", checksum2 = " + String.format("%04X", checksum2));
+                            if (DEBUG) appendToLog("FmData: checksum = " + String.format("%04X", checksum) + ", checksum2 = " + String.format("%04X", checksum2));
                         }
-                        appendToLog("FmData: bcheckChecksum = " + bcheckChecksum + ", checksum = " + checksum + ", checksum2 = " + checksum2);
+                        if (DEBUG) appendToLog("FmData: bcheckChecksum = " + bcheckChecksum + ", checksum = " + checksum + ", checksum2 = " + checksum2);
                         if (bcheckChecksum && checksum != checksum2) {
                             if (utility.DEBUG_FMDATA) {
                                 if (iPayloadLength < 0) {
@@ -327,7 +329,7 @@ public class CsReaderConnector {
                             } //appendToLog("BtData: processBleStreamOut cannot start mReadWriteRunnable as mCs108DataReadRequest is true");
                         }
                     }
-                    appendToLog("FmData: going to loop again with validHeader = " + validHeader + ", cs108DataReadStart = " + cs108DataReadStart + ", cs108DataReadStartOld = " + cs108DataReadStartOld);
+                    if (DEBUG) appendToLog("FmData: going to loop again with validHeader = " + validHeader + ", cs108DataReadStart = " + cs108DataReadStart + ", cs108DataReadStartOld = " + cs108DataReadStartOld);
                     if (validHeader && cs108DataReadStart < 0) {
                         cs108DataReadStart = 0;
                         cs108DataReadStartOld = 0;
@@ -335,7 +337,7 @@ public class CsReaderConnector {
                         cs108DataReadStart++;
                     }
                 }
-                appendToLog("FmData: end of while loop with cs108DataReadStart = " + cs108DataReadStart + ", cs108DataLeftOffset = " + cs108DataLeftOffset);
+                if (DEBUG) appendToLog("FmData: end of while loop with cs108DataReadStart = " + cs108DataReadStart + ", cs108DataLeftOffset = " + cs108DataLeftOffset);
                 if (cs108DataReadStart != 0 && cs108DataLeftOffset >= 8) {
                     if (utility.DEBUG_FMDATA) {
                         byte[] invalidPart = new byte[cs108DataReadStart];
@@ -353,7 +355,7 @@ public class CsReaderConnector {
                 }
             }
         }
-        appendToLog("CsReaderConnector.processStreamInData: while loop ending");
+        if (DEBUG) appendToLog("CsReaderConnector.processStreamInData: while loop ending");
         if (utility.DEBUG_FMDATA && bLooping) appendToLog("FmData: Exit loop with cs108DataLeftOffset=" + cs108DataLeftOffset);
     }
 
@@ -457,10 +459,17 @@ public class CsReaderConnector {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                         BluetoothGatt.CsScanData scanResultA = new BluetoothGatt.CsScanData(result.getDevice(), result.getRssi(), result.getScanRecord().getBytes());
                         boolean found98 = true;
-                        if (true) found98 = check9800(scanResultA);
+                        if (true) {
+                            CheckResult resultc = check9800(scanResultA);
+                            if (resultc != null) {
+                                found98 = resultc.is9802;
+                                scanResultA.name = resultc.stringName;
+                            }
+                        }
                         if (DEBUG) appendToLog("CsReaderConnector " + bis108 + ", found98 = " + found98 + ", mScanResultList 0 = " + (mScanResultList != null ? "VALID" : "NULL"));
                         if (mScanResultList != null && found98) {
                             scanResultA.serviceUUID2p2 = check9800_serviceUUID2p1;
+                            appendToLog("found980 with name = " + scanResultA.name + ", device.name = " + scanResultA.device.getName());
                             mScanResultList.add(scanResultA);
                             if (DEBUG) appendToLog("CsReaderConnector, bis108 = " + bis108 + ", mScanResultList 0 = " + mScanResultList.size() + ", serviceUUID2p2 = " + scanResultA.serviceUUID2p2);
                         }
@@ -474,7 +483,13 @@ public class CsReaderConnector {
                     if (true) appendToLog("onLeScan()");
                     BluetoothGatt.CsScanData scanResultA = new BluetoothGatt.CsScanData(device, rssi, scanRecord);
                     boolean found98 = true;
-                    if (true) found98 = check9800(scanResultA);
+                    if (true) {
+                        CheckResult resultc = check9800(scanResultA);
+                        if (resultc != null) {
+                            found98 = resultc.is9802;
+                            scanResultA.name = resultc.stringName;
+                        }
+                    }
                     appendToLog("found98 = " + found98 + ", mScanResultList 1 = " + (mScanResultList != null ? "VALID" : "NULL"));
                     if (mScanResultList != null && found98) {
                         scanResultA.serviceUUID2p2 = check9800_serviceUUID2p1;
@@ -523,6 +538,7 @@ public class CsReaderConnector {
             if (DEBUG_SCAN) appendToLog("mScanResultList.size() = " + mScanResultList.size());
             BluetoothGatt.CsScanData csScanData = mScanResultList.get(0); mScanResultList.remove(0);
             if (csScanData != null) {
+                appendToLog("found981 with name = " + csScanData.name + ", device.name = " + csScanData.device.getName());
                 //appendToLog("DeviceFinder, CsReaderConnector.getNewDeviceScanned: csScanData.getAddress is " + csScanData.getAddress());
             }
             return csScanData;
@@ -530,16 +546,21 @@ public class CsReaderConnector {
     }
     ArrayList<BluetoothGatt.CsScanData> mScanResultList = new ArrayList<>();
     int check9800_serviceUUID2p1 = 0;
-    boolean check9800(BluetoothGatt.CsScanData scanResultA) {
+    class CheckResult {
+        boolean is9802;
+        String stringName;
+    }
+    CheckResult check9800(BluetoothGatt.CsScanData scanResultA) {
         boolean found98 = false, DEBUG = true;
         if (DEBUG) appendToLog("decoded data size = " + scanResultA.decoded_scanRecord.size());
         int iNewADLength = 0;
         byte[] newAD = new byte[0];
         int iNewADIndex = 0;
         check9800_serviceUUID2p1 = -1;
-        if (bluetoothGatt.isBLUETOOTH_CONNECTinvalid()) return true;
+        if (bluetoothGatt.isBLUETOOTH_CONNECTinvalid()) return null;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED)
-            return true;
+            return null;
+        CheckResult checkResult = new CheckResult(); checkResult.is9802 = false;
         String strTemp = scanResultA.getDevice().getName();
         if (strTemp != null && DEBUG)
             appendToLog("Found name = " + strTemp + ", length = " + String.valueOf(strTemp.length()));
@@ -553,7 +574,12 @@ public class CsReaderConnector {
                     if (newAD[0] == 1) stringADType = "Flags";
                     else if (newAD[0] == 2) stringADType = "Incomplete List of 16-bit Service UUIDs";
                     else if (newAD[0] == 3) stringADType = "Complete list of 16-bit service UUIDs";
-                    else if (newAD[0] == 9) stringADType = "Complete local name";
+                    else if (newAD[0] == 9) {
+                        byte[] byteString = new byte[newAD.length - 1];
+                        System.arraycopy(newAD, 1, byteString, 0, byteString.length);
+                        checkResult.stringName = new String(byteString, StandardCharsets.UTF_8);
+                        stringADType = "Complete local name, " + checkResult.stringName;
+                    }
                     else if (newAD[0] == 0x0A) stringADType = "Tx power level";
                     else if (newAD[0] == 0x12) stringADType = "Peripheral connection interval range";
                     else if (newAD[0] == 0x16) stringADType = "Service data - 16-bit UUID";
@@ -593,7 +619,8 @@ public class CsReaderConnector {
             appendToLog("No 9800: with scanData = " + byteArrayToString(scanResultA.getScanRecord()));
         else if (DEBUG_SCAN)
             appendToLog("CsReaderConnector " + bis108 + ", Found 9800: with scanData = " + byteArrayToString(scanResultA.getScanRecord()));
-        return found98;
+        checkResult.is9802 = found98;
+        return checkResult;
     }
 
     long timeReady; boolean aborting = false, sendFailure = false;
