@@ -254,7 +254,7 @@ public class InventoryRfidSimpleFragment extends CommonFragment {
                 Toast.makeText(MainActivity.mContext, "Rfid is disabled", Toast.LENGTH_SHORT).show();
                 return;
             } else if (MainActivity.csLibrary4A.mrfidToWriteSize() != 0) {
-                Toast.makeText(MainActivity.mContext, R.string.toast_not_ready, Toast.LENGTH_SHORT).show();
+                //Toast.makeText(MainActivity.mContext, R.string.toast_not_ready, Toast.LENGTH_SHORT).show();
                 mHandler.post(runnableCheckReady);
                 return;
             }
@@ -281,8 +281,10 @@ public class InventoryRfidSimpleFragment extends CommonFragment {
             if (bAdd2End) rfidListView.setTranscriptMode(AbsListView.TRANSCRIPT_MODE_ALWAYS_SCROLL);
             else rfidListView.setSelection(0);
 
-            if (MainActivity.csLibrary4A.getInventoryVibrate() && MainActivity.csLibrary4A.getVibrateModeSetting() == 1)
+            MainActivity.csLibrary4A.appendToLog("setVibrateOn i 2 with getInventoryVibrate as " + MainActivity.csLibrary4A.getInventoryVibrate() + ", getVibrateModeSetting as " + MainActivity.csLibrary4A.getVibrateModeSetting());
+            if (MainActivity.csLibrary4A.getInventoryVibrate() && MainActivity.csLibrary4A.getVibrateModeSetting() == 1) {
                 MainActivity.csLibrary4A.setVibrateOn(2);
+            }
             //else MainActivity.csLibrary4A.setVibrateOn(0);
 
             startInventoryTask();

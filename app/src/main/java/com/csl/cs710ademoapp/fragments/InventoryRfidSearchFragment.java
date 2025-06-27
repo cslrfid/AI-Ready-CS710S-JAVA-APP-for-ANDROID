@@ -30,6 +30,7 @@ import com.csl.cs710ademoapp.MainActivity;
 import com.csl.cs710ademoapp.R;
 import com.csl.cslibrary4a.NotificationConnector;
 import com.csl.cslibrary4a.ReaderDevice;
+import com.csl.cslibrary4a.RfidReader;
 import com.csl.cslibrary4a.RfidReaderChipData;
 
 public class InventoryRfidSearchFragment extends CommonFragment {
@@ -344,7 +345,7 @@ public class InventoryRfidSearchFragment extends CommonFragment {
         }
         int memorybank = memoryBankSpinner.getSelectedItemPosition();
         int powerLevel = Integer.valueOf(editTextGeigerAntennaPower.getText().toString());
-        if (powerLevel < 0 || powerLevel > 330) {
+        if (powerLevel < 0 || powerLevel > MainActivity.powerLevelMax) {
             MainActivity.csLibrary4A.appendToLog("invalidRequest = " + invalidRequest + ", with powerLevel = " + powerLevel);
             invalidRequest = true;
         } else if (MainActivity.csLibrary4A.setSelectedTag(selectTag.editTextTagID.getText().toString(), memorybank+1, powerLevel) == false) {
@@ -355,7 +356,7 @@ public class InventoryRfidSearchFragment extends CommonFragment {
         }
         MainActivity.csLibrary4A.appendToLog("invalidRequest = " + invalidRequest);
         geigerSearchTask = new InventoryRfidTask(getContext(), -1,-1, 0, 0, 0, 0, invalidRequest, true,
-                null, null, geigerTagRssiView, null,
+                null, null, geigerTagRssiView, RfidReader.TagType.TAG_NULL, null,
                 geigerRunTime, geigerTagGotView, geigerVoltageLevelView, null, button, rfidRateView);
         geigerSearchTask.execute();
     }

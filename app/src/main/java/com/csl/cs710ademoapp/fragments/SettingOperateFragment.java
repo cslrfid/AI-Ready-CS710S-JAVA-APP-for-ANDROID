@@ -16,6 +16,7 @@ import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.csl.cs710ademoapp.CustomPopupWindow;
 import com.csl.cs710ademoapp.MainActivity;
 import com.csl.cs710ademoapp.R;
 import com.csl.cs710ademoapp.SettingTask;
@@ -328,7 +329,7 @@ public class SettingOperateFragment extends CommonFragment {
     @Override
     public void onDestroy() {
         if (settingTask != null) settingTask.cancel(true);
-        MainActivity.csLibrary4A.setSameCheck(true);
+        if (MainActivity.csLibrary4A != null) MainActivity.csLibrary4A.setSameCheck(true);
         mHandler.removeCallbacks(updateRunnable);
         super.onDestroy();
     }
@@ -615,7 +616,12 @@ public class SettingOperateFragment extends CommonFragment {
         }
         if (invalidRequest == false && (MainActivity.csLibrary4A.getPwrlevel() != powerLevel || sameCheck == false)) {
             sameSetting = false; MainActivity.csLibrary4A.appendToLog("point 6");
-            if (powerLevel < powerLevelMin || powerLevel > 330) invalidRequest = true;
+            if (powerLevel < powerLevelMin) invalidRequest = true;
+            else if (powerLevel > MainActivity.powerLevelMax) {
+                CustomPopupWindow customPopupWindow = new CustomPopupWindow(MainActivity.mContext);
+                customPopupWindow.popupStart("Power can only be set to 320 or below", false);
+                invalidRequest = true;
+            }
             else if (MainActivity.csLibrary4A.setPowerLevel(powerLevel) == false) invalidRequest = true;
         }
         if ((invalidRequest == false && (MainActivity.csLibrary4A.getAntennaDwell() != dwellTime || sameCheck == false || changedChannel))) {
