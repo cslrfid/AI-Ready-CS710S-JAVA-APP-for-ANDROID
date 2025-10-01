@@ -1,0 +1,80 @@
+{
+  "input": {
+    "maxFileSize": 100000000
+  },
+  "output": {
+    "filePath": "CS710S-Java-ENTIRE-CONTEXT.txt",
+    "style": "xml",
+    "parsableStyle": true,
+    "compress": true,
+    "headerText": "Packed CS710S Android codebase for AI analysis of BLE/RFID flows, including Java source, projects, and docs.",
+    "instructionFilePath": "repomix-instruction.md",
+    "fileSummary": true,
+    "directoryStructure": true,
+    "files": true,
+    "removeComments": false,
+    "removeEmptyLines": false,
+    "showLineNumbers": false,
+    "truncateBase64": false,
+    "copyToClipboard": false,
+    "includeEmptyDirectories": false,
+    "topFilesLength": 5,
+    "tokenCountTree": 1000
+  },
+  "include": [
+    "app/src/**",
+    "cslibrary4a/src/main/**",
+    "epctagcoder/src/main/**",
+    "gradle/**",
+    "README.md",
+    "repomix-instruction.md",
+    "repomix.config.json"
+  ],
+  "ignore": {
+    "useGitignore": true,
+    "useDefaultPatterns": true,
+    "customPatterns": [
+      "**/bin/**",
+      "**/obj/**",
+      "**/Debug/**",
+      "**/Release/**",
+      "**/.vs/**",
+      "**/TestResult*/**",
+      "**/node_modules/**",
+      "**/*.dll",
+      "**/*.so",
+      "**/*.a",
+      "**/*.jar",
+      "**/*.aar",
+      "**/*.nupkg",
+      "**/*.keystore",
+      "**/*.apk",
+      "**/*.aab",
+      "**/*.zip",
+      "**/*.png",
+      "**/*.jpg",
+      "**/*.gif",
+      "**/*.pdf",
+      "**/*.user",
+      "**/*.userprefs"
+    ]
+  },
+  "security": {
+    "enableSecurityCheck": false
+  },
+  "tokenCount": {
+    "encoding": "o200k_base"
+  },
+  "git": {
+    "includeLogs": false,
+    "sortByChanges": false,
+    "sortByChangesMaxCommits": 0,
+    "includeDiffs": false,
+    "includeLogsCount": 0
+  },
+  "metadata": {
+    "version": "1.0",
+    "lastUpdated": "2025-08-29",
+    "description": "Configuration for packing CS710S Android codebase for AI analysis."
+  }
+}
