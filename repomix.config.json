@@ -3,7 +3,7 @@
     "maxFileSize": 100000000
   },
   "output": {
-    "filePath": "CS710S-Java-ENTIRE-CONTEXT.txt",
+    "filePath": "CS710S-Java-ENTIRE-CONTEXT.xml",
     "style": "xml",
     "parsableStyle": true,
     "compress": true,
