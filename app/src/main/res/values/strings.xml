@@ -12,7 +12,7 @@
 
     <!-- Strings for Fragment actionBar title -->
     <string name="title_activity_home_simplewedge">CSL Wedge</string>
-    <string name="title_activity_home_cs710">CSL Java</string>
+    <string name="title_activity_home_cs710">CSL Java Reader</string>
     <string name="title_activity_home_cs108">Convergence Systems</string>
 
     <string name="title_activity_special">Special Functions</string>
@@ -465,18 +465,13 @@
     <string name="home_settings">Settings</string>
     <string name="home_locate">Geiger Search</string>
     <string name="home_filter">Filters</string>
-    <string name="home_connect">Connect</string>
+    <string name="home_connect">Press to Scan/Connect Reader</string>
     <string name="home_access">Security</string>
     <string name="home_activity_special">Special Functions</string>
 
-    <string name="home_read_write710">Read/Write\n</string>
     <string name="home_inventory710">Inventory\n</string>
-    <string name="home_regTag710">Register Tag\n</string>
-    <string name="home_settings710">Settings\n</string>
+    <string name="home_settings710">Configuration\n</string>
     <string name="home_locate710">Geiger Search\n</string>
-    <string name="home_filter710">Filters\n</string>
-    <string name="home_access710">Security\n</string>
-    <string name="home_activity_special710">Special Functions\n</string>
 
     <string name="special_N2ESL">Longjing EL-N2ESL\nCS6861</string>
     <string name="special_N2ESL_1">EL-N2ESL CS6861</string>

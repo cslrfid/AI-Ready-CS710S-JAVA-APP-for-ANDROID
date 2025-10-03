@@ -12526,12 +12526,6 @@ public class HomeFragment extends CommonFragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        if (true && ((AppCompatActivity) getActivity()).getSupportActionBar() != null) {
-            ActionBar actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
-            actionBar.setIcon(android.R.drawable.ic_menu_save);
-            if (getActivity().getPackageName().contains("cs710ademoapp")) actionBar.setTitle(R.string.title_activity_home_cs710);
-            else actionBar.setTitle(R.string.title_activity_home_cs108);
-        }
         if (true) {
             String strForegroundReader = MainActivity.csLibrary4A.getForegroundReader();
             MainActivity.csLibrary4A.appendToLog("strForegroundReader = " + strForegroundReader + ", getForegroundServiceEnable = " + MainActivity.csLibrary4A.getForegroundServiceEnable());
