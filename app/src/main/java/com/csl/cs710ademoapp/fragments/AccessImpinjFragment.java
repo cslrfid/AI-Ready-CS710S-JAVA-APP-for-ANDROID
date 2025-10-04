@@ -20,7 +20,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.csl.cs710ademoapp.AccessTask;
-import com.csl.cs710ademoapp.AccessTask1;
 import com.csl.cs710ademoapp.CustomPopupWindow;
 import com.csl.cs710ademoapp.MainActivity;
 import com.csl.cs710ademoapp.R;
@@ -45,7 +44,6 @@ public class AccessImpinjFragment extends CommonFragment {
     Button button, buttonAutoTuneValueRead, buttonProtectValueRead, buttonProtectResumeRead, buttonEpc128ValueRead, buttonRead, buttonWrite;
     boolean operationRead = false;
     AccessTask accessTask;
-    AccessTask1 accessTask1;
     int iRunType = -1; String stringNewAutoTuneConfig = null;
     int unprotecting = 0;
 
@@ -401,15 +399,6 @@ public class AccessImpinjFragment extends CommonFragment {
         if (operationRead) textViewUserValue.setText("");
         boolean invalidRequest = false;
 
-        MainActivity.csLibrary4A.appendToLog("Start accessTask1 with accBlockCount + " + accBlockCount + "F" + editTextBlockCount.getText().toString() + ", accOffset = " + accOffset + "F" + editTextUserOffset.getText().toString()  + ", accSize = " + accSize + "F" + editTextUserLength.getText().toString());
-        accessTask1 = new AccessTask1(
-                (operationRead ? buttonReadUserBank : buttonWriteUserBank), invalidRequest,
-                3, accOffset, accSize, accBlockCount, null,
-                selectTag.editTextTagID.getText().toString(), iSelectBank, iSelectOffset,
-                selectTag.editTextAccessPassword.getText().toString(),
-                Integer.valueOf(selectTag.editTextAccessAntennaPower.getText().toString()),
-                (operationRead ? RfidReaderChipData.HostCommands.CMD_18K6CREAD: RfidReaderChipData.HostCommands.CMD_18K6CWRITE), updateRunnable);
-        accessTask1.execute();
         iRunType = 7;
     }
     void startConfigRead() {
@@ -548,7 +537,7 @@ public class AccessImpinjFragment extends CommonFragment {
     private final Runnable updateRunnable = new Runnable() {
         @Override
         public void run() {
-            if (accessTask == null && accessTask1 == null) {
+            if (accessTask == null) {
                 MainActivity.csLibrary4A.appendToLog("updateRunnable(): null AccessTask");
             } else if (accessTask != null && accessTask.getStatus() == AsyncTask.Status.FINISHED) {
                 MainActivity.csLibrary4A.appendToLog("accessResult = " + accessTask.accessResult + " with iRunType = " + iRunType);
@@ -626,13 +615,7 @@ public class AccessImpinjFragment extends CommonFragment {
                 }
                 else if (iRunType == 7) textViewUserValue.setText(accessTask.accessResult);
                 else MainActivity.csLibrary4A.appendToLog("updateRunnable(): No procedure for iRunType == " + iRunType);
-            } else if (accessTask1 != null && accessTask1.isResultReady()) {
-                long duration = SystemClock.elapsedRealtime() - msStartTime;
-                textViewRunTime.setText(String.format("Run time: %.2f sec", ((float) duration / 1000))); MainActivity.csLibrary4A.appendToLog("StreamOut: End of running time");
-                MainActivity.csLibrary4A.appendToLog("access1Result = " + accessTask1.getResult() + " with iRunType = " + iRunType);
-                if (iRunType == 7) textViewUserValue.setText(accessTask1.getResult());
-                else MainActivity.csLibrary4A.appendToLog("updateRunnable(): No procedure for iRunType == " + iRunType);
-            }else {
+            } else {
 //                MainActivity.csLibrary4A.appendToLog("updateRunnable(): rerun after 100ms with accessTask.getStatus() = " + accessTask.getStatus().toString());
                 mHandler.postDelayed(updateRunnable, 100);
             }
