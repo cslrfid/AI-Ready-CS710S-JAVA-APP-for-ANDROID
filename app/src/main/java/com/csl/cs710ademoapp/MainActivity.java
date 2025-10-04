@@ -27,10 +27,6 @@ import androidx.fragment.app.FragmentManager;
 import com.csl.cs710ademoapp.DrawerListContent.DrawerPositions;
 import com.csl.cs710ademoapp.adapters.DrawerListAdapter;
 import com.csl.cs710ademoapp.fragments.AboutFragment;
-import com.csl.cs710ademoapp.fragments.AccessReadWriteFragment;
-import com.csl.cs710ademoapp.fragments.AccessReadWriteUserFragment;
-import com.csl.cs710ademoapp.fragments.AccessRegisterFragment;
-import com.csl.cs710ademoapp.fragments.AccessSecurityFragment;
 import com.csl.cs710ademoapp.fragments.AuraSenseFragment;
 import com.csl.cs710ademoapp.fragments.AxzonSelectorFragment;
 import com.csl.cs710ademoapp.fragments.ColdChainFragment;
@@ -223,12 +219,6 @@ public class MainActivity extends AppCompatActivity {
             case FILTER:
                 fragment = new SettingFilterFragment();
                 break;
-            case READWRITE:
-                fragment = new AccessReadWriteFragment();
-                break;
-            case SECURITY:
-                fragment = new AccessSecurityFragment();
-                break;
 
             case IMPINVENTORY:
                 fragment = new ImpinjFragment();
@@ -276,12 +266,6 @@ public class MainActivity extends AppCompatActivity {
                 fragment = InventoryRfidiMultiFragment.newInstance(true, TAG_ASYGN, "E283A");
                 break;
 
-            case REGISTER:
-                fragment = new AccessRegisterFragment();
-                break;
-            case READWRITEUSER:
-                fragment = new AccessReadWriteUserFragment();
-                break;
             case WEDGE:
             case DIRECTWEDGE:
                 fragment = new DirectWedgeFragment();
