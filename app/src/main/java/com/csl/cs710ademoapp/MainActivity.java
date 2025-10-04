@@ -27,10 +27,6 @@ import androidx.fragment.app.FragmentManager;
 import com.csl.cs710ademoapp.DrawerListContent.DrawerPositions;
 import com.csl.cs710ademoapp.adapters.DrawerListAdapter;
 import com.csl.cs710ademoapp.fragments.AboutFragment;
-import com.csl.cs710ademoapp.fragments.AccessReadWriteFragment;
-import com.csl.cs710ademoapp.fragments.AccessReadWriteUserFragment;
-import com.csl.cs710ademoapp.fragments.AccessRegisterFragment;
-import com.csl.cs710ademoapp.fragments.AccessSecurityFragment;
 import com.csl.cs710ademoapp.fragments.AuraSenseFragment;
 import com.csl.cs710ademoapp.fragments.AxzonSelectorFragment;
 import com.csl.cs710ademoapp.fragments.ColdChainFragment;
@@ -38,7 +34,6 @@ import com.csl.cs710ademoapp.fragments.ConnectionFragment;
 import com.csl.cs710ademoapp.fragments.DirectWedgeFragment;
 import com.csl.cs710ademoapp.fragments.FdmicroFragment;
 import com.csl.cs710ademoapp.fragments.HomeFragment;
-import com.csl.cs710ademoapp.fragments.HomeSpecialFragment;
 import com.csl.cs710ademoapp.fragments.ImpinjFragment;
 import com.csl.cs710ademoapp.fragments.ImpinjM775Fragment;
 import com.csl.cs710ademoapp.fragments.InventoryFragment;
@@ -47,7 +42,6 @@ import com.csl.cs710ademoapp.fragments.InventoryRfidSimpleFragment;
 import com.csl.cs710ademoapp.fragments.InventoryRfidiMultiFragment;
 import com.csl.cs710ademoapp.fragments.KilowayFragment;
 import com.csl.cs710ademoapp.fragments.LongjingFragment;
-import com.csl.cs710ademoapp.fragments.SettingFilterFragment;
 import com.csl.cs710ademoapp.fragments.SettingFragment;
 import com.csl.cs710ademoapp.fragments.TestFragment;
 import com.csl.cs710ademoapp.fragments.Ucode8Fragment;
@@ -194,10 +188,6 @@ public class MainActivity extends AppCompatActivity {
             case MAIN:
                 fragment = new HomeFragment();
                 break;
-            case SPECIAL:
-                fragment = new HomeSpecialFragment();
-                break;
-
             case ABOUT:
                 //fragment = new Test1Fragment();
                 fragment = new AboutFragment();
@@ -219,15 +209,6 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case SETTING:
                 fragment = new SettingFragment();
-                break;
-            case FILTER:
-                fragment = new SettingFilterFragment();
-                break;
-            case READWRITE:
-                fragment = new AccessReadWriteFragment();
-                break;
-            case SECURITY:
-                fragment = new AccessSecurityFragment();
                 break;
 
             case IMPINVENTORY:
@@ -276,12 +257,6 @@ public class MainActivity extends AppCompatActivity {
                 fragment = InventoryRfidiMultiFragment.newInstance(true, TAG_ASYGN, "E283A");
                 break;
 
-            case REGISTER:
-                fragment = new AccessRegisterFragment();
-                break;
-            case READWRITEUSER:
-                fragment = new AccessReadWriteUserFragment();
-                break;
             case WEDGE:
             case DIRECTWEDGE:
                 fragment = new DirectWedgeFragment();
