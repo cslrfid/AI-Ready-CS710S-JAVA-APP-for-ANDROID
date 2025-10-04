@@ -117,6 +117,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         if (savedInstanceState == null) selectItem(drawerPositionsDefault);
         if (true) Log.i(TAG, "MainActivity.onCreate.onCreate: END");
+
+        getSupportActionBar().hide();
     }
 
     @Override

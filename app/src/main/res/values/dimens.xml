@@ -27,5 +27,6 @@
     <dimen name="reader_list_item_padding">5dp</dimen>
     <dimen name="home_icon_margin_1">2dp</dimen>
     <dimen name="home_icon_margin_2">4dp</dimen>
+    <dimen name="home_icon_margin_3">8dp</dimen>
 
 </resources>
