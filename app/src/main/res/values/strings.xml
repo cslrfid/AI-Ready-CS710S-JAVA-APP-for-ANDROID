@@ -12,7 +12,7 @@
 
     <!-- Strings for Fragment actionBar title -->
     <string name="title_activity_home_simplewedge">CSL Wedge</string>
-    <string name="title_activity_home_cs710">CSL Java Reader</string>
+    <string name="title_activity_home_cs710">Java Reader</string>
     <string name="title_activity_home_cs108">Convergence Systems</string>
 
     <string name="title_activity_special">Special Functions</string>
