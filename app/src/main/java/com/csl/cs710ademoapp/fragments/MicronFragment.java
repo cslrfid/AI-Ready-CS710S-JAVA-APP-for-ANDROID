@@ -61,7 +61,6 @@ public class MicronFragment extends CommonFragment {
 
         adapter = new AdapterTab(getActivity().getSupportFragmentManager(), tabs.length);
         adapter.setFragment(0, InventoryRfidiMultiFragment.newInstance(true, null, ""));
-        adapter.setFragment(1, AccessMicronFragment.newInstance(false));
 
         viewPager = (ViewPager) getActivity().findViewById(R.id.OperationsPager);
         viewPager.setAdapter(adapter);

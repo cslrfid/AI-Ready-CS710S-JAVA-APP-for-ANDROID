@@ -75,7 +75,6 @@ public class AxzonFragment extends CommonFragment {
 
         adapter = new AdapterTab(getActivity().getSupportFragmentManager(), (bXervesTag ? 4 : 2));
         adapter.setFragment(0, InventoryRfidiMultiFragment.newInstance(true, null, ""));
-        adapter.setFragment(1, AccessMicronFragment.newInstance(true));
         adapter.setFragment(2, new AccessXerxesLoggerFragment());
         adapter.setFragment(3, new AccessUcodeFragment());
 
